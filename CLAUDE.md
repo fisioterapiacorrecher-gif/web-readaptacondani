@@ -57,3 +57,15 @@ Título, meta description, Open Graph/Twitter, datos estructurados Schema.org (`
 - **`emil-design-eng`** (`.claude/skills/emil-design-eng/`): filosofía de diseño e interacción de
   Emil Kowalski (animaciones, easing, estados de botones, detalles de pulido). Úsala al tocar
   estilos, animaciones o interacciones de la landing. Fuente: github.com/emilkowalski/skills (MIT).
+- **`review-animations`**: revisión estricta de animaciones (tabla Antes/Después/Por qué + veredicto).
+- **`mobile-native`**: detalles para que la web se sienta nativa en el móvil (hover pegado, flash al tocar, zoom en inputs…).
+- **`find-animation-opportunities`**: dónde añadir movimiento y dónde no (solo propone, no toca código).
+
+Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
+
+### Convenciones de movimiento (tras la revisión con las skills de Emil)
+
+- Curvas en `:root`: `--ease` (ease-out fuerte `0.23,1,0.32,1`) y `--ease-in-out`. No usar `ease-in`.
+- Duraciones de UI ≤ 200ms (pulsación 160ms). Animar solo `transform` y `opacity` (+ colores).
+- Todo `:hover` va dentro de `@media (hover: hover) and (pointer: fine)`.
+- Botones: `:active { transform: scale(0.97) }`. `prefers-reduced-motion` quita desplazamientos pero mantiene color/opacidad.

@@ -28,14 +28,16 @@
   --radius-lg: 24px;
   --shadow:    0 16px 44px rgba(0,0,0,.5);
   --shadow-coral: 0 14px 34px rgba(255,52,52,.34);
-  --ease: cubic-bezier(.22,.61,.36,1);
+  /* Curvas fuertes (Emil Kowalski): las de serie de CSS se quedan cortas */
+  --ease:        cubic-bezier(0.23, 1, 0.32, 1);    /* ease-out para UI */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* movimiento en pantalla */
 
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
 body {
   font-family: var(--font); color: var(--text); background: var(--bg);
   line-height: 1.6; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
@@ -58,8 +60,9 @@ svg use, .spark { fill: currentColor; }
   font-weight: 700; font-size: 1rem; letter-spacing: -.01em;
   padding: var(--pad-y) 26px; border-radius: 100px; border: 2px solid transparent;
   cursor: pointer; text-align: center;
-  transition: transform .25s var(--ease), background .25s var(--ease),
-              box-shadow .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+  transition: transform 160ms var(--ease), background-color 200ms ease,
+              box-shadow 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 .btn--lg { --pad-y: 17px; font-size: 1.05rem; padding-inline: 32px; }
 .btn--sm { --pad-y: 10px; font-size: .92rem; padding-inline: 20px; }
@@ -67,17 +70,22 @@ svg use, .spark { fill: currentColor; }
 .btn--icon .btn__ico { font-size: 1.1em; }
 
 .btn--coral { background: var(--coral); color: #fff; box-shadow: var(--shadow-coral); }
-.btn--coral:hover { background: var(--coral-700); transform: translateY(-3px); box-shadow: 0 18px 40px rgba(255,52,52,.46); }
-.btn--coral:active { transform: translateY(-1px); }
+.btn:active { transform: scale(0.97); }
 
 .btn--outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
-.btn--outline:hover { background: #fff; color: #000; border-color: #fff; transform: translateY(-3px); }
 
 .btn--glass {
   background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.5);
   backdrop-filter: blur(6px);
 }
-.btn--glass:hover { background: #fff; color: #000; border-color: #fff; transform: translateY(-3px); }
+
+/* Hover solo con ratón: en móvil el :hover se queda "pegado" tras tocar */
+@media (hover: hover) and (pointer: fine) {
+  .btn--coral:hover   { background: var(--coral-700); transform: translateY(-2px); box-shadow: 0 18px 40px rgba(255,52,52,.46); }
+  .btn--outline:hover,
+  .btn--glass:hover   { background: #fff; color: #000; border-color: #fff; transform: translateY(-2px); }
+  .btn:hover:active   { transform: translateY(-2px) scale(0.97); }
+}
 
 /* ============================================================
    LOGO / MARCA  (blanco, con destello coral)
@@ -94,7 +102,7 @@ svg use, .spark { fill: currentColor; }
    ============================================================ */
 .site-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-  transition: background .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+  transition: background-color 250ms ease, box-shadow 250ms ease, border-color 250ms ease;
   background: rgba(8,8,8,.82); backdrop-filter: saturate(160%) blur(12px);
   border-bottom: 1px solid var(--border);
 }
@@ -102,10 +110,12 @@ svg use, .spark { fill: currentColor; }
 .site-header.is-top { background: transparent; border-color: transparent; box-shadow: none; }
 
 .nav { display: none; gap: 28px; margin-left: auto; font-weight: 600; font-size: .96rem; }
-.nav a { position: relative; padding: 6px 0; color: rgba(255,255,255,.72); transition: color .2s var(--ease); }
-.nav a::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: var(--coral); transition: width .25s var(--ease); }
-.nav a:hover { color: #fff; }
-.nav a:hover::after { width: 100%; }
+.nav a { position: relative; padding: 6px 0; color: rgba(255,255,255,.72); transition: color 200ms ease; }
+.nav a::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--coral); transform: scaleX(0); transform-origin: left; transition: transform 200ms var(--ease); }
+@media (hover: hover) and (pointer: fine) {
+  .nav a:hover { color: #fff; }
+  .nav a:hover::after { transform: scaleX(1); }
+}
 .nav__cta { margin-left: auto; }
 
 /* ============================================================
@@ -154,9 +164,9 @@ svg use, .spark { fill: currentColor; }
   position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2;
   width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
   border: 1px solid rgba(255,255,255,.4); color: #fff; font-size: 1.1rem;
-  animation: bob 2s var(--ease) infinite;
+  animation: bob 2s var(--ease-in-out) infinite;
 }
-.hero__scroll:hover { background: rgba(255,255,255,.14); }
+@media (hover: hover) and (pointer: fine) { .hero__scroll:hover { background: rgba(255,255,255,.14); } }
 @keyframes bob { 0%,100% { transform: translate(-50%,0); } 50% { transform: translate(-50%,6px); } }
 
 /* ============================================================
@@ -200,9 +210,9 @@ svg use, .spark { fill: currentColor; }
 .card-soft {
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 28px 26px;
-  transition: transform .3s var(--ease), border-color .3s var(--ease);
+  transition: transform 200ms var(--ease), border-color 200ms ease;
 }
-.card-soft:hover { transform: translateY(-5px); border-color: var(--coral); }
+@media (hover: hover) and (pointer: fine) { .card-soft:hover { transform: translateY(-4px); border-color: var(--coral); } }
 .ico-circle { display: inline-grid; place-items: center; width: 46px; height: 46px; background: var(--coral); color: #fff; border-radius: 50%; font-size: 1.4rem; font-weight: 900; margin-bottom: 16px; }
 .card-soft h3 { font-size: 1.18rem; font-weight: 800; letter-spacing: -.01em; margin-bottom: 8px; color: #fff; }
 .card-soft p { color: var(--text-soft); font-size: .98rem; }
@@ -234,9 +244,9 @@ svg use, .spark { fill: currentColor; }
 .pillar {
   display: flex; align-items: flex-start; gap: 18px;
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px;
-  transition: transform .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease);
+  transition: transform 200ms var(--ease), border-color 200ms ease;
 }
-.pillar:hover { transform: translateY(-4px); border-color: var(--coral); }
+@media (hover: hover) and (pointer: fine) { .pillar:hover { transform: translateY(-4px); border-color: var(--coral); } }
 .pillar__num { flex: none; font-size: 1.5rem; font-weight: 900; letter-spacing: -.02em; color: #fff; background: var(--coral); width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; }
 .pillar h3 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.01em; margin-bottom: 4px; color: #fff; }
 .pillar p { color: var(--text-soft); font-size: .97rem; }
@@ -246,8 +256,8 @@ svg use, .spark { fill: currentColor; }
    ============================================================ */
 .method { background: var(--surface); }
 .method__grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
-.step { position: relative; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; transition: transform .3s var(--ease), border-color .3s var(--ease); }
-.step:hover { transform: translateY(-5px); border-color: var(--coral); }
+.step { position: relative; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px 28px; transition: transform 200ms var(--ease), border-color 200ms ease; }
+@media (hover: hover) and (pointer: fine) { .step:hover { transform: translateY(-4px); border-color: var(--coral); } }
 .step__num { display: grid; place-items: center; width: 48px; height: 48px; background: var(--coral); color: #fff; border-radius: 50%; font-size: 1.4rem; font-weight: 900; margin-bottom: 18px; }
 .step h3 { font-size: 1.28rem; font-weight: 800; letter-spacing: -.015em; margin-bottom: 8px; color: #fff; }
 .step p { color: var(--text-soft); font-size: .98rem; }
@@ -272,11 +282,13 @@ svg use, .spark { fill: currentColor; }
 .plan {
   position: relative; display: flex; flex-direction: column; overflow: hidden;
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+  transition: transform 200ms var(--ease), box-shadow 200ms ease, border-color 200ms ease;
 }
-.plan:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: #3a3a3a; }
 .plan--featured { border: 2px solid var(--coral); box-shadow: var(--shadow-coral); }
-.plan--featured:hover { box-shadow: 0 22px 50px rgba(255,52,52,.34); }
+@media (hover: hover) and (pointer: fine) {
+  .plan:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: #3a3a3a; }
+  .plan--featured:hover { border-color: var(--coral); box-shadow: 0 22px 50px rgba(255,52,52,.34); }
+}
 
 .plan__media { position: relative; aspect-ratio: 16 / 10; background-size: cover; background-position: center 25%; }
 .plan__media--1 { background-image: url('img/plan1.jpg'); }
@@ -313,7 +325,7 @@ svg use, .spark { fill: currentColor; }
 .form__title { font-size: 1.3rem; font-weight: 900; letter-spacing: -.02em; margin-bottom: 22px; color: #fff; }
 .field { margin-bottom: 18px; }
 .field label { display: block; font-weight: 700; font-size: .88rem; margin-bottom: 7px; color: #fff; }
-.field input, .field textarea { width: 100%; font-family: inherit; font-size: 1rem; color: #fff; background: var(--surface-3); border: 2px solid var(--border); border-radius: 14px; padding: 13px 15px; resize: vertical; transition: border-color .2s var(--ease), background .2s var(--ease); }
+.field input, .field textarea { width: 100%; font-family: inherit; font-size: 1rem; color: #fff; background: var(--surface-3); border: 2px solid var(--border); border-radius: 14px; padding: 13px 15px; resize: vertical; transition: border-color 200ms ease, background-color 200ms ease; }
 .field input::placeholder, .field textarea::placeholder { color: var(--text-mute); }
 .field input:focus, .field textarea:focus { outline: none; background: #000; border-color: var(--coral); }
 .form__hint { margin-top: 14px; font-weight: 700; font-size: .92rem; color: var(--coral); min-height: 1.2em; }
@@ -342,14 +354,21 @@ svg use, .spark { fill: currentColor; }
   .about__grid { grid-template-columns: 0.85fr 1.15fr; gap: 48px; }
   .plans__grid { grid-template-columns: repeat(3, 1fr); }
   .plan--featured { transform: translateY(-14px); }
-  .plan--featured:hover { transform: translateY(-20px); }
   .contact__card { grid-template-columns: 1.05fr 1fr; }
+}
+@media (min-width: 880px) and (hover: hover) and (pointer: fine) {
+  .plan--featured:hover { transform: translateY(-18px); }
 }
 @media (min-width: 980px) {
   .pillars__list { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* Movimiento reducido: menos y más suave, no cero. Se mantienen los cambios de
+   color/opacidad (ayudan a entender el estado) y se quita todo desplazamiento. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  * { transition: none !important; animation: none !important; }
+  *, *::before, *::after {
+    transition-property: color, background-color, border-color, opacity, box-shadow !important;
+    animation: none !important;
+  }
 }
