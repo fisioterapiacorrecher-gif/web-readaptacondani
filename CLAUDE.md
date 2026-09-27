@@ -51,3 +51,9 @@ entienda el método y contacte (WhatsApp/Instagram/formulario).
 
 Título, meta description, Open Graph/Twitter, datos estructurados Schema.org (`MedicalBusiness`),
 `robots.txt` y `sitemap.xml`. Keyword objetivo: **"fisio online para runners"**.
+
+## Skills del proyecto
+
+- **`emil-design-eng`** (`.claude/skills/emil-design-eng/`): filosofía de diseño e interacción de
+  Emil Kowalski (animaciones, easing, estados de botones, detalles de pulido). Úsala al tocar
+  estilos, animaciones o interacciones de la landing. Fuente: github.com/emilkowalski/skills (MIT).
