@@ -63,6 +63,14 @@ Título, meta description, Open Graph/Twitter, datos estructurados Schema.org (`
 
 Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
 
+- **`design-taste-frontend`** (`.claude/skills/taste-skill/`): la "Taste Skill" anti-plantilla para landings
+  (github.com/Leonxlnx/taste-skill, MIT). Úsala para criticar/rediseñar layout, tipografía, color y copy.
+  **Cómo aplicarla aquí:**
+  - Su stack por defecto (React/Next/Tailwind/Motion) **no aplica**: este proyecto es HTML/CSS/JS sin build.
+  - En **animación mandan las reglas de Emil** (arriba). Ignora su `transition: all 0.3s` de ejemplo.
+  - Marca y contenido reales (colores `#FF3434`/`#E9FFB9`, tema oscuro, textos de Dani, logo) no se cambian
+    sin que Dani lo pida: trátalo como "redesign - preserve" (su sección 11).
+
 ### Convenciones de movimiento (tras la revisión con las skills de Emil)
 
 - Curvas en `:root`: `--ease` (ease-out fuerte `0.23,1,0.32,1`) y `--ease-in-out`. No usar `ease-in`.
