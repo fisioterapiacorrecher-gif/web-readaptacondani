@@ -1,0 +1,6 @@
+# RCD Clinic — robots.txt
+# Sustituye el dominio por el tuyo real al publicar.
+User-agent: *
+Allow: /
+
+Sitemap: https://rcdclinic.com/sitemap.xml
