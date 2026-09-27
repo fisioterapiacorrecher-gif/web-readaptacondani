@@ -52,6 +52,9 @@ entienda el método y contacte (WhatsApp/Instagram/formulario).
 - Sustituir **logo oficial** y **tipografía oficial** cuando estén disponibles.
 - Posible **sección de FAQ** (buena para SEO: "¿funciona la fisio online?", "¿cuánto tarda una
   tendinopatía?"…).
+- **Subir las fotos a `img/`** (`hero.jpg`, `dani.jpg`, `quote.jpg`, `plan1.jpg`, `plan2.jpg`, `plan3.jpg`):
+  la carpeta **no está en el repo**. Mientras falten, cada foto muestra un fondo de marca (negro + halo
+  coral + destello) gracias a `.media-fallback` en `styles.css` y al aviso `is-missing` de `script.js`.
 - Foto de Dani (`img/dani.jpg`) ya lleva difuminada la marca de la otra clínica del fondo y del polo.
 
 ## SEO ya hecho
@@ -84,6 +87,14 @@ Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
   y hacen una pasada completa al terminar. El motor se descarga solo la primera vez (verificado por SHA-256)
   a `~/.impeccable/bin/`; no va en el repo. Pendiente: `/impeccable init` para crear `PRODUCT.md`.
   **El manual de marca de Canva manda sobre sus reglas** (negro `#000000`, estrella de 4 puntas, paleta cerrada).
+
+### Convenciones de UI (tras la revisión con Impeccable, sept. 2026)
+
+- Botones coral con **texto negro** (`#000` sobre `#FF3434` ≈ 6:1, AA). No volver a texto hueso sobre coral (3.5:1).
+- Sin etiquetas/"kickers" encima de los títulos: el título habla solo.
+- Viñetas de listas = destello de marca (`--spark-mask`), nunca glifos como ✓.
+- Fotos como `<img>` dentro de `.media-fallback` (con `width`/`height`, `loading="lazy"` salvo el hero).
+- Foco visible (`:focus-visible` coral), selección y scrollbar con la paleta.
 
 ### Convenciones de movimiento (tras la revisión con las skills de Emil)
 

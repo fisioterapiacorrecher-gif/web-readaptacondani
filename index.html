@@ -100,7 +100,7 @@
         <a href="#contacto">Contacto</a>
       </nav>
 
-      <a href="#contacto" class="btn btn--coral btn--sm nav__cta">Empezar mi recuperación</a>
+      <a href="#contacto" class="btn btn--coral btn--sm nav__cta" aria-label="Empezar mi recuperación">Empezar<span class="nav__cta-long">&nbsp;mi recuperación</span></a>
     </div>
   </header>
 
@@ -109,14 +109,10 @@
     <!-- ===================== HERO (full-bleed fotográfico) ===================== -->
     <section class="hero" aria-labelledby="hero-title">
       <!-- Foto del manual de marca (página "Estilo visual") -->
-      <div class="hero__media" role="img" aria-label="Corredor entrenando en carretera"></div>
+      <div class="hero__media media-fallback"><img src="img/hero.jpg" alt="Corredor entrenando en carretera" width="1600" height="1067" fetchpriority="high" decoding="async" /></div>
       <div class="hero__overlay"></div>
 
       <div class="container hero__inner">
-        <p class="eyebrow eyebrow--light">
-          <svg class="eyebrow__spark" aria-hidden="true"><use href="#spark"></use></svg>
-          Fisio online para runners · tendinopatías del corredor
-        </p>
 
         <h1 id="hero-title" class="hero__title">
           Vuelve a correr<br /><span class="text-coral">sin dolor</span>
@@ -179,7 +175,7 @@
             <h3>Ejercicio terapéutico</h3>
             <div class="step__body">
               <p>No dejas de entrenar: usamos esa vía para recuperarte al 100%. Programa adaptado a tu estado actual, tu contexto y tus capacidades.</p>
-            <span class="step__note">No es el mismo PDF para todos.</span>
+              <span class="step__note">No es el mismo PDF para todos.</span>
             </div>
           </li>
           <li class="step">
@@ -196,11 +192,11 @@
     <!-- ===================== SOBRE DANI (texto + foto) ===================== -->
     <section class="section about" id="sobre-dani" aria-labelledby="about-title">
       <div class="container about__grid">
-        <!-- Foto del manual (sustituible por un retrato real de Dani cuando lo tengas) -->
-        <figure class="about__media media" role="img" aria-label="Dani, fisioterapeuta especializado en corredores"></figure>
+        <figure class="about__media media-fallback">
+          <img src="img/dani.jpg" alt="Dani, fisioterapeuta especializado en corredores" width="800" height="1000" loading="lazy" decoding="async" />
+        </figure>
 
         <div class="about__body">
-          <p class="kicker"><svg class="kicker__spark" aria-hidden="true"><use href="#spark"></use></svg> Quién soy</p>
           <h2 id="about-title" class="section__title">Soy Dani. Fisioterapeuta y corredor.</h2>
           <p>
             Soy experto en corredores con tendinopatías, así que conozco tu lesión
@@ -226,7 +222,7 @@
       <div class="container pillars__grid">
         <div class="section__head pillars__head">
           <h2 id="pillars-title" class="section__title section__title--light">
-            5 pilares para recuperar tu <span class="text-mint">tendinitis</span>
+            5 pilares para recuperar tu <span class="text-coral">tendinitis</span>
           </h2>
           <p class="section__sub section__sub--light">
             Sobre estos cinco pilares construyo tu plan. Ninguno funciona solo: el orden y el equilibrio entre ellos es lo que devuelve el tendón a tus carreras.
@@ -235,23 +231,23 @@
 
         <ol class="pillars__list">
           <li class="pillar">
-            <span class="pillar__num">01</span>
+            <svg class="pillar__spark" aria-hidden="true"><use href="#spark"></use></svg>
             <div><h3>Gestión de cargas</h3><p>Ajustamos el entrenamiento para bajar el dolor sin perder tu base como corredor.</p></div>
           </li>
           <li class="pillar">
-            <span class="pillar__num">02</span>
+            <svg class="pillar__spark" aria-hidden="true"><use href="#spark"></use></svg>
             <div><h3>Fuerza muscular</h3><p>Preparamos el tendón y la musculatura para soportar la carga real de la carrera.</p></div>
           </li>
           <li class="pillar">
-            <span class="pillar__num">03</span>
+            <svg class="pillar__spark" aria-hidden="true"><use href="#spark"></use></svg>
             <div><h3>Control de factores sociales</h3><p>Sueño, estrés, nutrición y hábitos: lo que rodea a la lesión también la condiciona.</p></div>
           </li>
           <li class="pillar">
-            <span class="pillar__num">04</span>
+            <svg class="pillar__spark" aria-hidden="true"><use href="#spark"></use></svg>
             <div><h3>Educación en dolor</h3><p>Entender qué te pasa rompe el miedo. Que duela no significa que algo esté roto.</p></div>
           </li>
           <li class="pillar">
-            <span class="pillar__num">05</span>
+            <svg class="pillar__spark" aria-hidden="true"><use href="#spark"></use></svg>
             <div><h3>Return to run real</h3><p>Una vuelta a correr progresiva y guiada, hasta tus kilómetros y tu objetivo.</p></div>
           </li>
         </ol>
@@ -276,7 +272,6 @@
     <section class="section plans" id="planes" aria-labelledby="plans-title">
       <div class="container">
         <div class="section__head section__head--center">
-          <p class="kicker"><svg class="kicker__spark" aria-hidden="true"><use href="#spark"></use></svg> Servicios &amp; planes</p>
           <h2 id="plans-title" class="section__title">Elige cómo quieres recuperarte</h2>
           <p class="section__sub">
             Ninguno es una tabla cerrada. Cada plan se construye sobre
@@ -288,7 +283,7 @@
 
           <!-- Plan 1 -->
           <article class="plan">
-            <div class="plan__media plan__media--1"></div>
+            <div class="plan__media media-fallback"><img src="img/plan1.jpg" alt="" width="800" height="500" loading="lazy" decoding="async" /></div>
             <div class="plan__body">
               <header class="plan__head">
                 <h3 class="plan__name">¿Encajas en RCD?</h3>
@@ -310,7 +305,7 @@
           <!-- Plan 2 (destacado) -->
           <article class="plan plan--featured">
             <span class="plan__flag">El más elegido</span>
-            <div class="plan__media plan__media--2"></div>
+            <div class="plan__media media-fallback"><img src="img/plan2.jpg" alt="" width="800" height="500" loading="lazy" decoding="async" /></div>
             <div class="plan__body">
               <header class="plan__head">
                 <h3 class="plan__name">Readaptación Completa</h3>
@@ -332,7 +327,7 @@
 
           <!-- Plan 3 -->
           <article class="plan">
-            <div class="plan__media plan__media--3"></div>
+            <div class="plan__media media-fallback"><img src="img/plan3.jpg" alt="" width="800" height="500" loading="lazy" decoding="async" /></div>
             <div class="plan__body">
               <header class="plan__head">
                 <h3 class="plan__name">Vuelta a Competir</h3>
@@ -390,15 +385,15 @@
 
             <div class="field">
               <label for="name">Tu nombre</label>
-              <input type="text" id="name" name="name" placeholder="Cómo te llamas" autocomplete="name" required />
+              <input type="text" id="name" name="name" placeholder="Cómo te llamas" autocomplete="name" aria-describedby="formHint" required />
             </div>
             <div class="field">
               <label for="contact">WhatsApp o email</label>
-              <input type="text" id="contact" name="contact" placeholder="Para responderte en privado" required />
+              <input type="text" id="contact" name="contact" placeholder="Para responderte en privado" aria-describedby="formHint" required />
             </div>
             <div class="field">
               <label for="message">¿Qué te pasa?</label>
-              <textarea id="message" name="message" rows="3" placeholder="Cuéntame tu lesión, tu kilometraje y tu objetivo" required></textarea>
+              <textarea id="message" name="message" rows="3" placeholder="Cuéntame tu lesión, tu kilometraje y tu objetivo" aria-describedby="formHint" required></textarea>
             </div>
 
             <button type="submit" class="btn btn--coral btn--lg btn--block">Enviar mi mensaje</button>

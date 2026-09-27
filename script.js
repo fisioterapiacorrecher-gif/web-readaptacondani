@@ -21,12 +21,28 @@
     header.classList.remove("is-top");
   }
 
+  // Fotos: si una no carga (o aún no está en /img), se oculta y queda el fondo de marca
+  function markMissing(img) { img.classList.add("is-missing"); }
+  Array.prototype.forEach.call(document.querySelectorAll(".media-fallback img"), function (img) {
+    if (img.complete && img.naturalWidth === 0) markMissing(img);
+    else img.addEventListener("error", function () { markMissing(img); }, { once: true });
+  });
+
   // Formulario de contacto: abre WhatsApp con el mensaje prerrellenado
   var form = document.getElementById("contactForm");
   var hint = document.getElementById("formHint");
   var WHATSAPP_NUMBER = "34684780066"; // WhatsApp de Dani (+34 684 78 00 66)
 
   if (form) {
+    var fields = [form.name, form.contact, form.message];
+    var MISSING = { name: "tu nombre", contact: "cómo contactarte", message: "contarme qué te pasa" };
+    // Al escribir se quita la marca de error de ese campo
+    fields.forEach(function (el) {
+      el.addEventListener("input", function () {
+        if (el.value.trim()) el.removeAttribute("aria-invalid");
+      });
+    });
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
@@ -34,8 +50,15 @@
       var contact = form.contact.value.trim();
       var message = form.message.value.trim();
 
-      if (!name || !contact || !message) {
-        hint.textContent = "Rellena los tres campos y te respondo en privado.";
+      // Marca los campos vacíos y lleva el foco al primero
+      var empty = fields.filter(function (el) { return !el.value.trim(); });
+      fields.forEach(function (el) { el.removeAttribute("aria-invalid"); });
+      if (empty.length) {
+        empty.forEach(function (el) { el.setAttribute("aria-invalid", "true"); });
+        hint.textContent = empty.length === fields.length
+          ? "Rellena los tres campos y te respondo en privado."
+          : "Te falta " + empty.map(function (el) { return MISSING[el.id]; }).join(" y ") + ".";
+        empty[0].focus();
         return;
       }
 

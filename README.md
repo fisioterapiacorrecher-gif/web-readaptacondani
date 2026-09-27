@@ -16,7 +16,7 @@ robots.txt       → SEO (permite indexar; apunta al sitemap)
 sitemap.xml      → SEO (lista la home)
 server.js        → mini-servidor local opcional (solo para previsualizar)
 fonts/           → tipografía Geist (woff2 + licencia)
-img/             → fotos
+img/             → fotos (⚠️ aún no están en el repo: súbelas con estos nombres)
   hero.jpg  dani.jpg  quote.jpg  plan1.jpg  plan2.jpg  plan3.jpg
 ```
 
