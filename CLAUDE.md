@@ -78,6 +78,13 @@ Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
   - Marca y contenido reales (colores `#FF3434`/`#E9FFB9`, tema oscuro, textos de Dani, logo) no se cambian
     sin que Dani lo pida: trátalo como "redesign - preserve" (su sección 11).
 
+- **`impeccable`** (`.claude/skills/impeccable/`, github.com/pbakaus/impeccable, Apache 2.0): skill de
+  diseño con 24 comandos (`/impeccable init`, `critique`, `audit`, `polish`, `typeset`…) + 4 subagentes
+  (`.claude/agents/impeccable-*.md`) + hooks en `.claude/settings.json` que analizan cada edición de UI
+  y hacen una pasada completa al terminar. El motor se descarga solo la primera vez (verificado por SHA-256)
+  a `~/.impeccable/bin/`; no va en el repo. Pendiente: `/impeccable init` para crear `PRODUCT.md`.
+  **El manual de marca de Canva manda sobre sus reglas** (negro `#000000`, estrella de 4 puntas, paleta cerrada).
+
 ### Convenciones de movimiento (tras la revisión con las skills de Emil)
 
 - Curvas en `:root`: `--ease` (ease-out fuerte `0.23,1,0.32,1`) y `--ease-in-out`. No usar `ease-in`.
