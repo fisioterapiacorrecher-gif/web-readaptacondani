@@ -29,10 +29,15 @@ entienda el método y contacte (WhatsApp/Instagram/formulario).
 
 ## Marca
 
-- **Tema oscuro**: fondo negro, texto blanco, detalle principal **rojo coral `#FF3434`**.
-  Verde menta `#E9FFB9` **muy puntual** (2 toques). Variables al inicio de `styles.css` (`:root`).
-- Tipografía provisional **Geist** (autoalojada en `fonts/`, licencia OFL) hasta tener la oficial de la marca.
-- Fondo casi negro `#0a0a0a` (no negro puro). Radios: botones en píldora, superficies 16px, inputs 14px.
+- **Fuente de verdad: manual de marca en Canva** ("MANUAL DE MARCA", pág. 04 tipografías y 05 paleta).
+- **Paleta (sin añadir tonos nuevos):** negro `#000000`, blanco hueso `#FFFBE8` (texto), gris `#F1F1F1`
+  (superficies = gris con transparencia sobre negro), **rojo coral `#FF3434`** como eje y verde menta
+  `#E9FFB9` **muy puntual**. Variables al inicio de `styles.css` (`:root`).
+- **Tipografías del manual:** Pragmatica (títulos Bold en mayúsculas, texto Regular) y Stavok Groteske
+  (subtítulos con interletrado amplio y números). Son de pago: en la web se usan **Geist** (por Pragmatica)
+  y **Outfit** (por Stavok), autoalojadas en `fonts/` (OFL). Si se consiguen las licencias web, añadir su
+  `@font-face` en `styles.css`: ya van primeras en `--font` y `--font-accent`.
+- Radios: botones en píldora, superficies 16px, inputs 14px.
 - El logo es un **destello/estrella SVG** hecho a mano como marcador, hasta tener el logo oficial.
 
 ## Contacto real (ya en la web)
