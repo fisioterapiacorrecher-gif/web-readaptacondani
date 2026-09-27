@@ -8,13 +8,17 @@
 
   // Header: transparente sobre el hero, sólido al hacer scroll
   var header = document.getElementById("siteHeader");
-  if (header) {
-    var onScroll = function () {
-      if (window.scrollY > 40) header.classList.remove("is-top");
-      else header.classList.add("is-top");
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+  // (IntersectionObserver sobre un marcador de 40px en vez de escuchar cada scroll)
+  if (header && "IntersectionObserver" in window) {
+    var sentinel = document.createElement("div");
+    sentinel.setAttribute("aria-hidden", "true");
+    sentinel.style.cssText = "position:absolute;top:0;left:0;width:1px;height:40px;pointer-events:none;";
+    document.body.prepend(sentinel);
+    new IntersectionObserver(function (entries) {
+      header.classList.toggle("is-top", entries[0].isIntersecting);
+    }).observe(sentinel);
+  } else if (header) {
+    header.classList.remove("is-top");
   }
 
   // Formulario de contacto: abre WhatsApp con el mensaje prerrellenado

@@ -15,6 +15,7 @@ script.js        → interacciones (menú al hacer scroll, formulario → WhatsA
 robots.txt       → SEO (permite indexar; apunta al sitemap)
 sitemap.xml      → SEO (lista la home)
 server.js        → mini-servidor local opcional (solo para previsualizar)
+fonts/           → tipografía Geist (woff2 + licencia)
 img/             → fotos
   hero.jpg  dani.jpg  quote.jpg  plan1.jpg  plan2.jpg  plan3.jpg
 ```
@@ -45,7 +46,7 @@ Al ser estática, el deploy es de los más sencillos:
 2. **Contacto** (ya puesto, revísalo): WhatsApp `+34 684 78 00 66` e Instagram `@readaptacondani`.
 3. **Pendiente de sustituir cuando los tengáis:**
    - El **logo oficial** (ahora hay un destello SVG hecho a mano como marcador).
-   - Las **tipografías** de la marca (ahora usa *Inter* de Google Fonts como sustituta).
+   - Las **tipografías** de la marca (ahora usa *Geist*, autoalojada en `fonts/`, como sustituta).
 4. **Foto de Dani** (`img/dani.jpg`): ya lleva difuminado el logo/rótulo de la otra clínica que
    salía de fondo y en el polo. Si tienes una foto de estudio mejor, se cambia por esta.
 

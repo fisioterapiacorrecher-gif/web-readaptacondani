@@ -17,11 +17,12 @@ entienda el método y contacte (WhatsApp/Instagram/formulario).
 
 ## Estructura de la página (en `index.html`)
 
-1. **Hero** — "Vuelve a correr sin dolor" sobre foto a pantalla completa.
+1. **Hero** — "Vuelve a correr sin dolor" sobre foto a pantalla completa (entrada escalonada al cargar).
+   - Debajo, **franja de garantías** (plan adaptado · seguimiento 1:1 · largo plazo).
 2. **¿Funciona?** — banda que responde a la duda de la fisio online.
-3. **Qué hago** — el método en **3 pasos** (educación en dolor · ejercicio terapéutico · seguimiento).
+3. **Qué hago** — el método en **3 pasos** (filas con número grande, no tarjetas) (educación en dolor · ejercicio terapéutico · seguimiento).
 4. **Sobre Dani** — foto + texto ("soy experto en corredores").
-5. **5 pilares** — el enfoque.
+5. **5 pilares** — el enfoque (título fijo a la izquierda + lista con divisores).
 6. **Cita** a pantalla completa.
 7. **Planes** — 3 tarjetas (¿Encajas en RCD? · Readaptación Completa · Vuelta a Competir).
 8. **Contacto** — WhatsApp + Instagram + formulario (el formulario abre WhatsApp con el mensaje).
@@ -30,7 +31,8 @@ entienda el método y contacte (WhatsApp/Instagram/formulario).
 
 - **Tema oscuro**: fondo negro, texto blanco, detalle principal **rojo coral `#FF3434`**.
   Verde menta `#E9FFB9` **muy puntual** (2 toques). Variables al inicio de `styles.css` (`:root`).
-- Tipografía provisional **Inter** (Google Fonts) hasta tener la tipografía oficial de la marca.
+- Tipografía provisional **Geist** (autoalojada en `fonts/`, licencia OFL) hasta tener la oficial de la marca.
+- Fondo casi negro `#0a0a0a` (no negro puro). Radios: botones en píldora, superficies 16px, inputs 14px.
 - El logo es un **destello/estrella SVG** hecho a mano como marcador, hasta tener el logo oficial.
 
 ## Contacto real (ya en la web)
