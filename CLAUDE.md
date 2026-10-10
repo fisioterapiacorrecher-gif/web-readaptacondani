@@ -91,3 +91,8 @@ Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
 - Duraciones de UI ≤ 200ms (pulsación 160ms). Animar solo `transform` y `opacity` (+ colores).
 - Todo `:hover` va dentro de `@media (hover: hover) and (pointer: fine)`.
 - Botones: `:active { transform: scale(0.97) }`. `prefers-reduced-motion` quita desplazamientos pero mantiene color/opacidad.
+
+## Edición de reels (no es parte de la web)
+
+Si Dani pide **editar un vídeo/reel**, lee y sigue [`reels-kit/PROMPT.md`](reels-kit/PROMPT.md): estilo, sonidos,
+color HDR y flujo con los scripts de `reels-kit/`. El vídeo lo sube a Drive › CLAUDE › "video a editar".
