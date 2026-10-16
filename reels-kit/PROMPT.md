@@ -144,6 +144,10 @@ Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo d
   punch-in de zoom, sin clic (`"sfx_in": null`): el zoom ya da el énfasis.
 - Monigotes/personas en animaciones: estilo de las ilustraciones del manual (planas, sin contorno, piel clara, dolor con
   brillo coral y rayitos rojos) y silueta natural, nunca "palitos y bolas" (ver `scripts/anim_corredor.py`).
+  Si Dani pasa un dibujo de línea, se colorea por zonas con la paleta (sin contorno, lado lejano más oscuro) y se anima
+  la ilustración entera: ver `assets/corredor.png` + `scripts/anim_corredor.py`.
+- **Silencios largos** entre frases (> 0,5 s), sobre todo en un cambio de escena, se recortan del vídeo original
+  (trim+concat de vídeo y audio) y se desplazan todos los tiempos posteriores del edit.json y words.json.
   Un sonido que "no pega" con lo que se dice se quita.
 
 ---

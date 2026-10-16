@@ -1,7 +1,7 @@
 {
- "END": 45.44,
- "video": "ENTRADA/video.mov",
- "video_end": 45.44,
+ "END": 45.04,
+ "video": "ENTRADA/video_cut.mov",
+ "video_end": 45.04,
  "hook": {
   "y0": 655,
   "lh": 122,
@@ -296,19 +296,19 @@
    "sfx_out": null
   },
   {
-   "st": 40.59,
-   "en": 41.58,
+   "st": 40.19,
+   "en": 41.18,
    "style": "caps",
    "lines": [
     [
      "ESPERAR",
-     40.59,
+     40.19,
      false,
      140
     ],
     [
      "MUCHO TIEMPO",
-     40.99,
+     40.59,
      true,
      140
     ]
@@ -382,28 +382,29 @@
   {
    "module": "anim_calendario",
    "st": 35.6,
-   "en": 42.29,
+   "en": 41.89,
    "blur": false,
    "sfx_in": null,
    "sfx_out": null,
    "sfx": [
     [
      "disco_rayado",
-     35.45
+     35.42
     ],
     [
      "reloj",
-     36.0
+     35.85
     ]
-   ]
+   ],
+   "pulses": []
   },
   {
    "module": "anim_compartir",
-   "st": 42.4,
+   "st": 42.0,
    "en": 46.0,
    "pulses": [
-    42.85,
-    42.6
+    42.45,
+    42.2
    ],
    "blur": false,
    "sfx_out": null
@@ -411,7 +412,7 @@
  ],
  "broll": {
   "st": 35.6,
-  "en": 42.29,
+  "en": 41.89,
   "offset": 0.0,
   "path": "ENTRADA/apoyo_corte2.mp4",
   "hdr": true,
@@ -600,25 +601,25 @@
    "L"
   ],
   [
-   36.23,
+   35.83,
    1.1,
    1.13,
    "L"
   ],
   [
-   40.59,
+   40.19,
    1.1,
    1.24,
    "P"
   ],
   [
-   41.6,
+   41.2,
    1.1,
    1.115,
    "L"
   ],
   [
-   42.29,
+   41.89,
    1.0,
    1.04,
    "L"
@@ -628,7 +629,7 @@
  "looks": [
   {
    "st": 35.6,
-   "en": 42.29,
+   "en": 41.89,
    "fade_in": 0.0,
    "fade_out": 0.01,
    "contrast": 1.15,
