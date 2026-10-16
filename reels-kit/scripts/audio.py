@@ -10,7 +10,7 @@ E=json.load(open(sys.argv[1])); SR=48000; END=E["END"]; N=int(END*SR)
 def load(p):
     sr,x=wavfile.read(p); x=x.astype(np.float32)/32768
     return x if x.ndim>1 else np.stack([x,x],1)
-LIB={k:load(f"{KIT}/sfx/{k}.wav") for k in ("entrada","salida","destello","bien","trombon","error")}
+LIB={os.path.splitext(k)[0]:load(f"{KIT}/sfx/{k}") for k in os.listdir(f"{KIT}/sfx") if k.endswith(".wav")}
 v=load(sys.argv[2]); voice=np.zeros((N,2),np.float32); n=min(N,len(v)); voice[:n]=v[:n]
 voice*=10**(E.get("voice_gain_db",14)/20)     # voz de Dani a ~-11 dB RMS, como en sus vídeos
 fx=np.zeros((N,2),np.float32); log=[]
@@ -27,7 +27,7 @@ for K in E["keys"]:
     put("salida",K["en"]-0.17)
 for C in E.get("cards",[]): put("entrada",C["st"]); put("salida",C["en"]-0.2)
 for G in E.get("graphics",[]):
-    put("entrada",G["st"]); put("salida",G["en"]-0.25)
+    put(G.get("sfx_in","entrada"),G["st"]); put(G.get("sfx_out","salida"),G["en"]-0.25)
     for name,t,*g in G.get("sfx",[]): put(name,t,(g or [1.0])[0])
 h=E.get("outro",{}).get("handle")
 if h: put("entrada",h[1]); put("salida",END-0.24)

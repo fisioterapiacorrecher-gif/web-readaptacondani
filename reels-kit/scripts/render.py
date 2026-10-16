@@ -5,10 +5,15 @@ KIT=os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 E=json.load(open(sys.argv[1])); ASS=sys.argv[2]; AUD=sys.argv[3]; out=sys.argv[4]
 if len(sys.argv)>5: E["END"]=min(E["END"],float(sys.argv[5]))
 FONTS=KIT+"/fonts"
-if E.get("graphics"):
-    sys.path.insert(0,KIT+"/scripts"); import importlib; graphic=importlib.import_module(E.get("graphic_module","animacion_tendon"))
-    graphic.FONT=FONTS+'/Montserrat-900.ttf'
-    if 'graphic_cy' in E: graphic.CY=E['graphic_cy']; graphic.OY=graphic.CY-450
+MODS={}
+def modulo(name):   # cada animación puede usar su propio módulo ("module" en el gráfico; por defecto "graphic_module")
+    if name not in MODS:
+        sys.path.insert(0,KIT+"/scripts"); import importlib; m=importlib.import_module(name)
+        m.FONT=FONTS+'/Montserrat-900.ttf'
+        if 'graphic_cy' in E and hasattr(m,'OY'): m.CY=E['graphic_cy']; m.OY=m.CY-450
+        MODS[name]=m
+    return MODS[name]
+for G_ in E.get("graphics",[]): G_["_mod"]=modulo(G_.get("module",E.get("graphic_module","animacion_tendon")))
 W,H,FPS=1080,1920,30; END=E["END"]; NF=int(round(END*FPS))
 # ---- sRGB (SDR graphics) -> HLG code values in BT.2020 (SDR white = 75% HLG, BT.2408)
 M=np.array([[0.6274,0.3293,0.0433],[0.0691,0.9195,0.0114],[0.0164,0.0880,0.8956]],np.float32)
@@ -95,13 +100,13 @@ for i in range(NF):
     if abs(z-1)>1e-4:
         Mz=np.array([[z,0,CX*(1-z)],[0,z,CY*(1-z)]],np.float32)
         f=cv2.warpAffine(f,Mz,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)
-    f=look(f,t)
     if BR and BR["st"]<=t<BR["en"]:
         k=min(len(brf)-1,int((t-BR["st"])*FPS)); b=brf[k].astype(np.float32)/(65535 if BR.get("hdr") else 255)
         zb=1.0+BR.get("zoom",0.08)*(t-BR["st"])/(BR["en"]-BR["st"])
         Mb=np.array([[zb,0,540*(1-zb)],[0,zb,960*(1-zb)]],np.float32)
         b=cv2.warpAffine(b,Mb,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)*BR.get("dark",0.82)
         f=b if BR.get("hdr") else to_hlg(b)
+    f=look(f,t)
     kd=keydark(t)
     if kd.max()>0: f=f*(1-kd[:,None,None])
     for st,en,im,ccy,csc in cards:
@@ -112,8 +117,8 @@ for i in range(NF):
             over(f,cv2.resize(im,None,fx=s*csc,fy=s*csc,interpolation=cv2.INTER_AREA),540,ccy,a)
     for G in GR:
         if G["st"]<=t<=G["en"]:
-            f=blurbg(f,max(0,min(1,(t-G["st"])/0.2,(G["en"]-t)/0.2)))
-            g=graphic.draw(t,G["scene"],G["st"],G["en"],G["pulses"],G["broken"])
+            if G.get("blur",True): f=blurbg(f,max(0,min(1,(t-G["st"])/0.2,(G["en"]-t)/0.2)))
+            g=G["_mod"].draw(t,G.get("scene",""),G["st"],G["en"],G.get("pulses",[]),G.get("broken",[]))
             if g is not None:
                 ys=np.where(g[...,3].max(1)>0)[0]
                 if len(ys):

@@ -84,13 +84,6 @@
      true,
      137
     ]
-   ],
-   "sfx": [
-    [
-     "destello",
-     0.15,
-     0.8
-    ]
    ]
   },
   {
@@ -107,29 +100,12 @@
     [
      "O ANESTÉSICO",
      9.06,
-     true,
-     140
-    ]
-   ]
-  },
-  {
-   "st": 13.09,
-   "en": 13.92,
-   "style": "caps",
-   "lines": [
-    [
-     "BAJAR",
-     13.09,
      false,
      140
-    ],
-    [
-     "EL DOLOR",
-     13.27,
-     true,
-     140
     ]
-   ]
+   ],
+   "y": 330,
+   "glow": "red"
   },
   {
    "st": 14.79,
@@ -165,10 +141,33 @@
     [
      "LA ALARMA",
      17.18,
-     true,
+     false,
      140
     ]
-   ]
+   ],
+   "y": 420,
+   "glow": "red"
+  },
+  {
+   "st": 17.57,
+   "en": 18.85,
+   "style": "caps",
+   "lines": [
+    [
+     "EL PROBLEMA",
+     17.57,
+     false,
+     140
+    ],
+    [
+     "SIGUE AHÍ",
+     18.2,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red"
   },
   {
    "st": 21.08,
@@ -222,14 +221,22 @@
     [
      "CORRER",
      26.58,
-     true,
+     false,
      140
     ],
     [
      "COMO ANTES",
      26.83,
-     true,
+     false,
      140
+    ]
+   ],
+   "y": 400,
+   "glow": "red",
+   "sfx": [
+    [
+     "error",
+     0.9
     ]
    ]
   },
@@ -304,24 +311,90 @@
   }
  ],
  "cards": [],
- "graphics": [],
+ "graphics": [
+  {
+   "module": "anim_infiltracion",
+   "st": 6.36,
+   "en": 11.95,
+   "pulses": [
+    7.68,
+    8.41,
+    10.6
+   ]
+  },
+  {
+   "module": "anim_lista",
+   "st": 12.32,
+   "en": 14.72,
+   "scene": "SU EFECTO ES BAJAR|EL DOLOR|LA INFLAMACIÓN",
+   "pulses": [
+    13.09,
+    13.85
+   ],
+   "blur": false,
+   "hide_subs": true,
+   "sfx": [
+    [
+     "entrada",
+     13.09
+    ],
+    [
+     "entrada",
+     13.85
+    ]
+   ]
+  },
+  {
+   "module": "anim_alarma",
+   "st": 16.42,
+   "en": 19.47,
+   "pulses": [
+    17.0,
+    17.57
+   ],
+   "sfx_in": "alarma"
+  },
+  {
+   "module": "anim_corredor",
+   "st": 25.96,
+   "en": 27.6,
+   "pulses": [
+    26.88
+   ]
+  },
+  {
+   "module": "anim_calendario",
+   "st": 36.23,
+   "en": 42.29,
+   "blur": false,
+   "sfx_in": "reloj"
+  },
+  {
+   "module": "anim_compartir",
+   "st": 42.57,
+   "en": 45.44,
+   "pulses": [
+    43.0,
+    43.33
+   ],
+   "blur": false,
+   "sfx": [
+    [
+     "salida",
+     43.05
+    ]
+   ],
+   "sfx_out": null
+  }
+ ],
  "broll": {
   "st": 36.23,
-  "en": 41.63,
+  "en": 42.29,
   "offset": 0.0,
-  "path": "ENTRADA/apoyo_corte.mp4",
+  "path": "ENTRADA/apoyo_seguido.mp4",
   "hdr": true,
-  "dark": 0.93,
-  "zoom": 0.06
- },
- "outro": {
-  "st": 42.57,
-  "handle": [
-   "@readaptacondani",
-   42.57,
-   94,
-   1310
-  ]
+  "dark": 1.0,
+  "zoom": 0.05
  },
  "zoom": [
   [
@@ -386,20 +459,8 @@
   ],
   [
    12.32,
-   1.1,
-   1.13,
-   "L"
-  ],
-  [
-   13.09,
-   1.1,
-   1.24,
-   "P"
-  ],
-  [
-   13.94,
-   1.1,
-   1.115,
+   1.0,
+   1.0,
    "L"
   ],
   [
@@ -540,5 +601,16 @@
    1.04,
    "L"
   ]
+ ],
+ "graphic_cy": 920,
+ "looks": [
+  {
+   "st": 36.23,
+   "en": 42.29,
+   "fade_in": 0.0,
+   "fade_out": 0.01,
+   "contrast": 1.15,
+   "vignette": 0.22
+  }
  ]
 }
