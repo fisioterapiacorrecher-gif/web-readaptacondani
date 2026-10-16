@@ -59,7 +59,8 @@
      true,
      140
     ]
-   ]
+   ],
+   "sfx_in": null
   },
   {
    "st": 4.41,
@@ -84,7 +85,8 @@
      true,
      137
     ]
-   ]
+   ],
+   "sfx_in": null
   },
   {
    "st": 8.41,
@@ -205,7 +207,8 @@
      true,
      140
     ]
-   ]
+   ],
+   "sfx_in": "error"
   },
   {
    "st": 25.96,
@@ -314,12 +317,12 @@
  "graphics": [
   {
    "module": "anim_infiltracion",
-   "st": 6.36,
+   "st": 8.2,
    "en": 11.95,
    "pulses": [
-    7.68,
-    8.41,
-    10.6
+    8.9,
+    9.25,
+    11.0
    ]
   },
   {
@@ -364,18 +367,18 @@
   },
   {
    "module": "anim_calendario",
-   "st": 36.23,
+   "st": 35.6,
    "en": 42.29,
    "blur": false,
    "sfx_in": "reloj"
   },
   {
    "module": "anim_compartir",
-   "st": 42.57,
+   "st": 42.4,
    "en": 45.44,
    "pulses": [
-    43.0,
-    43.33
+    42.85,
+    42.6
    ],
    "blur": false,
    "sfx": [
@@ -388,13 +391,13 @@
   }
  ],
  "broll": {
-  "st": 36.23,
+  "st": 35.6,
   "en": 42.29,
   "offset": 0.0,
-  "path": "ENTRADA/apoyo_seguido.mp4",
+  "path": "ENTRADA/apoyo_corte2.mp4",
   "hdr": true,
   "dark": 1.0,
-  "zoom": 0.05
+  "zoom": 0.04
  },
  "zoom": [
   [
@@ -605,7 +608,7 @@
  "graphic_cy": 920,
  "looks": [
   {
-   "st": 36.23,
+   "st": 35.6,
    "en": 42.29,
    "fade_in": 0.0,
    "fade_out": 0.01,

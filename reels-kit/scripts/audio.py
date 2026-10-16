@@ -14,7 +14,7 @@ LIB={os.path.splitext(k)[0]:load(f"{KIT}/sfx/{k}") for k in os.listdir(f"{KIT}/s
 v=load(sys.argv[2]); voice=np.zeros((N,2),np.float32); n=min(N,len(v)); voice[:n]=v[:n]
 voice*=10**(E.get("voice_gain_db",14)/20)     # voz de Dani a ~-11 dB RMS, como en sus vídeos
 fx=np.zeros((N,2),np.float32); log=[]
-GAIN={"entrada":2.0}
+GAIN={"entrada":1.3}     # clic de entrada más suave (antes 2.0: con el zoom resultaba agresivo)
 def put(k,t,g=1.0):
     if not k: return
     if k in("salida","entrada") and any(k2==k and abs(t2-t)<0.45 for t2,k2 in log): return
