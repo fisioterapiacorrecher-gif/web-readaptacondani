@@ -133,6 +133,9 @@ Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo d
 | `bien.wav` | campanita + "¡bieeen!" | momento positivo/alivio (usado en INTACTAS) |
 | `trombon.wav` | trombón triste "wah-wah-wah-waaah" | momento triste/negativo ("ya no hay nada que hacer") |
 | `error.wav` | doble zumbido de error | algo que falla o está mal ("no es buena idea", la fuerza choca con la rotura) |
+| `disco_rayado.wav` | scratch de vinilo + frenazo (hecho con la voz de Dani) | cambio de escena / "cosa mal hecha" (entrada del vídeo de apoyo en «Infiltración») |
+| `reloj.wav` | tic-tac que se acelera (6 s) | paso del tiempo (calendario) |
+| `alarma.wav` | timbre de despertador (0,6 s) | alarma que se silencia |
 
 - Los especiales (destello, bien, trombón, error) **solo** donde tengan sentido con el guion, pocos por vídeo.
 - **Menos ruido (feedback de Dani, reel «Infiltración»):** el barrido de salida **solo** al salir el título, las 3-4

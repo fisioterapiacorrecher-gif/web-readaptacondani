@@ -218,7 +218,7 @@
   },
   {
    "st": 25.96,
-   "en": 27.55,
+   "en": 28.5,
    "style": "caps",
    "lines": [
     [
@@ -247,8 +247,7 @@
      "error",
      0.9
     ]
-   ],
-   "sfx_out": null
+   ]
   },
   {
    "st": 30.95,
@@ -293,7 +292,8 @@
      "bien",
      0.6
     ]
-   ]
+   ],
+   "sfx_out": null
   },
   {
    "st": 40.59,
@@ -325,12 +325,12 @@
  "graphics": [
   {
    "module": "anim_infiltracion",
-   "st": 8.2,
+   "st": 7.11,
    "en": 11.95,
    "pulses": [
-    8.9,
-    9.25,
-    11.0
+    7.9,
+    8.41,
+    10.6
    ],
    "sfx_out": null
   },
@@ -384,13 +384,23 @@
    "st": 35.6,
    "en": 42.29,
    "blur": false,
-   "sfx_in": "reloj",
-   "sfx_out": null
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "disco_rayado",
+     35.45
+    ],
+    [
+     "reloj",
+     36.0
+    ]
+   ]
   },
   {
    "module": "anim_compartir",
    "st": 42.4,
-   "en": 45.44,
+   "en": 46.0,
    "pulses": [
     42.85,
     42.6
