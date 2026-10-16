@@ -60,7 +60,8 @@
      140
     ]
    ],
-   "sfx_in": null
+   "sfx_in": null,
+   "sfx_out": null
   },
   {
    "st": 4.41,
@@ -107,7 +108,8 @@
     ]
    ],
    "y": 330,
-   "glow": "red"
+   "glow": "red",
+   "sfx_out": null
   },
   {
    "st": 14.79,
@@ -148,7 +150,8 @@
     ]
    ],
    "y": 420,
-   "glow": "red"
+   "glow": "red",
+   "sfx_out": null
   },
   {
    "st": 17.57,
@@ -169,7 +172,8 @@
     ]
    ],
    "y": 420,
-   "glow": "red"
+   "glow": "red",
+   "sfx_out": null
   },
   {
    "st": 21.08,
@@ -188,7 +192,8 @@
      true,
      140
     ]
-   ]
+   ],
+   "sfx_out": null
   },
   {
    "st": 23.88,
@@ -208,7 +213,8 @@
      140
     ]
    ],
-   "sfx_in": "error"
+   "sfx_in": "error",
+   "sfx_out": null
   },
   {
    "st": 25.96,
@@ -241,7 +247,8 @@
      "error",
      0.9
     ]
-   ]
+   ],
+   "sfx_out": null
   },
   {
    "st": 30.95,
@@ -260,7 +267,8 @@
      true,
      140
     ]
-   ]
+   ],
+   "sfx_out": null
   },
   {
    "st": 34.3,
@@ -323,7 +331,8 @@
     8.9,
     9.25,
     11.0
-   ]
+   ],
+   "sfx_out": null
   },
   {
    "module": "anim_lista",
@@ -345,7 +354,9 @@
      "entrada",
      13.85
     ]
-   ]
+   ],
+   "sfx_out": null,
+   "sfx_in": null
   },
   {
    "module": "anim_alarma",
@@ -355,22 +366,26 @@
     17.0,
     17.57
    ],
-   "sfx_in": "alarma"
+   "sfx_in": "alarma",
+   "sfx_out": null
   },
   {
    "module": "anim_corredor",
-   "st": 25.96,
-   "en": 27.6,
+   "st": 24.97,
+   "en": 28.5,
    "pulses": [
     26.88
-   ]
+   ],
+   "sfx_out": null,
+   "sfx_in": null
   },
   {
    "module": "anim_calendario",
    "st": 35.6,
    "en": 42.29,
    "blur": false,
-   "sfx_in": "reloj"
+   "sfx_in": "reloj",
+   "sfx_out": null
   },
   {
    "module": "anim_compartir",
@@ -381,12 +396,6 @@
     42.6
    ],
    "blur": false,
-   "sfx": [
-    [
-     "salida",
-     43.05
-    ]
-   ],
    "sfx_out": null
   }
  ],
@@ -615,5 +624,6 @@
    "contrast": 1.15,
    "vignette": 0.22
   }
- ]
+ ],
+ "salida_gain": 0.5
 }

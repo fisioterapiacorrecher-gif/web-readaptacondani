@@ -135,6 +135,12 @@ Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo d
 | `error.wav` | doble zumbido de error | algo que falla o está mal ("no es buena idea", la fuerza choca con la rotura) |
 
 - Los especiales (destello, bien, trombón, error) **solo** donde tengan sentido con el guion, pocos por vídeo.
+- **Menos ruido (feedback de Dani, reel «Infiltración»):** el barrido de salida **solo** al salir el título, las 3-4
+  palabras clave principales y las imágenes pequeñas de apoyo; nunca en animaciones a pantalla completa. Barrido a
+  mitad de volumen (`"salida_gain": 0.5`) y clic de entrada suave (ganancia 1.3). Si una palabra clave coincide con un
+  punch-in de zoom, sin clic (`"sfx_in": null`): el zoom ya da el énfasis.
+- Monigotes/personas en animaciones: estilo de las ilustraciones del manual (planas, sin contorno, piel clara, dolor con
+  brillo coral y rayitos rojos) y silueta natural, nunca "palitos y bolas" (ver `scripts/anim_corredor.py`).
   Un sonido que "no pega" con lo que se dice se quita.
 
 ---
