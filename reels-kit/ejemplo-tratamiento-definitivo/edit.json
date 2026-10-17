@@ -30,11 +30,12 @@
     true
    ],
    [
-    "TENDINITIS?",
+    "TENDINITIS",
     1.88,
     true
    ]
-  ]
+  ],
+  "sfx_out": null
  },
  "keys": [
   {
@@ -49,7 +50,7 @@
      140
     ],
     [
-     "SEMANAS",
+     "SEMANAS?",
      3.79,
      true,
      140
@@ -100,7 +101,8 @@
    "sfx": [
     [
      "eureka",
-     0.0
+     0.0,
+     2.6
     ]
    ]
   },
@@ -180,13 +182,13 @@
     [
      "TENDÓN",
      30.91,
-     true,
+     false,
      140
     ]
    ],
-   "y": 1365,
-   "keep_subs": true,
-   "sfx_out": null
+   "y": 1330,
+   "sfx_out": null,
+   "glow": "red"
   }
  ],
  "cards": [],
@@ -218,7 +220,7 @@
    "module": "anim_lista",
    "st": 8.66,
    "en": 12.98,
-   "scene": "check:UN TRATAMIENTO QUE|EVITA RECAÍDAS|NO TE PRODUCE DOLOR|SEGUIR ENTRENANDO",
+   "scene": "@1170;check:UN TRATAMIENTO QUE|EVITA RECAÍDAS|NO TE PRODUCE DOLOR|SEGUIR ENTRENANDO",
    "pulses": [
     9.49,
     10.68,
@@ -231,15 +233,18 @@
    "sfx": [
     [
      "acierto",
-     9.52
+     9.52,
+     2.6
     ],
     [
      "acierto",
-     10.71
+     10.71,
+     2.6
     ],
     [
      "acierto",
-     12.12
+     12.12,
+     2.6
     ]
    ]
   },

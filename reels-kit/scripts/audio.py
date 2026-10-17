@@ -21,7 +21,7 @@ def put(k,t,g=1.0):
     if k in("salida","entrada") and any(k2==k and abs(t2-t)<0.45 for t2,k2 in log): return
     x=LIB[k]*GAIN.get(k,1.0)*g; s=int(t*SR); e=min(N,s+len(x))
     if 0<=s<N: fx[s:e]+=x[:e-s]; log.append((round(t,2),k))
-H=E["hook"]; put(H.get("sfx_in"),0.0); put("salida",H["end"]-0.17,E.get("salida_gain",1.0))
+H=E["hook"]; put(H.get("sfx_in"),0.0); put(H.get("sfx_out","salida"),H["end"]-0.17,E.get("salida_gain",1.0))
 for K in E["keys"]:
     put(K.get("sfx_in","entrada"),K["st"])
     for name,off,*g in K.get("sfx",[]): put(name,K["st"]+off,(g or [1.0])[0])

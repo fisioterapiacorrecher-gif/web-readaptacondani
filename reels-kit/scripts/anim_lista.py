@@ -8,6 +8,8 @@ FONT=None; Y0=1035
 def draw(t,scene,t0,t1,pulses,broken):
     A=fade_io(t,t0,t1,0.2,0.2)
     if A<=0: return None
+    Y0_=Y0
+    if scene.startswith('@'): y_,scene=scene[1:].split(';',1); Y0_=int(y_)      # "@1150;..." baja la lista
     chk=scene.startswith('check:'); scene=scene[6:] if chk else scene
     parts=scene.split('|'); title,items=parts[0],parts[1:]
     img=canvas(); d=ImageDraw.Draw(img); fT=font(FONT,46*SS)
@@ -16,14 +18,14 @@ def draw(t,scene,t0,t1,pulses,broken):
     fI=font(FONT,sz*SS)
     wmax=max(d.textlength(x,font=fI) for x in items)/SS+120; x0=540-wmax/2
     # sombra suave detrás del bloque para que se lea sobre el vídeo
-    sh=canvas(); ImageDraw.Draw(sh).rounded_rectangle([(x0-50)*SS,(Y0-40)*SS,(x0+wmax+50)*SS,(Y0+110+len(items)*118)*SS],60*SS,fill=(0,0,0,120))
+    sh=canvas(); ImageDraw.Draw(sh).rounded_rectangle([(x0-50)*SS,(Y0_-40)*SS,(x0+wmax+50)*SS,(Y0_+110+len(items)*118)*SS],60*SS,fill=(0,0,0,70))     # sombra suave (no tapar la cara)
     sh=Image.fromarray(cv2.GaussianBlur(np.array(sh),(0,0),30*SS))
     a=eo((t-t0)/0.25)
-    w=d.textlength(title,font=fT); d.text((x0*SS,(Y0+(1-a)*20)*SS),title,font=fT,fill=(255,251,232,int(235*a)),stroke_width=3*SS,stroke_fill=(0,0,0,120))
+    w=d.textlength(title,font=fT); d.text((x0*SS,(Y0_+(1-a)*20)*SS),title,font=fT,fill=(255,251,232,int(235*a)),stroke_width=3*SS,stroke_fill=(0,0,0,70))     # sombra suave (no tapar la cara)
     for i,(txt,ti) in enumerate(zip(items,pulses)):
         u=(t-ti)/0.32
         if u<0: continue
-        k=eo(u); y=Y0+80+i*118; dx=(1-k)*-40
+        k=eo(u); y=Y0_+80+i*118; dx=(1-k)*-40
         cx=x0+44+dx; cy=y+46; r=40*(0.6+0.4*back(u))
         d.ellipse([(cx-r)*SS,(cy-r)*SS,(cx+r)*SS,(cy+r)*SS],fill=CORAL+(int(255*k),))
         if chk:                                                      # check que se dibuja
