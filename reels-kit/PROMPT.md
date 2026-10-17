@@ -157,7 +157,21 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `trombon.wav` | wah-wah-waaah | momento triste ("vas a esperar mucho tiempo") |
 | `bien.wav` | campanita + "¡bieeen!" | alivio/positivo (EJERCICIO BIEN PLANEADO, INTACTAS) |
 | `destello.wav` | brillo | revelación; **no** en "todo depende" (Dani lo quitó): úsalo poco |
+| `golpe.wav` | **golpe grave** (sub-bajo ~40 Hz, impacto corto) | **el efecto que más usa Dani**: cuando aparece de golpe una palabra o imagen GRANDE (NO ENTIENDES NADA, NO SIR, el @, una foto de producto). Sacado de sus vídeos (promedio de 5 usos) |
+| `golpe_largo.wav` | golpe grave más profundo y largo | palabras que entran **una a una** en grande (DINERO / TIEMPO / FRUSTRACIÓN: un golpe por palabra). De «placa de carbono» (7 usos) |
+| `impacto.wav` | barrido corto + golpe | salto a una imagen/vídeo de stock y vuelta a Dani («no entiendes nada» 10,6 s) |
+| `transicion.wav` | barrido de aire (whoosh) 0,45 s | cambio de plano o de escena con movimiento (barrido de cámara, desenfoque) |
+| `subida.wav` | ruido que crece y corta en seco 0,55 s | justo antes de un corte importante (crea tensión) |
+| `arpegio.wav` | acorde de Do mayor + 2 ecos | revelación positiva / respuesta ("estará…", la solución). Imitado de «placa de carbono» y «meses con dolor» |
+| `acorde_brillante.wav` | acorde agudo sostenido 1 s | la gran frase final positiva (SOLUCIÓN DEFINITIVA). Imitado de «no entiendes nada» |
+| `ding.wav` | ding-ding agudo corto | aparece el logo/marca (READAPTA CON DANI) o un icono |
 
+- **Cómo edita Dani sus propios reels** (analizados 6: «dolor lateral», «no entiendes nada», «placa de carbono»,
+  «meses con dolor», «zapatillas», «correr por la ciudad»): el sonido base de sus textos grandes es el **golpe grave**
+  (no el clic); campanas en Do mayor para lo positivo; barridos solo en cambios de plano; error para el "no".
+  1-7 golpes por vídeo, 0-1 campana, 0-4 barridos. Los golpes van fuertes (pico parecido a la voz, ganancia 1.0);
+  las campanas, por debajo de la voz (ganancia 1-1.5). Muchos de sus efectos son estéreo y la voz mono: para
+  analizar un vídeo suyo, el canal lateral (L-R) aísla los efectos.
 - Los sonidos "especiales" deben **oírse** (Dani no notó el eureka/acierto a volumen normal): comprueba que su RMS
   quede al nivel de la voz (ganancia 2-3 en `sfx`: `["eureka", 0.0, 2.6]`).
 - Un sonido que no pega con lo que se dice se quita. Dos sonidos que se pisan (barrido + disco rayado) → quita uno.
