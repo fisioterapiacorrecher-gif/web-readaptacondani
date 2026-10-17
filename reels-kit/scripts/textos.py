@@ -26,13 +26,16 @@ cards=E["cards"]+E.get("graphics",[]); keys=[(K["st"],K["en"]) for K in E["keys"
 def in_card(t): return any(c["st"]-0.05<=t<c["en"]+0.05 for c in cards)
 keys+=[(G["st"],G["en"]) for G in E.get("graphics",[]) if G.get("hide_subs")]   # gráficos que sustituyen al subtítulo (p. ej. listas)
 def in_key(t): return any(a-0.08<=t<b for a,b in keys)
+def norm(x): return re.sub(r'[¿?¡!.,:;]','',x).lower()
+# hide_words: el gráfico convive con los subtítulos pero quita las palabras que ya muestra (nunca el mismo texto dos veces)
+def dup(t,txt): return any(G["st"]<=t<G["en"] and set(norm(txt).split())&{norm(w) for w in G.get("hide_words",[])} for G in E.get("graphics",[]))
 def clip_to_key(st,en):
     for a,b in keys:
         if st<a<en: en=a
     return en
 # 1) white one-word subtitles (hidden while a key text is on screen)
 for st,en,txt,red in W:
-    if st<E["hook"]["end"]-0.07 or in_key(st): continue
+    if st<E["hook"]["end"]-0.07 or in_key(st) or dup(st,txt): continue
     en=clip_to_key(st,min(en,E["END"]))
     txt=re.sub(r'[¿?¡!.,:;]','',txt).lower()
     y=1180

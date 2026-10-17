@@ -7,36 +7,10 @@
   "y0": 692,
   "lh": 134,
   "size": 146,
-  "end": 2.25,
+  "end": 0.0,
   "sfx_in": null,
   "sfx_out": null,
-  "lines": [
-   [
-    "UNA",
-    0.0,
-    false
-   ],
-   [
-    "TENDINITIS",
-    0.27,
-    true
-   ],
-   [
-    "ES PARA",
-    0.82,
-    false
-   ],
-   [
-    "TODA LA",
-    1.23,
-    false
-   ],
-   [
-    "VIDA",
-    1.65,
-    true
-   ]
-  ]
+  "lines": []
  },
  "looks": [
   {
@@ -49,40 +23,19 @@
  ],
  "keys": [
   {
-   "st": 2.31,
-   "en": 3.17,
-   "style": "caps",
-   "lines": [
-    [
-     "NO SE PUEDE",
-     2.31,
-     false,
-     140
-    ],
-    [
-     "CURAR",
-     3.0,
-     true,
-     140
-    ]
-   ],
-   "sfx_in": "error",
-   "sfx_out": null
-  },
-  {
-   "st": 19.94,
-   "en": 21.3,
+   "st": 20.1,
+   "en": 21.6,
    "style": "caps",
    "lines": [
     [
      "TOTALMENTE",
-     19.94,
+     20.1,
      false,
      140
     ],
     [
      "ADAPTADO",
-     20.51,
+     20.62,
      true,
      140
     ]
@@ -97,19 +50,19 @@
    ]
   },
   {
-   "st": 23.38,
-   "en": 24.1,
+   "st": 23.45,
+   "en": 24.2,
    "style": "caps",
    "lines": [
     [
      "ADIÓS A LA",
-     23.38,
+     23.45,
      false,
      140
     ],
     [
      "TENDINITIS",
-     23.62,
+     23.7,
      true,
      140
     ]
@@ -121,63 +74,60 @@
      0.05
     ]
    ]
-  },
-  {
-   "st": 30.37,
-   "en": 33.13,
-   "style": "caps",
-   "lines": [
-    [
-     "ESCRIBE UN",
-     30.37,
-     false,
-     140
-    ],
-    [
-     "MENSAJE",
-     30.8,
-     false,
-     140
-    ]
-   ],
-   "y": 1330,
-   "glow": "red",
-   "sfx_out": null
   }
  ],
  "cards": [],
  "graphics": [
   {
    "module": "anim_lista",
-   "st": 10.97,
-   "en": 17.42,
-   "scene": "@1170;check:TRES FACTORES|FASE REAL|CARGA|OBJETIVO",
+   "st": 10.81,
+   "en": 17.5,
+   "scene": "@1260;check:TRES FACTORES|FASE REAL|CARGA|OBJETIVO",
    "pulses": [
-    12.22,
-    14.35,
-    16.37
+    12.3,
+    13.95,
+    16.75
    ],
    "blur": false,
-   "hide_subs": true,
+   "hide_words": [
+    "tres",
+    "factores",
+    "fase",
+    "real",
+    "carga",
+    "objetivo"
+   ],
    "sfx_in": null,
    "sfx_out": null,
    "sfx": [
     [
      "acierto",
-     12.25,
+     12.33,
      2.6
     ],
     [
      "acierto",
-     14.38,
+     13.98,
      2.6
     ],
     [
      "acierto",
-     16.4,
+     16.78,
      2.6
     ]
    ]
+  },
+  {
+   "module": "anim_mensaje",
+   "st": 30.6,
+   "en": 33.53,
+   "scene": "Quiero volver a correr",
+   "pulses": [
+    31.35,
+    31.75
+   ],
+   "blur": false,
+   "sfx_out": null
   }
  ],
  "graphic_cy": 920,
@@ -185,7 +135,7 @@
   [
    0.0,
    1.0,
-   1.1,
+   1.12,
    "L"
   ],
   [
@@ -213,31 +163,25 @@
    "L"
   ],
   [
-   10.97,
+   10.81,
    1.0,
    1.0,
    "L"
   ],
   [
-   17.42,
-   1.0,
-   1.0,
-   "L"
-  ],
-  [
-   17.42,
+   17.6,
    1.0,
    1.02,
    "L"
   ],
   [
-   19.94,
+   20.1,
    1.0,
    1.06,
    "S"
   ],
   [
-   21.35,
+   21.6,
    1.0,
    1.02,
    "L"
@@ -265,6 +209,13 @@
    1.05,
    1.07,
    "L"
+  ]
+ ],
+ "sfx": [
+  [
+   "error",
+   2.31,
+   1.0
   ]
  ]
 }

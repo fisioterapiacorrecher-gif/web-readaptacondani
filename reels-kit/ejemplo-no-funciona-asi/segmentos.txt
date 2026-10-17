@@ -1,17 +1,27 @@
 0.00|1.92|Una tendinitis es para toda la vida.
 2.31|3.38|No se puede curar.
-3.84|6.17|Eso te diría alguien que no sabe cómo funciona el tendón.
-6.57|7.78|Recuperarse de una tendinitis
-8.03|8.65|puede ser largo,
-8.88|9.58|pero no imposible.
-9.91|10.63|Solo hay que tener
-10.81|11.52|estos tres factores en cuenta.
-12.14|14.27|¿En qué fase real estás de tu lesión?
-14.50|17.46|¿Qué carga tolerar durante tu tratamiento y qué objetivo tienes?
-18.25|19.88|Con toda esta información podemos crear
-20.03|22.85|un programa totalmente adaptado a ti para recuperar
-23.09|23.62|ese tendón
-23.78|24.52|y decirle adiós a la tendinitis.
-25.39|25.73|Y dime.
-26.21|30.28|¿Vas a dejar que tu tendón nunca vuelva a ser el mismo o prefieres recuperarte y volver a correr?
-30.68|33.04|Si eres de los segundos, escribe un mensaje y veamos tu caso.
+3.85|5.59|Eso te diría alguien que no sabe cómo
+5.62|6.17|funciona el tendón.
+6.58|7.77|Recuperarse de una tendinitis
+8.03|8.64|puede ser largo,
+8.89|9.57|pero no imposible.
+9.92|10.62|Solo hay que tener
+10.81|11.45|estos tres factores en cuenta.
+11.88|12.95|¿En qué fase real
+12.95|13.58|estás de tu lesión?
+13.71|15.34|¿Qué carga tolerar durante
+15.56|16.47|tu tratamiento y
+16.62|17.18|qué objetivo tienes?
+17.62|18.97|Con toda esta información podemos crear
+19.41|19.97|un programa
+20.10|21.53|totalmente adaptado a ti
+21.67|22.22|para recuperar
+22.46|22.98|ese tendón
+23.15|24.05|y decirle adiós a la tendinitis.
+24.26|24.58|Y dime.
+25.11|26.87|¿Vas a dejar que tu tendón nunca vuelva a ser
+26.97|28.16|el mismo o prefieres recuperarte
+28.34|29.14|y volver a correr?
+29.54|30.43|Si eres de los segundos,
+30.60|31.37|escribe un mensaje
+31.46|31.82|y veamos tu caso.

@@ -30,6 +30,7 @@ for C in E.get("cards",[]): put("entrada",C["st"]); put("salida",C["en"]-0.2)
 for G in E.get("graphics",[]):
     put(G.get("sfx_in","entrada"),G["st"]); put(G.get("sfx_out","salida"),G["en"]-0.25,E.get("salida_gain",1.0))
     for name,t,*g in G.get("sfx",[]): put(name,t,(g or [1.0])[0])
+for name,t,*g in E.get("sfx",[]): put(name,t,(g or [1.0])[0])   # sonidos sueltos (tiempo absoluto), sin texto ni gráfico
 h=E.get("outro",{}).get("handle")
 if h: put("entrada",h[1]); put("salida",END-0.24)
 wavfile.write(sys.argv[3],SR,(voice+fx).astype(np.float32))
