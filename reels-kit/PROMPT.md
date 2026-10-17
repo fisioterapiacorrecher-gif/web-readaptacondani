@@ -136,6 +136,8 @@ Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo d
 | `disco_rayado.wav` | scratch de vinilo + frenazo (hecho con la voz de Dani) | cambio de escena / "cosa mal hecha" (entrada del vídeo de apoyo en «Infiltración») |
 | `reloj.wav` | tic-tac que se acelera (6 s) | paso del tiempo (calendario) |
 | `alarma.wav` | timbre de despertador (0,6 s) | alarma que se silencia |
+| `acierto.wav` | "ding-ding" ascendente | cada beneficio de una lista con checks |
+| `eureka.wav` | arpa que sube + acorde brillante | la solución / idea clave (EJERCICIO PROGRESIVO) |
 
 - Los especiales (destello, bien, trombón, error) **solo** donde tengan sentido con el guion, pocos por vídeo.
 - **Menos ruido (feedback de Dani, reel «Infiltración»):** el barrido de salida **solo** al salir el título, las 3-4
@@ -147,6 +149,11 @@ Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo d
   Si Dani pasa un dibujo de línea, se colorea por zonas con la paleta (sin contorno, lado lejano más oscuro) y se anima
   la ilustración **articulada** (muñeco recortable: cabeza y zapatillas del dibujo, tronco y miembros dibujados con su
   estilo, que corren de verdad): ver `assets/corredor_*.png`, `corredor_rig.json` y `scripts/anim_corredor.py`.
+- **Menos es más (feedback de Dani, «Tratamiento definitivo»):** palabras destacadas de 1-2 palabras (VERDADERA CAUSA,
+  TU RECUPERACIÓN, NI FÁRMACO / NI INFILTRACIÓN), no frases enteras. Zooms suaves: saltos de 1.00 <-> 1.05 y empujes
+  lentos (modo `"S"`, 0,6 s) solo en 1-2 ideas clave; nada de punch-in en cada palabra. Enumeraciones de beneficios =
+  lista con checks (`anim_lista`, scene `check:...`) y `acierto.wav`. Final sin @: el CTA destacado va donde iba el @
+  (y ≈ 1365, `"keep_subs": true`).
 - **Silencios largos** entre frases (> 0,5 s), sobre todo en un cambio de escena, se recortan del vídeo original
   (trim+concat de vídeo y audio) y se desplazan todos los tiempos posteriores del edit.json y words.json.
   Un sonido que "no pega" con lo que se dice se quita.

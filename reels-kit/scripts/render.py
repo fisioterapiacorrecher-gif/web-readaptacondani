@@ -48,6 +48,8 @@ Z=E["zoom"]
 def eo(x): x=min(1,max(0,x)); return 1-(1-x)**3
 def zoom(t):
     k=max(i for i in range(len(Z)) if Z[i][0]<=t+1e-6); t0,za,zb,m=Z[k]; t1=Z[k+1][0] if k+1<len(Z) else END
+    if m=="S":   # empuje suave (0,6 s, ease in-out): énfasis sin brusquedad
+        return za+(zb-za)*(3*min(1,(t-t0)/0.6)**2-2*min(1,(t-t0)/0.6)**3)
     if m=="P":
         if t-t0<0.22: return za+(zb-za)*eo((t-t0)/0.22)
         return zb+0.015*(t-t0-0.22)/max(0.01,t1-t0-0.22)

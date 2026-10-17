@@ -22,7 +22,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 ev=[]
 def D(layer,st,en,style,tags,text): ev.append(f"Dialogue: {layer},{ts(st)},{ts(en)},{style},,0,0,0,,{{{tags}}}{text}")
-cards=E["cards"]+E.get("graphics",[]); keys=[(K["st"],K["en"]) for K in E["keys"]]
+cards=E["cards"]+E.get("graphics",[]); keys=[(K["st"],K["en"]) for K in E["keys"] if not K.get("keep_subs")]   # keep_subs: el texto convive con el subtítulo
 def in_card(t): return any(c["st"]-0.05<=t<c["en"]+0.05 for c in cards)
 keys+=[(G["st"],G["en"]) for G in E.get("graphics",[]) if G.get("hide_subs")]   # gráficos que sustituyen al subtítulo (p. ej. listas)
 def in_key(t): return any(a-0.08<=t<b for a,b in keys)
