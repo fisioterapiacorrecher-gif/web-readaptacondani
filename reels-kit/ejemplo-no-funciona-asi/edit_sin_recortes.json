@@ -1,0 +1,270 @@
+{
+ "END": 33.7,
+ "video": "ENTRADA/video.mov",
+ "video_end": 33.7,
+ "salida_gain": 0.5,
+ "hook": {
+  "y0": 692,
+  "lh": 134,
+  "size": 146,
+  "end": 2.25,
+  "sfx_in": null,
+  "sfx_out": null,
+  "lines": [
+   [
+    "UNA",
+    0.0,
+    false
+   ],
+   [
+    "TENDINITIS",
+    0.27,
+    true
+   ],
+   [
+    "ES PARA",
+    0.82,
+    false
+   ],
+   [
+    "TODA LA",
+    1.23,
+    false
+   ],
+   [
+    "VIDA",
+    1.65,
+    true
+   ]
+  ]
+ },
+ "looks": [
+  {
+   "st": 0.0,
+   "en": 3.2,
+   "fade_out": 0.25,
+   "contrast": 1.15,
+   "vignette": 0.22
+  }
+ ],
+ "keys": [
+  {
+   "st": 2.31,
+   "en": 3.17,
+   "style": "caps",
+   "lines": [
+    [
+     "NO SE PUEDE",
+     2.31,
+     false,
+     140
+    ],
+    [
+     "CURAR",
+     3.0,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "error",
+   "sfx_out": null
+  },
+  {
+   "st": 20.59,
+   "en": 21.95,
+   "style": "caps",
+   "lines": [
+    [
+     "TOTALMENTE",
+     20.59,
+     false,
+     140
+    ],
+    [
+     "ADAPTADO",
+     21.16,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx": [
+    [
+     "eureka",
+     0.0,
+     2.6
+    ]
+   ]
+  },
+  {
+   "st": 24.03,
+   "en": 24.75,
+   "style": "caps",
+   "lines": [
+    [
+     "ADIÓS A LA",
+     24.03,
+     false,
+     140
+    ],
+    [
+     "TENDINITIS",
+     24.27,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx": [
+    [
+     "bien",
+     0.05
+    ]
+   ]
+  },
+  {
+   "st": 31.54,
+   "en": 33.7,
+   "style": "caps",
+   "lines": [
+    [
+     "ESCRIBE UN",
+     31.54,
+     false,
+     140
+    ],
+    [
+     "MENSAJE",
+     31.97,
+     false,
+     140
+    ]
+   ],
+   "y": 1330,
+   "glow": "red",
+   "sfx_out": null
+  }
+ ],
+ "cards": [],
+ "graphics": [
+  {
+   "module": "anim_lista",
+   "st": 10.97,
+   "en": 17.75,
+   "scene": "@1170;check:TRES FACTORES|FASE REAL|CARGA|OBJETIVO",
+   "pulses": [
+    12.5,
+    14.63,
+    16.65
+   ],
+   "blur": false,
+   "hide_subs": true,
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "acierto",
+     12.53,
+     2.6
+    ],
+    [
+     "acierto",
+     14.66,
+     2.6
+    ],
+    [
+     "acierto",
+     16.68,
+     2.6
+    ]
+   ]
+  }
+ ],
+ "graphic_cy": 920,
+ "zoom": [
+  [
+   0.0,
+   1.0,
+   1.1,
+   "L"
+  ],
+  [
+   3.17,
+   1.0,
+   1.0,
+   "L"
+  ],
+  [
+   3.84,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   6.6,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   9.0,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   10.97,
+   1.0,
+   1.0,
+   "L"
+  ],
+  [
+   17.75,
+   1.0,
+   1.0,
+   "L"
+  ],
+  [
+   18.07,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   20.59,
+   1.0,
+   1.06,
+   "S"
+  ],
+  [
+   22.0,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   25.27,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   27.23,
+   1.05,
+   1.1,
+   "S"
+  ],
+  [
+   28.5,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   30.6,
+   1.05,
+   1.07,
+   "L"
+  ]
+ ]
+}

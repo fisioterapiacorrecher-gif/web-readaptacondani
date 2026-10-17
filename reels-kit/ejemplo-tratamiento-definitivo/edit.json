@@ -1,0 +1,362 @@
+{
+ "END": 32.33,
+ "video": "ENTRADA/video.mov",
+ "video_end": 32.33,
+ "hook": {
+  "y0": 700,
+  "lh": 130,
+  "size": 142,
+  "end": 2.5,
+  "sfx_in": null,
+  "lines": [
+   [
+    "¿Y SI TE",
+    0.43,
+    false
+   ],
+   [
+    "DIJERA",
+    0.77,
+    false
+   ],
+   [
+    "QUE PUEDES",
+    1.1,
+    false
+   ],
+   [
+    "MEJORAR TU",
+    1.44,
+    true
+   ],
+   [
+    "TENDINITIS",
+    1.88,
+    true
+   ]
+  ],
+  "sfx_out": null
+ },
+ "keys": [
+  {
+   "st": 3.49,
+   "en": 4.25,
+   "style": "caps",
+   "lines": [
+    [
+     "TODAS LAS",
+     3.49,
+     false,
+     140
+    ],
+    [
+     "SEMANAS?",
+     3.79,
+     true,
+     140
+    ]
+   ],
+   "sfx_out": null
+  },
+  {
+   "st": 13.96,
+   "en": 15.45,
+   "style": "caps",
+   "lines": [
+    [
+     "NI FÁRMACO",
+     13.96,
+     false,
+     140
+    ],
+    [
+     "NI INFILTRACIÓN",
+     14.89,
+     true,
+     137
+    ]
+   ],
+   "sfx_in": "error",
+   "sfx_out": null
+  },
+  {
+   "st": 15.76,
+   "en": 17.05,
+   "style": "caps",
+   "lines": [
+    [
+     "EJERCICIO",
+     15.76,
+     false,
+     140
+    ],
+    [
+     "PROGRESIVO",
+     16.27,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx": [
+    [
+     "eureka",
+     0.0,
+     2.6
+    ]
+   ]
+  },
+  {
+   "st": 18.36,
+   "en": 19.15,
+   "style": "caps",
+   "lines": [
+    [
+     "VERDADERA",
+     18.36,
+     false,
+     140
+    ],
+    [
+     "CAUSA",
+     18.78,
+     true,
+     140
+    ]
+   ]
+  },
+  {
+   "st": 19.98,
+   "en": 21.75,
+   "style": "caps",
+   "lines": [
+    [
+     "CAPACIDAD",
+     19.98,
+     false,
+     140
+    ],
+    [
+     "DE CARGA",
+     20.46,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_out": null
+  },
+  {
+   "st": 26.49,
+   "en": 27.35,
+   "style": "caps",
+   "lines": [
+    [
+     "TU",
+     26.49,
+     false,
+     140
+    ],
+    [
+     "RECUPERACIÓN",
+     26.63,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx_out": null
+  },
+  {
+   "st": 30.14,
+   "en": 32.33,
+   "style": "caps",
+   "lines": [
+    [
+     "ESCRÍBEME",
+     30.14,
+     false,
+     140
+    ],
+    [
+     "TENDÓN",
+     30.91,
+     false,
+     140
+    ]
+   ],
+   "y": 1330,
+   "sfx_out": null,
+   "glow": "red"
+  }
+ ],
+ "cards": [],
+ "graphics": [
+  {
+   "module": "anim_sin",
+   "st": 6.57,
+   "en": 8.4,
+   "scene": "SIN AGUJAS|SIN CORRIENTES",
+   "pulses": [
+    6.69,
+    7.3
+   ],
+   "hide_subs": true,
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "entrada",
+     6.69
+    ],
+    [
+     "entrada",
+     7.3
+    ]
+   ]
+  },
+  {
+   "module": "anim_lista",
+   "st": 8.66,
+   "en": 12.98,
+   "scene": "@1170;check:UN TRATAMIENTO QUE|EVITA RECAÍDAS|NO TE PRODUCE DOLOR|SEGUIR ENTRENANDO",
+   "pulses": [
+    9.49,
+    10.68,
+    12.09
+   ],
+   "blur": false,
+   "hide_subs": true,
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "acierto",
+     9.52,
+     2.6
+    ],
+    [
+     "acierto",
+     10.71,
+     2.6
+    ],
+    [
+     "acierto",
+     12.12,
+     2.6
+    ]
+   ]
+  },
+  {
+   "module": "anim_carga",
+   "st": 19.64,
+   "en": 21.75,
+   "pulses": [
+    19.98
+   ],
+   "sfx_in": null,
+   "sfx_out": null
+  }
+ ],
+ "zoom": [
+  [
+   0.0,
+   1.0,
+   1.05,
+   "L"
+  ],
+  [
+   2.5,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   2.67,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   4.48,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   6.57,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   8.66,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   13.08,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   15.54,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   15.76,
+   1.05,
+   1.11,
+   "S"
+  ],
+  [
+   17.15,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   18.36,
+   1.05,
+   1.11,
+   "S"
+  ],
+  [
+   19.3,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   19.64,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   21.85,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   24.55,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   27.91,
+   1.0,
+   1.02,
+   "L"
+  ]
+ ],
+ "graphic_cy": 920,
+ "salida_gain": 0.5
+}

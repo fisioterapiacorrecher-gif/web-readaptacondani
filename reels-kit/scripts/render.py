@@ -5,10 +5,15 @@ KIT=os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 E=json.load(open(sys.argv[1])); ASS=sys.argv[2]; AUD=sys.argv[3]; out=sys.argv[4]
 if len(sys.argv)>5: E["END"]=min(E["END"],float(sys.argv[5]))
 FONTS=KIT+"/fonts"
-if E.get("graphics"):
-    sys.path.insert(0,KIT+"/scripts"); import importlib; graphic=importlib.import_module(E.get("graphic_module","animacion_tendon"))
-    graphic.FONT=FONTS+'/Montserrat-900.ttf'
-    if 'graphic_cy' in E: graphic.CY=E['graphic_cy']; graphic.OY=graphic.CY-450
+MODS={}
+def modulo(name):   # cada animación puede usar su propio módulo ("module" en el gráfico; por defecto "graphic_module")
+    if name not in MODS:
+        sys.path.insert(0,KIT+"/scripts"); import importlib; m=importlib.import_module(name)
+        m.FONT=FONTS+'/Montserrat-900.ttf'
+        if 'graphic_cy' in E and hasattr(m,'OY'): m.CY=E['graphic_cy']; m.OY=m.CY-450
+        MODS[name]=m
+    return MODS[name]
+for G_ in E.get("graphics",[]): G_["_mod"]=modulo(G_.get("module",E.get("graphic_module","animacion_tendon")))
 W,H,FPS=1080,1920,30; END=E["END"]; NF=int(round(END*FPS))
 # ---- sRGB (SDR graphics) -> HLG code values in BT.2020 (SDR white = 75% HLG, BT.2408)
 M=np.array([[0.6274,0.3293,0.0433],[0.0691,0.9195,0.0114],[0.0164,0.0880,0.8956]],np.float32)
@@ -33,12 +38,18 @@ enc=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-f","rawvideo","-pix_fmt
 BR=E.get("broll"); brf=None
 if BR:
     nb=int(round((BR["en"]-BR["st"])*FPS))
-    brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf","fps=30,scale=1080:1920:flags=lanczos","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb24","-"],stdout=subprocess.PIPE)
-    brf=[np.frombuffer(brp.stdout.read(W*H*3),np.uint8).reshape(H,W,3) for _ in range(nb)]
+    if BR.get("hdr"):   # vídeo de apoyo grabado en HLG (iPhone): se usa tal cual, sin to_hlg()
+        brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf","fps=30,scale=1080:1920:flags=lanczos:in_color_matrix=bt2020:in_range=tv:out_range=pc,format=rgb48le","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb48le","-"],stdout=subprocess.PIPE)
+        brf=[np.frombuffer(brp.stdout.read(W*H*6),np.uint16).reshape(H,W,3) for _ in range(nb)]
+    else:
+        brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf","fps=30,scale=1080:1920:flags=lanczos","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb24","-"],stdout=subprocess.PIPE)
+        brf=[np.frombuffer(brp.stdout.read(W*H*3),np.uint8).reshape(H,W,3) for _ in range(nb)]
 Z=E["zoom"]
 def eo(x): x=min(1,max(0,x)); return 1-(1-x)**3
 def zoom(t):
     k=max(i for i in range(len(Z)) if Z[i][0]<=t+1e-6); t0,za,zb,m=Z[k]; t1=Z[k+1][0] if k+1<len(Z) else END
+    if m=="S":   # empuje suave (0,6 s, ease in-out): énfasis sin brusquedad
+        return za+(zb-za)*(3*min(1,(t-t0)/0.6)**2-2*min(1,(t-t0)/0.6)**3)
     if m=="P":
         if t-t0<0.22: return za+(zb-za)*eo((t-t0)/0.22)
         return zb+0.015*(t-t0-0.22)/max(0.01,t1-t0-0.22)
@@ -91,13 +102,13 @@ for i in range(NF):
     if abs(z-1)>1e-4:
         Mz=np.array([[z,0,CX*(1-z)],[0,z,CY*(1-z)]],np.float32)
         f=cv2.warpAffine(f,Mz,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)
-    f=look(f,t)
     if BR and BR["st"]<=t<BR["en"]:
-        k=min(len(brf)-1,int((t-BR["st"])*FPS)); b=brf[k].astype(np.float32)/255
-        zb=1.0+0.08*(t-BR["st"])/(BR["en"]-BR["st"])
+        k=min(len(brf)-1,int((t-BR["st"])*FPS)); b=brf[k].astype(np.float32)/(65535 if BR.get("hdr") else 255)
+        zb=1.0+BR.get("zoom",0.08)*(t-BR["st"])/(BR["en"]-BR["st"])
         Mb=np.array([[zb,0,540*(1-zb)],[0,zb,960*(1-zb)]],np.float32)
-        b=cv2.warpAffine(b,Mb,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)*0.82
-        f=to_hlg(b)
+        b=cv2.warpAffine(b,Mb,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)*BR.get("dark",0.82)
+        f=b if BR.get("hdr") else to_hlg(b)
+    f=look(f,t)
     kd=keydark(t)
     if kd.max()>0: f=f*(1-kd[:,None,None])
     for st,en,im,ccy,csc in cards:
@@ -108,8 +119,8 @@ for i in range(NF):
             over(f,cv2.resize(im,None,fx=s*csc,fy=s*csc,interpolation=cv2.INTER_AREA),540,ccy,a)
     for G in GR:
         if G["st"]<=t<=G["en"]:
-            f=blurbg(f,max(0,min(1,(t-G["st"])/0.2,(G["en"]-t)/0.2)))
-            g=graphic.draw(t,G["scene"],G["st"],G["en"],G["pulses"],G["broken"])
+            if G.get("blur",True): f=blurbg(f,max(0,min(1,(t-G["st"])/0.2,(G["en"]-t)/0.2)))
+            g=G["_mod"].draw(t,G.get("scene",""),G["st"],G["en"],G.get("pulses",[]),G.get("broken",[]))
             if g is not None:
                 ys=np.where(g[...,3].max(1)>0)[0]
                 if len(ys):

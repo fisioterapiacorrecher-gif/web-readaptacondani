@@ -1,0 +1,663 @@
+{
+ "END": 45.04,
+ "video": "ENTRADA/video_cut.mov",
+ "video_end": 45.04,
+ "hook": {
+  "y0": 655,
+  "lh": 122,
+  "size": 134,
+  "end": 2.85,
+  "sfx_in": null,
+  "lines": [
+   [
+    "¿ES SUFICIENTE",
+    0.0,
+    false
+   ],
+   [
+    "UNA",
+    0.67,
+    false
+   ],
+   [
+    "INFILTRACIÓN",
+    0.94,
+    true
+   ],
+   [
+    "PARA",
+    1.48,
+    false
+   ],
+   [
+    "RECUPERAR",
+    1.75,
+    false
+   ],
+   [
+    "TU TENDÓN?",
+    2.29,
+    true
+   ]
+  ]
+ },
+ "keys": [
+  {
+   "st": 3.31,
+   "en": 4.1,
+   "style": "caps",
+   "lines": [
+    [
+     "NI UNA",
+     3.31,
+     false,
+     140
+    ],
+    [
+     "NI DOS",
+     3.8,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx_out": null
+  },
+  {
+   "st": 4.41,
+   "en": 5.98,
+   "style": "caps",
+   "lines": [
+    [
+     "TODO DEPENDE",
+     4.41,
+     false,
+     140
+    ],
+    [
+     "DE LO QUE",
+     4.96,
+     false,
+     140
+    ],
+    [
+     "HAGAS DESPUÉS",
+     5.36,
+     true,
+     137
+    ]
+   ],
+   "sfx_in": null
+  },
+  {
+   "st": 8.41,
+   "en": 10.25,
+   "style": "caps",
+   "lines": [
+    [
+     "CORTICOIDE",
+     8.41,
+     false,
+     140
+    ],
+    [
+     "O ANESTÉSICO",
+     9.06,
+     false,
+     140
+    ]
+   ],
+   "y": 330,
+   "glow": "red",
+   "sfx_out": null
+  },
+  {
+   "st": 14.79,
+   "en": 16.15,
+   "style": "caps",
+   "lines": [
+    [
+     "NO RECONSTRUYE",
+     14.79,
+     false,
+     126
+    ],
+    [
+     "EL TENDÓN",
+     15.44,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "error"
+  },
+  {
+   "st": 16.77,
+   "en": 17.55,
+   "style": "caps",
+   "lines": [
+    [
+     "SILENCIAR",
+     16.77,
+     false,
+     140
+    ],
+    [
+     "LA ALARMA",
+     17.18,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_out": null
+  },
+  {
+   "st": 17.57,
+   "en": 18.85,
+   "style": "caps",
+   "lines": [
+    [
+     "EL PROBLEMA",
+     17.57,
+     false,
+     140
+    ],
+    [
+     "SIGUE AHÍ",
+     18.2,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_out": null
+  },
+  {
+   "st": 18.9,
+   "en": 19.72,
+   "style": "caps",
+   "lines": [
+    [
+     "PERO NO",
+     18.9,
+     false,
+     140
+    ],
+    [
+     "SUENA",
+     19.24,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_out": null
+  },
+  {
+   "st": 21.08,
+   "en": 22.45,
+   "style": "caps",
+   "lines": [
+    [
+     "LA ESTRUCTURA",
+     21.08,
+     false,
+     139
+    ],
+    [
+     "DEL TENDÓN",
+     21.88,
+     true,
+     140
+    ]
+   ],
+   "sfx_out": null
+  },
+  {
+   "st": 23.88,
+   "en": 24.85,
+   "style": "caps",
+   "lines": [
+    [
+     "CAPACIDAD",
+     23.88,
+     false,
+     140
+    ],
+    [
+     "DE CARGA",
+     24.34,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "error",
+   "sfx_out": null
+  },
+  {
+   "st": 25.96,
+   "en": 28.5,
+   "style": "caps",
+   "lines": [
+    [
+     "NO VAS A PODER",
+     25.96,
+     false,
+     133
+    ],
+    [
+     "CORRER",
+     26.58,
+     false,
+     140
+    ],
+    [
+     "COMO ANTES",
+     26.83,
+     false,
+     140
+    ]
+   ],
+   "y": 400,
+   "glow": "red",
+   "sfx": [
+    [
+     "error",
+     0.9
+    ]
+   ]
+  },
+  {
+   "st": 30.95,
+   "en": 32.15,
+   "style": "caps",
+   "lines": [
+    [
+     "VENTANA",
+     30.95,
+     false,
+     140
+    ],
+    [
+     "TERAPÉUTICA",
+     31.36,
+     true,
+     140
+    ]
+   ],
+   "sfx_out": null
+  },
+  {
+   "st": 34.3,
+   "en": 35.55,
+   "style": "caps",
+   "lines": [
+    [
+     "EJERCICIO",
+     34.3,
+     false,
+     140
+    ],
+    [
+     "BIEN PLANEADO",
+     34.86,
+     true,
+     138
+    ]
+   ],
+   "sfx": [
+    [
+     "bien",
+     0.6
+    ]
+   ],
+   "sfx_out": null
+  },
+  {
+   "st": 40.19,
+   "en": 41.18,
+   "style": "caps",
+   "lines": [
+    [
+     "ESPERAR",
+     40.19,
+     false,
+     140
+    ],
+    [
+     "MUCHO TIEMPO",
+     40.59,
+     true,
+     140
+    ]
+   ],
+   "sfx": [
+    [
+     "trombon",
+     0.45
+    ]
+   ],
+   "y": 960
+  }
+ ],
+ "cards": [],
+ "graphics": [
+  {
+   "module": "anim_infiltracion",
+   "st": 7.11,
+   "en": 11.95,
+   "pulses": [
+    7.9,
+    8.41,
+    10.6
+   ],
+   "sfx_out": null
+  },
+  {
+   "module": "anim_lista",
+   "st": 12.32,
+   "en": 14.72,
+   "scene": "SU EFECTO ES BAJAR|EL DOLOR|LA INFLAMACIÓN",
+   "pulses": [
+    13.09,
+    13.85
+   ],
+   "blur": false,
+   "hide_subs": true,
+   "sfx": [
+    [
+     "entrada",
+     13.09
+    ],
+    [
+     "entrada",
+     13.85
+    ]
+   ],
+   "sfx_out": null,
+   "sfx_in": null
+  },
+  {
+   "module": "anim_alarma",
+   "st": 16.42,
+   "en": 19.72,
+   "pulses": [
+    17.0,
+    17.57
+   ],
+   "sfx_in": "alarma",
+   "sfx_out": null
+  },
+  {
+   "module": "anim_corredor",
+   "st": 24.97,
+   "en": 28.5,
+   "pulses": [
+    26.88
+   ],
+   "sfx_out": null,
+   "sfx_in": null
+  },
+  {
+   "module": "anim_calendario",
+   "st": 35.6,
+   "en": 41.89,
+   "blur": false,
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "disco_rayado",
+     35.42
+    ],
+    [
+     "reloj",
+     35.85
+    ]
+   ],
+   "pulses": []
+  },
+  {
+   "module": "anim_compartir",
+   "st": 42.0,
+   "en": 46.0,
+   "pulses": [
+    42.45,
+    42.2
+   ],
+   "blur": false,
+   "sfx_out": null
+  }
+ ],
+ "broll": {
+  "st": 35.6,
+  "en": 41.89,
+  "offset": 0.0,
+  "path": "ENTRADA/apoyo_corte2.mp4",
+  "hdr": true,
+  "dark": 1.0,
+  "zoom": 0.04
+ },
+ "zoom": [
+  [
+   0.0,
+   1.0,
+   1.1,
+   "L"
+  ],
+  [
+   2.85,
+   1.0,
+   1.03,
+   "L"
+  ],
+  [
+   3.09,
+   1.0,
+   1.04,
+   "L"
+  ],
+  [
+   3.31,
+   1.0,
+   1.14,
+   "P"
+  ],
+  [
+   4.12,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   4.41,
+   1.1,
+   1.24,
+   "P"
+  ],
+  [
+   6.0,
+   1.1,
+   1.115,
+   "L"
+  ],
+  [
+   6.36,
+   1.0,
+   1.04,
+   "L"
+  ],
+  [
+   8.41,
+   1.0,
+   1.14,
+   "P"
+  ],
+  [
+   10.27,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   12.32,
+   1.0,
+   1.0,
+   "L"
+  ],
+  [
+   14.79,
+   1.1,
+   1.24,
+   "P"
+  ],
+  [
+   16.17,
+   1.1,
+   1.115,
+   "L"
+  ],
+  [
+   16.42,
+   1.0,
+   1.04,
+   "L"
+  ],
+  [
+   16.77,
+   1.0,
+   1.14,
+   "P"
+  ],
+  [
+   17.57,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   19.81,
+   1.1,
+   1.13,
+   "L"
+  ],
+  [
+   21.08,
+   1.1,
+   1.24,
+   "P"
+  ],
+  [
+   22.47,
+   1.1,
+   1.115,
+   "L"
+  ],
+  [
+   23.88,
+   1.1,
+   1.24,
+   "P"
+  ],
+  [
+   24.87,
+   1.1,
+   1.115,
+   "L"
+  ],
+  [
+   24.97,
+   1.0,
+   1.04,
+   "L"
+  ],
+  [
+   25.96,
+   1.0,
+   1.14,
+   "P"
+  ],
+  [
+   27.57,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   27.83,
+   1.1,
+   1.13,
+   "L"
+  ],
+  [
+   30.95,
+   1.1,
+   1.24,
+   "P"
+  ],
+  [
+   32.17,
+   1.1,
+   1.115,
+   "L"
+  ],
+  [
+   32.61,
+   1.0,
+   1.04,
+   "L"
+  ],
+  [
+   34.3,
+   1.0,
+   1.14,
+   "P"
+  ],
+  [
+   35.57,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   35.83,
+   1.1,
+   1.13,
+   "L"
+  ],
+  [
+   40.19,
+   1.1,
+   1.24,
+   "P"
+  ],
+  [
+   41.2,
+   1.1,
+   1.115,
+   "L"
+  ],
+  [
+   41.89,
+   1.0,
+   1.04,
+   "L"
+  ]
+ ],
+ "graphic_cy": 920,
+ "looks": [
+  {
+   "st": 35.6,
+   "en": 41.89,
+   "fade_in": 0.0,
+   "fade_out": 0.01,
+   "contrast": 1.15,
+   "vignette": 0.22
+  }
+ ],
+ "salida_gain": 0.5
+}

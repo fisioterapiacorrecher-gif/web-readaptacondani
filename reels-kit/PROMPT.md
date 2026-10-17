@@ -1,189 +1,269 @@
 # Prompt — Editor de reels de Dani (@readaptacondani · RCD Clinic)
 
 > Pega esto (o di "lee el prompt del Kit de edición de reels") al empezar una sesión nueva.
-> Todo lo que hay aquí lo aprendimos editando el reel "Maratón con el tendón roto" (oct 2026).
+> Resume todo lo aprendido editando 4 reels con Dani (oct 2026): «Maratón con el tendón roto», «No funciona así»,
+> «¿Es suficiente una infiltración?» (7 versiones) y «Tratamiento definitivo» (3 versiones).
+> El objetivo es que **el primer render ya salga como la versión final** de esos reels.
 > Si algo de este documento choca con lo que Dani pida en el momento, manda lo que pida Dani.
 
 ---
 
-## 0. Quién es Dani y qué hace
+## 0. Quién es Dani y qué quiere
 
 Dani es fisioterapeuta especializado en corredores (tendinopatías). Publica reels educativos verticales en
-Instagram: él hablando a cámara + textos dinámicos + imágenes de apoyo. Habla en español, tono cercano.
-Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo de tú, en español.
+Instagram: él hablando a cámara + textos destacados + animaciones explicativas + algún vídeo de apoyo.
+Habla en español, tono cercano. Trátalo de tú, en español, con mensajes cortos.
+
+**La lección más importante: MENOS ES MÁS.** Las primeras versiones siempre le parecieron "agresivas": demasiadas
+palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que aprobó al final:
+- **Pocas palabras destacadas** (5-7 por minuto), de **1-2 palabras** cada una, solo las ideas clave.
+- **Pocos sonidos**, suaves, y cada uno con un significado (no un clic por cada cosa que entra o sale).
+- **Zooms suaves** (saltos pequeños y empujes lentos), nunca un punch-in en cada palabra.
+- **Animaciones explicativas** en los momentos clave: le encantan, son lo que más valor aporta.
 
 ---
 
 ## 1. Arranque de la sesión (hazlo tú, sin preguntar)
 
-1. **Kit** (programas, sonidos, fuentes y ejemplo). Está en el repo `fisioterapiacorrecher-gif/web-readaptacondani`,
-   rama `claude/amazing-fermi-clq5qg`, carpeta `reels-kit/`:
+1. **Kit** (programas, sonidos, fuentes, ilustraciones y ejemplos) en el repo `fisioterapiacorrecher-gif/web-readaptacondani`,
+   rama **`claude/funny-goldberg-ebx6mx`** (la más completa), carpeta `reels-kit/`:
    ```bash
    cd /home/user/web-readaptacondani
-   git fetch origin claude/amazing-fermi-clq5qg
-   git checkout origin/claude/amazing-fermi-clq5qg -- reels-kit   # si no está ya
+   git fetch origin claude/funny-goldberg-ebx6mx
+   git checkout origin/claude/funny-goldberg-ebx6mx -- reels-kit   # si no está ya
+   git reset -q reels-kit                                           # que no quede "staged" en tu rama
    bash reels-kit/scripts/preparar.sh                               # pip + modelo Whisper large-v3 (GitHub)
    ```
+   Si mejoras el kit, haz commit en tu rama de trabajo (el kit viaja con ella).
 2. **Drive** (conector Google Drive). Carpeta raíz `CLAUDE` (id `1N9BnTAeyHzv8Bctc896iykw1uXsBnCQa`):
-   - `video a editar` → el vídeo nuevo + guion + imágenes/vídeos de apoyo (busca por título; mira subcarpetas).
-   - `Kit edición reels` → este prompt (documento).
-   - (Pueden haber desaparecido `REFERENCIAS`, `Audios`, `Creación contenido`, `videos apoyo`: ya no hacen falta.)
-3. **Descargar archivos de Drive**: el conector solo baja ≤10 MB y lo devuelve en base64. Para vídeos usa:
+   - Carpetas `Video a editar`, `Video a editar 2`, `Video a editar 3`… → cada una: el vídeo, un doc `Guion` y,
+     si hay, `Video apoyo` (busca con `parentId = '<id carpeta>'`). **Si hay varias, edítalas una tras otra.**
+   - El `Guion` puede venir **vacío**: entonces los textos salen solo de la transcripción.
+   - `Kit edición reels` → este prompt (documento de Google).
+3. **Descargar de Drive**: el conector solo baja ≤10 MB y en base64. Para vídeos:
    ```bash
    curl -sS -L -o video.mov "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"
    ```
-   Requisitos: dominio `drive.usercontent.google.com` permitido en la red del entorno y el archivo compartido
-   como "cualquiera con el enlace". Si da 403, díselo a Dani (red del entorno / compartir).
-   Imágenes pequeñas: `download_file_content` → se guarda en un .txt JSON → `jq -r .content f | base64 -d > img.png`.
-4. **Red**: huggingface (CDN) está bloqueado → el modelo Whisper se baja de GitHub (lo hace `preparar.sh`).
-   Pexels/pixabay están bloqueados: los vídeos de apoyo los sube Dani a Drive.
+   Si da 403: red del entorno o archivo no compartido "con el enlace" → díselo a Dani.
+4. **Red**: huggingface, pexels, pixabay, unsplash, wikimedia y canva.com están **bloqueados**; GitHub sí funciona.
+   No hay bancos de imágenes: las imágenes/vídeos de apoyo los pasa Dani, o se **dibujan como animación** (§5).
+5. **Canva** (conector): el **MANUAL DE MARCA** (`DAHIyA7xpXU`) tiene la paleta, tipografías y en la pág. 29
+   ("RECURSOS", iconos de @pepermpron) el estilo de ilustración de referencia (§5.1).
 
 ---
 
 ## 2. Qué te va a dar Dani
 
-- **Vídeo bruto**: iPhone, `.mov`, HEVC 10-bit **HDR HLG (BT.2020, arib-std-b67)**, 1080×1920, 30 fps, ~1 min.
-- **Guion** (texto en el mensaje o en un doc). OJO: **Dani no lo sigue al pie de la letra**. Los subtítulos y las
-  palabras clave deben reflejar **lo que dice de verdad** en el audio, no el guion.
-- **Imágenes de apoyo** con la frase en la que van ("imagen tendón en 'es como un cable…'").
-- **Vídeo de apoyo para la portada/inicio** (opcional, SDR bt709, p. ej. corredores de maratón).
+- **Vídeo bruto**: iPhone, `.mov`, HEVC 10-bit **HDR HLG (BT.2020, arib-std-b67)**, 1080×1920, 30 fps, 30-60 s.
+  A veces empieza con Dani entrando en plano o se corta al final a mitad de palabra: no pasa nada, se edita igual
+  (fundido de audio de 0,3 s al final) y se le comenta.
+- **Guion**: **no lo sigue al pie de la letra**. Subtítulos y textos = **lo que dice de verdad**. El guion sirve
+  para corregir palabras mal oídas ("corticoides"→"corticoide", "comando"→"como antes", "demos"→"veamos").
+- **Vídeo de apoyo** (p. ej. él esperando sentado): también HDR HLG del iPhone, a veces girado (metadato de rotación,
+  ffmpeg lo endereza solo). Te dirá en qué frase va.
+- Instrucciones a veces incompletas ("te pongo los guiones" sin pegarlos): busca en Drive antes de preguntar.
 
 ---
 
-## 3. ESTILO DEFINITIVO (lo que Dani aprobó)
+## 3. ESTILO DEFINITIVO
 
 ### 3.1 Color
-- **El color debe ser el del original.** NO conviertas a SDR ni apliques LUT/tonemapping (lo vio naranja 3 veces).
-- Se trabaja y se exporta en **HDR HLG** tal cual: decodificar a rgb48 sin cambiar transferencia, componer, y
-  re-codificar HEVC 10-bit con tags `bt2020 / arib-std-b67 / bt2020nc`, `-tag:v hvc1` (lo hace `render.py`).
-- Los gráficos SDR (texto, imágenes) se convierten a HLG con `to_hlg()`. Blanco de texto = referencia 0.40
-  (más brillante que el blanco SDR 0.203; si no, los subtítulos se ven **grises**). Imágenes/vídeo de apoyo = 0.203.
+- **El color debe ser el del original.** Nada de SDR/LUT/tonemapping (lo vio naranja 3 veces).
+- Todo se trabaja y exporta en **HDR HLG** (`render.py`). Gráficos SDR → HLG con `to_hlg()`; blanco de texto 0.40,
+  imágenes 0.203, animaciones 0.30. Vídeo de apoyo HLG: `"hdr": true` en `broll` (no pasa por `to_hlg`).
+- Única excepción aprobada: el **vídeo de apoyo en blanco y negro** (`looks`) para que se note que es otro clip.
 
-### 3.2 Inicio (título / gancho) — estilo "dolor lateral"
-- Pregunta-gancho en **MAYÚSCULAS**, Montserrat Black, **grande (~150 px)**, **centrada en el medio del encuadre
-  aunque tape la cara**, líneas **muy juntas** (interlineado ~0.88), una línea por palabra/grupo, alternando
-  blanco y **rojo #FF3434** en las palabras clave (p. ej. MARATÓN / TENDÓN / ROTO?).
-- Cada línea entra al decirla (pop: escala 55%→107%→100%). Sale con **barrido a la derecha** (estirado + desenfoque).
-- Si hay vídeo de apoyo: **a pantalla completa** bajo el título, con zoom lento 1.00→1.08 y oscurecido un 18 %.
-  Termina **justo cuando Dani dice la frase de transición** ("te lo cuento") → corte a Dani.
-- **Sin sonido de clic al empezar el título** (sí barrido de salida).
+### 3.2 Título (gancho)
+- Pregunta-gancho en **MAYÚSCULAS**, Montserrat Black, grande (130-150 px, que quepa en el ancho con margen;
+  mide con `medir.py`), **centrada en el medio aunque tape la cara**, líneas muy juntas, una línea por palabra/grupo,
+  blanco y **rojo #FF3434** en las palabras clave. Cada línea entra al decirla (pop) y sale con barrido a la derecha.
+- **Sin ningún sonido** (ni al entrar ni al salir): `"sfx_in": null, "sfx_out": null` en `hook`.
+- **El interrogante va donde acaba la pregunta de verdad.** Si la pregunta sigue después del título
+  ("…mejorar tu tendinitis / sin tener que ir al fisio todas las semanas?"), el título va sin "?" y el "?" lo lleva
+  la palabra destacada que cierra la frase (SEMANAS?).
 
-### 3.3 Subtítulos normales
-- **Una palabra cada vez**, minúsculas, sin puntuación, Montserrat ExtraBold 80 px, **blanco puro**, sombra
-  negra suave (desenfocada). Pequeño pop de entrada (86%→100% en 110 ms).
-- **Siempre en la misma línea (y = 1180)**, también cuando hay imágenes o animaciones. Nunca bajarlos.
-- Se ocultan mientras está en pantalla una palabra clave (las palabras clave sustituyen al subtítulo).
+### 3.3 Subtítulos
+- **Una palabra cada vez**, minúsculas, sin puntuación, Montserrat ExtraBold 80 px, blanco puro, sombra suave.
+- **Siempre en la misma línea (y = 1180).** Nunca cambian de altura.
+- Se ocultan mientras hay un texto destacado o una animación que lleva su propio texto (`hide_subs`).
+- **Nunca el mismo texto dos veces**: si algo está en texto destacado, no sale también en subtítulo.
 
-### 3.4 Palabras clave / textos destacados
-- **Misma tipografía que el título**: Montserrat Black, **MAYÚSCULAS**, centradas, en la línea de subtítulos
-  (y = 1180), **en lugar** del subtítulo. Tamaño hasta 140 px (ajustado al ancho, ~990 px).
-- 1–3 líneas. Primera en blanco, la palabra fuerte en **rojo #FF3434** (ej. ROTURA / **PARCIAL**,
-  ROTURA / **COMPLETA**, NADA QUE / **HACER**, NO ES / **BUENA IDEA**, SE ROMPA / **POR COMPLETO**,
-  TIPO DE / **ROTURA**). Si una línea larga queda pequeña, pártela para que todas tengan tamaño parecido
-  (DEPENDE / DEL TIPO / DE ROTURA).
-- Entrada estilo Dani: pequeña con letras separadas → crece con rebote (25%→112%→100%). Salida: **barrido a la
-  derecha**. Sombra oscura detrás + leve oscurecimiento de la franja.
-- Copia **literal** lo que dice (corrige: dijo "se rompa", no "se rompe"; "no es buena idea" no es pregunta).
-- ~1 cada 4–5 s, solo conceptos clave. **No poner palabras rojas sueltas en los subtítulos normales.**
+### 3.4 Textos destacados (palabras clave)
+- Montserrat Black, MAYÚSCULAS, centrados, hasta 140 px (`fit()` de `medir.py`), 1-3 líneas, primera blanca y la
+  palabra fuerte en **rojo**. Entrada con rebote (letras separadas → 112% → 100%), salida con barrido.
+- **1-2 palabras, literales o exactamente como las pida Dani**: VERDADERA / CAUSA (no "ATACA LA VERDADERA CAUSA"),
+  TU / RECUPERACIÓN, NI FÁRMACO / NI INFILTRACIÓN, EJERCICIO / PROGRESIVO, TODAS LAS / SEMANAS?, NO RECONSTRUYE /
+  EL TENDÓN, MUCHO TIEMPO. Si una frase merece más, mejor una animación o una lista que una frase entera en grande.
+- **Dónde van:**
+  - Normal: en la línea de subtítulos (y = 1180), en lugar del subtítulo.
+  - Con una **animación a pantalla completa**: arriba (y ≈ 420) en **blanco con resplandor rojo** (todas las líneas
+    blancas; nunca letra roja + resplandor rojo). Si la animación es alta, bájala a ella, no subas el texto.
+  - Si abajo hay otra cosa (p. ej. el calendario sobre el vídeo de apoyo): **a media pantalla (y ≈ 960)**.
+  - **CTA final** (escríbeme X): donde antes iba el @ (y ≈ 1330), blanco con resplandor rojo, hasta el final, sin subtítulos.
+- El texto de una animación **aguanta hasta que se va la animación** y se van **a la vez** (mismo `en`).
+- En una animación, cada frase que Dani dice sobre ella lleva su texto con el mismo estilo
+  (SILENCIAR LA ALARMA → EL PROBLEMA SIGUE AHÍ → PERO NO SUENA).
 
-### 3.5 Imágenes de apoyo
-- **Centradas** en el encuadre sobre el **fondo de vídeo desenfocado y oscurecido**, como tarjeta con esquinas
-  redondeadas (`tarjeta.py`). Entrada con pop (86%→100%) + fundido; salida rápida.
-- **Duración corta: ~2 s**, sobre la frase exacta. Grandes; si una vertical queda mejor grande y centrada
-  aunque el subtítulo pase por encima, mejor (la cuerda: escala 1.18 en el centro).
+### 3.5 Listas (enumeraciones y efectos)
+- Cuando enumera (efectos, beneficios), **lista** en vez de palabras sueltas (`anim_lista.py`):
+  título pequeño + filas que entran al decirlas, icono en círculo coral.
+  - Efectos que bajan algo: flecha ↓ (`scene = "SU EFECTO ES BAJAR|EL DOLOR|LA INFLAMACIÓN"`).
+  - Beneficios: **check ✓** (`scene = "check:UN TRATAMIENTO QUE|EVITA RECAÍDAS|NO TE PRODUCE DOLOR|SEGUIR ENTRENANDO"`)
+    con sonido `acierto` en cada fila.
+- Sin desenfoque del fondo, **sombra negra suave** (que no tape la cara) y **más abajo** si la cara queda tapada
+  (`scene = "@1170;check:…"`). **Sin zoom** mientras está la lista. `hide_subs: true`.
 
-### 3.6 Animaciones explicativas (infografías)
-- Gustan mucho. Ejemplo hecho: músculo → tendón (fibras) → hueso (`animacion_tendon.py`):
-  rotura parcial = la luz recorre las fibras sanas, llega al hueso y el hueso se levanta; rotura completa = la luz
-  se para en la rotura, chispas rojas + X, el hueso no se mueve.
-- Sobre fondo desenfocado, en la zona central (centro y ≈ 920), subtítulos en su línea por debajo.
-- La palabra clave asociada (HAY MOVIMIENTO / NO HAY MOVIMIENTO) va **arriba, separada de la animación (y ≈ 420)**,
-  **letras blancas con resplandor rojo** (nunca letra roja + resplandor rojo: "demasiado"). Sin subtítulo mientras.
-  La animación debe durar al menos lo que dure su texto.
+### 3.6 Zooms (suaves)
+- Saltos de encuadre entre frases **1.00 ↔ 1.05** con deriva lenta (+0.02) — modo `"L"`.
+- **Empuje lento** (`"S"`, 0,6 s ease-in-out, +0.05/+0.06) solo en **1-2 ideas clave** del vídeo.
+- Nada de punch-in rápido (`"P"`) en cada palabra destacada: zoom + sonido + texto a la vez es "agresivo".
+- Sin zoom durante listas. Centro del zoom en la cara.
 
-### 3.7 Zooms
-- Saltos de encuadre entre frases (1.00 ↔ 1.10–1.15) y **punch-in rápido** (0.22 s) en las palabras fuertes;
-  acercamiento lento y dramático en los momentos tristes. Centro del zoom en la cara.
+### 3.7 Vídeo de apoyo (b-roll a mitad del reel)
+- Entra **justo al acabar la frase anterior** (sin verte en grande ni un instante antes) y dura hasta la frase
+  siguiente al tramo que ilustra. Sustituye a la imagen de Dani a pantalla completa; subtítulos encima.
+- **Blanco y negro** (`looks` con `contrast 1.15`, `vignette 0.22`) para que se note que es otro clip.
+- Entrada con **`disco_rayado`** (cambio de escena / "cosa mal hecha"); si es una espera, **`reloj`** debajo.
+- Elige los trozos con más significado y móntalos con cortes (trim+concat) a la duración exacta; a Dani le gustan
+  los cortes de acción (mira alrededor → resopla → mira el reloj). No lo aceleres si no lo pide.
+- **Silencios largos** (> 0,5 s) entre frases, sobre todo justo en el cambio de escena, se **recortan del vídeo
+  original** con `scripts/recortar_silencio.py` (desplaza todos los tiempos de edit.json y words.json).
 
-### 3.8 Final (@usuario)
-- **@readaptacondani** en Montserrat Black ~94 px, **blanco con resplandor/sombra roja** + sombra oscura,
-  **debajo de la línea de subtítulos (y ≈ 1310)**. Aparece ~2 s antes del final (cuando dice la llamada a la
-  acción), entra con **barrido desde la izquierda** y sale con **barrido a la derecha** al terminar.
-- **El vídeo no se congela al final** (nada de plano quieto). Los subtítulos siguen con lo que dice
-  ("esta es tu cuenta").
+### 3.8 Final
+- **Sin @usuario por defecto** (en los dos últimos reels lo quitó). Según la llamada a la acción:
+  - "Escríbeme TENDÓN": texto destacado ESCRÍBEME / TENDÓN donde iba el @ (§3.4), hasta el último fotograma.
+  - "Envíaselo a un amigo": **animación de compartir** (`anim_compartir.py`): botón coral con avión de papel que
+    se pulsa varias veces, el avión vuela con estela blanca hasta el amigo, insignia con el número de envíos.
+    **No desaparece**: dura hasta el último fotograma (`en` > END).
+- El vídeo nunca se congela al final.
 
 ---
 
 ## 4. SONIDO
 
-- **Sin música de fondo.** (No le gustó la música generada.)
-- Voz subida al nivel de sus vídeos: ~-11 dB RMS activo (+14 dB sobre el bruto del iPhone) + limitador.
-- **Siempre el mismo sonido para cada función** (no mezclar sonidos distintos para lo mismo). Archivos en `reels-kit/sfx/`
-  (recortados de sus propios vídeos):
+- **Sin música de fondo.** Voz a ~-11 dB RMS activo (+14 dB sobre el iPhone) + limitador.
+- **Cada sonido tiene un significado** y siempre es el mismo para lo mismo. Pocos por vídeo.
 
-| Archivo | Qué es | Cuándo |
+| Archivo | Qué es | Cuándo (y cómo) |
 |---|---|---|
-| `entrada.wav` | doble clic | entra cada palabra clave, imagen, animación y el @usuario (volumen ×2). **No** al empezar el título |
-| `salida.wav` | barrido | sale cada palabra clave, el título, imágenes, animaciones y el @usuario |
-| `destello.wav` | brillo con vibrato (2,7 s) | revelación importante (usado en "DEPENDE") |
-| `bien.wav` | campanita + "¡bieeen!" | momento positivo/alivio (usado en INTACTAS) |
-| `trombon.wav` | trombón triste "wah-wah-wah-waaah" | momento triste/negativo ("ya no hay nada que hacer") |
-| `error.wav` | doble zumbido de error | algo que falla o está mal ("no es buena idea", la fuerza choca con la rotura) |
+| `entrada.wav` | doble clic | entra un texto destacado o una animación **sin** otro sonido. Ganancia 1.3 (suave). **No** si coincide con un empuje de zoom, ni en el título |
+| `salida.wav` | barrido | **solo** al salir 2-4 textos destacados principales, a mitad de volumen (`"salida_gain": 0.5`). **Nunca** en animaciones a pantalla completa ni en el título. Excepción: texto + animación que se van juntos (un solo barrido) |
+| `error.wav` | doble zumbido | algo que está mal / un "no" fuerte (NO RECONSTRUYE EL TENDÓN, NI FÁRMACO NI INFILTRACIÓN, NO VAS A PODER CORRER COMO ANTES). Es el "nooo" que pide Dani |
+| `acierto.wav` | ding-ding ascendente | cada fila de una lista de beneficios (ganancia 2.6, que se oiga) |
+| `eureka.wav` | arpa que sube + acorde | **la** solución del vídeo (EJERCICIO PROGRESIVO). Ganancia 2.6 |
+| `disco_rayado.wav` | scratch de vinilo + frenazo | entrada del vídeo de apoyo / cambio de escena |
+| `reloj.wav` | tic-tac que se acelera (6 s) | paso del tiempo (bajo el calendario) |
+| `alarma.wav` | timbre de despertador 0,6 s | la alarma de la animación, se corta al silenciarla |
+| `trombon.wav` | wah-wah-waaah | momento triste ("vas a esperar mucho tiempo") |
+| `bien.wav` | campanita + "¡bieeen!" | alivio/positivo (EJERCICIO BIEN PLANEADO, INTACTAS) |
+| `destello.wav` | brillo | revelación; **no** en "todo depende" (Dani lo quitó): úsalo poco |
 
-- Los especiales (destello, bien, trombón, error) **solo** donde tengan sentido con el guion, pocos por vídeo.
-  Un sonido que "no pega" con lo que se dice se quita.
-
----
-
-## 5. Lo que a Dani NO le gusta (no repetir)
-- Verse naranja / cualquier filtro de color. Subtítulos grisáceos.
-- Música de fondo inventada. Mezclar sonidos distintos para la misma función.
-- Palabras rojas "cada x palabras" en los subtítulos. Letra roja con resplandor rojo.
-- Tipografías distintas (serif, cursiva) en los textos destacados: todo Montserrat.
-- Imágenes que duran mucho. Subtítulos que cambian de altura.
-- Plano congelado al final para enseñar el @. @ en rojo plano.
-- Textos que no dicen exactamente lo que él dice.
+- Los sonidos "especiales" deben **oírse** (Dani no notó el eureka/acierto a volumen normal): comprueba que su RMS
+  quede al nivel de la voz (ganancia 2-3 en `sfx`: `["eureka", 0.0, 2.6]`).
+- Un sonido que no pega con lo que se dice se quita. Dos sonidos que se pisan (barrido + disco rayado) → quita uno.
+- No puedes escuchar el resultado: dile a Dani qué sonidos revisar.
 
 ---
 
-## 6. Flujo técnico (comandos)
+## 5. ANIMACIONES (lo que más le gusta)
 
-Directorio de trabajo en el scratchpad: `ENTRADA/` (descargas) y `TRABAJO/`.
+### 5.1 Estilo de ilustración
+- Como los iconos del manual (@pepermpron): **planas, sin contorno**, paleta cerrada: coral `#FF3434`,
+  blanco hueso `#FFFBE8`, gris `#F1F1F1`, menta `#E9FFB9` (puntual), negro; piel clara `(247,214,200)`.
+- **Dolor** = brillo coral concéntrico + rayitos rojos alrededor (como sus iconos de lesión).
+- Rótulos en Montserrat Black blanco con trazo oscuro. Personas: **silueta natural**, nunca "palitos y bolas".
+- **Corredor**: el muñeco articulado hecho a partir del dibujo de Dani (`assets/corredor_*.png` +
+  `corredor_rig.json` + `anim_corredor.py`): corre de verdad (zancada, rodillas, braceo, rebote), frena, se queda
+  sobre la pierna buena sin apoyar la dolorida y aparece el dolor en el Aquiles. Si Dani pasa otro dibujo de
+  línea: se escala ×4, se separa por zonas (connectedComponents), se colorea con la paleta sin contorno (lado lejano
+  ×0.8 más oscuro) y se monta como recortable (cabeza/zapatillas del dibujo, tronco y miembros dibujados).
 
-1. **Descargar** vídeo, imágenes y vídeo de apoyo (sección 1.3). Mira el vídeo con una hoja de contacto:
-   `ffmpeg -i video.mov -vf "fps=1/4,scale=270:-2,tile=6x3" -frames:v 1 hoja.jpg` (y léela).
-2. **Audio**: `ffmpeg -i video.mov -ac 1 -ar 16000 TRABAJO/voz16k.wav` y `-ac 2 -ar 48000 TRABAJO/voz48k.wav`.
-3. **Transcribir** (en segundo plano, ~20-25 min): `python3 -I reels-kit/scripts/transcribir.py TRABAJO/voz16k.wav ~/models/sherpa-onnx-whisper-large-v3 -38 15 TRABAJO/ventanas.json 0.3`
-4. **Pausas**: `python3 -I reels-kit/scripts/pausas.py TRABAJO/voz16k.wav` → tramos `inicio|fin|`.
-5. **segmentos.txt**: rellena cada tramo con el texto REAL (de la transcripción, corrigiendo con el guion las palabras
-   mal oídas: "fisio", "deshilachados"…). Formato `inicio|fin|texto` (ver `ejemplo-maraton/segmentos.txt`).
-6. **Palabras**: `python3 -I reels-kit/scripts/alinear_palabras.py TRABAJO/voz16k.wav segmentos.txt TRABAJO/words.json`
-   (después revisa a mano la última frase: si dice "esta es tu cuenta", que no ponga "sígueme").
-7. **edit.json**: copia `ejemplo-maraton/edit.json` y adapta: `video`, `END`/`video_end` (duración), `hook`,
-   `broll`, `keys` (st/en/líneas/rojo/`sfx`/`sfx_in`/`y`/`glow`), `cards` (`png`, `cy`, `sc`), `graphics`, `zoom`, `outro`.
-   Tarjetas: `python3 -I reels-kit/scripts/tarjeta.py imagen.png 940 TRABAJO/card_x.png` (vertical: 620).
-   Para otra animación, crea un módulo nuevo en `scripts/` con `draw(t, scene, t0, t1, pulses, broken)` y pon
-   `"graphic_module"` en edit.json.
-8. **Textos**: `python3 -I reels-kit/scripts/textos.py edit.json TRABAJO/words.json TRABAJO/subs.ass`
-9. **Sonido**: `python3 -I reels-kit/scripts/audio.py edit.json TRABAJO/voz48k.wav TRABAJO/mix_raw.wav` y
-   `ffmpeg -i TRABAJO/mix_raw.wav -af "alimiter=limit=0.97:attack=3:release=60:level=disabled" -ar 48000 -c:a pcm_s16le TRABAJO/mix.wav`
-10. **Prueba corta** (1 min): `python3 -I reels-kit/scripts/render.py edit.json TRABAJO/subs.ass TRABAJO/mix.wav TRABAJO/prueba.mp4 8`
-    y mira fotogramas. **Render completo** (~11 min, en segundo plano): sin el último argumento.
-11. **Comprobar** fotogramas clave (título, cada palabra clave, imágenes, animación, final). Busca solapes.
-12. **Comprimir para entregar** (<30 MB, conservando HDR):
+### 5.2 Reglas
+- **Entra exactamente en la palabra** que la motiva ("consiste" → infiltración; no antes ni 2 s tarde) y dura al
+  menos lo que su texto; si algo se explica con ella, que dure hasta el final de la explicación (≥ 3 s si es un "gag").
+- A pantalla completa: fondo desenfocado y oscurecido, centro y ≈ 920, texto arriba (y ≈ 420) que no la toque.
+- Listas, calendario y compartir: **sin** desenfoque (`"blur": false`).
+- Pruébala con `scripts/probar.py` (hoja de fotogramas sobre un fotograma real) **antes** del render completo.
+
+### 5.3 Catálogo (en `scripts/`, todas con `draw(t, scene, t0, t1, pulses, broken)`)
+| Módulo | Qué muestra | Ejemplo de uso |
+|---|---|---|
+| `animacion_tendon.py` | músculo → tendón (fibras) → hueso; rotura parcial/completa con luz que recorre | «Maratón con el tendón roto» |
+| `anim_infiltracion.py` | jeringa que pincha la zona lesionada (roja que late) e inyecta líquido menta que la calma | "una infiltración consiste en inyectar…" |
+| `anim_lista.py` | lista con ↓ (efectos) o ✓ (beneficios) | "su efecto es bajar el dolor y la inflamación" |
+| `anim_alarma.py` | campana que suena → se tacha y calla → aviso "!" que sigue latiendo | "es como silenciar la alarma" |
+| `anim_corredor.py` | corredor articulado que corre y se para por dolor en el Aquiles | "no vas a poder correr como antes" |
+| `anim_calendario.py` | hojas de calendario tachándose cada vez más rápido (un año en 6 s) | "vas a esperar mucho tiempo" (sobre el b-roll) |
+| `anim_compartir.py` | botón de enviar + aviones de papel repetidos hasta el amigo | CTA "envíaselo a ese amigo" |
+| `anim_sin.py` | jeringa y electrodo que se tachan con señal de prohibido | "sin agujas y sin corrientes molestas" |
+| `anim_carga.py` | barras que crecen + flecha menta que sube | "aumenta la capacidad de carga del tendón" |
+
+Para una idea nueva, crea un módulo con `anim_base.py` (canvas ×2, `to_full`, `fade_io`, easings, colores) y ponlo
+en `graphics` con `"module"`. Ideas que encajan: sol-luna (paso de días), reloj, carga/peso, fibras que se ordenan.
+
+---
+
+## 6. edit.json — campos útiles
+
+- `hook`: `y0, lh, size, end, lines[[texto,t,rojo]], sfx_in, sfx_out`.
+- `keys[]`: `st, en, lines[[texto,t,rojo,px]], y, glow:"red", sfx_in, sfx_out, sfx[[nombre,offset,ganancia]], keep_subs`.
+- `graphics[]`: `module, st, en, scene, pulses, blur, hide_subs, sfx_in, sfx_out, sfx[[nombre,t_abs,ganancia]]`.
+- `broll`: `st, en, offset, path, hdr, dark, zoom` · `looks[]`: `st, en, fade_in, fade_out, contrast, vignette`.
+- `zoom[]`: `[t, desde, hasta, "L"|"S"|"P"]` · `salida_gain` · `graphic_cy` · sin `outro` = sin @.
+- Ejemplos completos y aprobados: `ejemplo-infiltracion/edit.json` y `ejemplo-tratamiento-definitivo/edit.json`.
+
+---
+
+## 7. Lo que a Dani NO le gusta (no repetir)
+- Mezcla de muchas palabras destacadas + sonidos + zooms (agresivo). Frases enteras como texto destacado.
+- Clic/barrido en el título; barrido al salir animaciones; sonidos que se pisan; sonidos especiales que no se oyen.
+- Punch-ins de zoom rápidos en cada palabra.
+- Verse naranja / filtros de color (salvo el B/N del vídeo de apoyo). Subtítulos grisáceos o que cambian de altura.
+- Música de fondo. Mezclar sonidos distintos para la misma función.
+- Palabras rojas sueltas en subtítulos. Letra roja con resplandor rojo. Tipografías distintas a Montserrat.
+- Texto destacado repetido en los subtítulos. Textos que no dicen lo que él dice (o lo que pidió).
+- Sombras negras que le tapan la cara. Textos que se pisan con la animación.
+- Monigotes de palitos y bolas o figuras rígidas que no se mueven de verdad.
+- Animaciones que aparecen tarde o desaparecen antes de que acabe su frase; la animación final que se va.
+- Verse en grande un momento antes del vídeo de apoyo; silencios raros en el cambio de escena.
+- Plano congelado al final. @ en rojo plano.
+
+---
+
+## 8. Flujo técnico
+
+Trabaja en el scratchpad: `vN/ENTRADA/` (descargas) y `vN/TRABAJO/`.
+
+1. **Descargar** (§1.3) y mirar con hoja de contacto: `ffmpeg -i video.mov -vf "fps=1/4,scale=270:-2,tile=6x3" -frames:v 1 hoja.jpg`.
+2. **Audio**: `-ac 1 -ar 16000 voz16k.wav` y `-ac 2 -ar 48000 voz48k.wav`.
+3. **Transcribir** en segundo plano (~5-10 min por vídeo de 45 s; si hay varios, en cadena):
+   `python3 -I reels-kit/scripts/transcribir.py voz16k.wav ~/models/sherpa-onnx-whisper-large-v3 -38 15 ventanas.json 0.3`
+4. **Pausas**: `pausas.py voz16k.wav`. Para afinar, transcribe cada tramo por separado (mismo modelo, un
+   `create_stream` por tramo) y así sabes qué frase va en cada pausa.
+5. **segmentos.txt** (`inicio|fin|texto` real) → **words.json** con `alinear_palabras.py`.
+6. **edit.json**: escríbelo con un pequeño script Python (más fiable que a mano) partiendo de un ejemplo aprobado.
+   Tamaños con `from medir import fit`. Aplica §3-§5 desde la primera versión.
+7. **Animaciones**: pruébalas con `probar.py` sobre un fotograma real.
+8. `textos.py` → `audio.py` → limitador + fundido final:
+   `ffmpeg -i mix_raw.wav -af "alimiter=limit=0.97:attack=3:release=60:level=disabled,afade=t=out:st=<END-0.3>:d=0.3" -ar 48000 -c:a pcm_s16le mix.wav`
+9. **Render** (`render.py`) en segundo plano: ~25-30 min con animaciones (10 min sin ellas) + 4 min de
+   compresión. Encadena render + compresión en un solo comando y avisa a Dani de cuánto falta si pregunta.
+   Si hay dos vídeos, **en cola** (uno detrás de otro), no a la vez.
+10. **Comprobar** fotogramas clave (título, cada texto, cada animación, b-roll, final): solapes, caras tapadas.
+11. **Comprimir** (<30 MB, HDR):
     ```bash
     X="colorprim=bt2020:transfer=arib-std-b67:colormatrix=bt2020nc:range=limited:log-level=error"
     ffmpeg -i HQ.mp4 -c:v libx265 -preset medium -b:v 3600k -x265-params "pass=1:$X" -an -f mp4 /dev/null -y
     ffmpeg -i HQ.mp4 -c:v libx265 -preset medium -b:v 3600k -x265-params "pass=2:$X" -pix_fmt yuv420p10le -tag:v hvc1 \
       -color_primaries bt2020 -color_trc arib-std-b67 -colorspace bt2020nc -color_range tv -c:a aac -b:a 192k -movflags +faststart FINAL.mp4
     ```
-13. **Entregar** con `SendUserFile` (límite 30 MB). No se puede subir a Drive (conector ≤10 MB y en base64).
-    Recuérdale subirlo desde el iPhone para que Instagram respete el HDR.
+12. **Entregar** con `SendUserFile` (nombre claro: `Reel_<tema>_vN.mp4`), resumen corto de qué cambió y qué
+    sonidos revisar. Recuérdale subirlo desde el iPhone (HDR).
+13. Cuando apruebe, guarda su `edit.json` como `ejemplo-<tema>/` y lo aprendido en este prompt; commit + push.
 
-### Trucos técnicos aprendidos
+### Trucos técnicos
 - libass no escribe transparencia: `render.py` dibuja los textos sobre negro y sobre blanco y calcula el alfa.
-- `ffmpeg -ss` como opción de salida sobre una fuente lavfi corta da 0 frames: dale duración suficiente (`d=`).
-- Para esperar a un proceso no uses `pgrep -f "<texto>"` con un texto que aparece en tu propio comando (se
-  encuentra a sí mismo y no termina nunca). Espera a que exista el archivo de salida.
-- Un `ffmpeg` sin `-nostdin`/`-y` puede quedarse esperando confirmación.
-- Comunica avances a Dani con frases cortas; los renders tardan (~11 min + 4 min de compresión).
+- Halo/brillo: desenfoca el color **premultiplicado** por el alfa (si no, salen bordes de colores raros).
+- `ffmpeg` siempre con `-nostdin -y`. En `filter_complex`, un filtro tras `concat` necesita su propia etiqueta.
+- Para esperar, no uses `pgrep -f` con un texto de tu propio comando; espera a que exista el archivo de salida.
+- No uses `rm` con rutas relativas tras un `cd` (lo bloquea la sesión): rutas absolutas o carpetas nuevas.

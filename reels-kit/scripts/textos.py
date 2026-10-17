@@ -22,8 +22,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 ev=[]
 def D(layer,st,en,style,tags,text): ev.append(f"Dialogue: {layer},{ts(st)},{ts(en)},{style},,0,0,0,,{{{tags}}}{text}")
-cards=E["cards"]+E.get("graphics",[]); keys=[(K["st"],K["en"]) for K in E["keys"]]
+cards=E["cards"]+E.get("graphics",[]); keys=[(K["st"],K["en"]) for K in E["keys"] if not K.get("keep_subs")]   # keep_subs: el texto convive con el subtítulo
 def in_card(t): return any(c["st"]-0.05<=t<c["en"]+0.05 for c in cards)
+keys+=[(G["st"],G["en"]) for G in E.get("graphics",[]) if G.get("hide_subs")]   # gráficos que sustituyen al subtítulo (p. ej. listas)
 def in_key(t): return any(a-0.08<=t<b for a,b in keys)
 def clip_to_key(st,en):
     for a,b in keys:
@@ -64,9 +65,10 @@ for K in E["keys"]:
         D(6,t,K["en"],"H",f"\\an5{mv(y)}\\fs{size}\\fsp0\\c{col}{ent}{ex}",txt)
         y+=gap[j]
 # 4) outro: Instagram handle under the subtitle line, whip in / whip out, white with shadow + glow
-END=E["END"]; txt,t2,s2,y2=E["outro"]["handle"]
+END=E["END"]; txt,t2,s2,y2=E.get("outro",{}).get("handle") or ("",0,0,0)
 XO=END-0.24
 for lay,tags,dy,bl in ((9,"\\c&H000000&\\bord6\\3c&H000000&\\1a&H30&\\3a&H80&",8,16),(10,"\\c&H3434FF&\\bord8\\3c&H3434FF&\\1a&H20&\\3a&H40&",0,24),(11,"\\c&HFFFFFF&",0,0)):
+    if not txt: break
     D(lay,t2,XO,"H",f"\\an5\\move(-420,{y2+dy},540,{y2+dy},0,280)\\fs{s2}\\fsp0{tags}\\fscx160\\t(0,280,0.5,\\fscx100)\\blur10\\t(0,280,\\blur{bl})",txt)
     D(lay,XO,END,"H",f"\\an5\\move(540,{y2+dy},1550,{y2+dy},0,240)\\fs{s2}\\fsp0{tags}\\blur{bl}\\t(0,240,0.5,\\fscx170\\blur12)",txt)
 open(sys.argv[3],"w").write(hdr+"\n".join(ev)+"\n"); print(len(ev),"events")

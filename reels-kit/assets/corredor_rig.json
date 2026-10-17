@@ -1,0 +1,48 @@
+{
+ "escala_ref": "coordenadas del dibujo ampliado x4 (con margen)",
+ "tronco_origen": [
+  393,
+  16
+ ],
+ "zapatilla_origen": [
+  671,
+  829
+ ],
+ "cadera": [
+  440,
+  528
+ ],
+ "cuello": [
+  520,
+  195
+ ],
+ "hombro": [
+  478,
+  232
+ ],
+ "tobillo_zapatilla": [
+  704,
+  852
+ ],
+ "punta_zapatilla": [
+  830,
+  888
+ ],
+ "talon_zapatilla": [
+  680,
+  905
+ ],
+ "muslo": 210,
+ "tibia": 232,
+ "brazo": 165,
+ "antebrazo": 170,
+ "alto_total": 915,
+ "cabeza_origen": [
+  455,
+  16
+ ],
+ "cuello_base": [
+  528,
+  205
+ ]
+}
