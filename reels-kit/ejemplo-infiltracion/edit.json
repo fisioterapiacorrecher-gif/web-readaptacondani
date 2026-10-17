@@ -176,6 +176,28 @@
    "sfx_out": null
   },
   {
+   "st": 18.9,
+   "en": 19.72,
+   "style": "caps",
+   "lines": [
+    [
+     "PERO NO",
+     18.9,
+     false,
+     140
+    ],
+    [
+     "SUENA",
+     19.24,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_out": null
+  },
+  {
    "st": 21.08,
    "en": 22.45,
    "style": "caps",
@@ -318,7 +340,8 @@
      "trombon",
      0.45
     ]
-   ]
+   ],
+   "y": 960
   }
  ],
  "cards": [],
@@ -361,7 +384,7 @@
   {
    "module": "anim_alarma",
    "st": 16.42,
-   "en": 19.47,
+   "en": 19.72,
    "pulses": [
     17.0,
     17.57

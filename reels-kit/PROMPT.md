@@ -145,7 +145,8 @@ Quiere vídeos con ritmo, legibles y con **siempre el mismo estilo**. Trátalo d
 - Monigotes/personas en animaciones: estilo de las ilustraciones del manual (planas, sin contorno, piel clara, dolor con
   brillo coral y rayitos rojos) y silueta natural, nunca "palitos y bolas" (ver `scripts/anim_corredor.py`).
   Si Dani pasa un dibujo de línea, se colorea por zonas con la paleta (sin contorno, lado lejano más oscuro) y se anima
-  la ilustración entera: ver `assets/corredor.png` + `scripts/anim_corredor.py`.
+  la ilustración **articulada** (muñeco recortable: cabeza y zapatillas del dibujo, tronco y miembros dibujados con su
+  estilo, que corren de verdad): ver `assets/corredor_*.png`, `corredor_rig.json` y `scripts/anim_corredor.py`.
 - **Silencios largos** entre frases (> 0,5 s), sobre todo en un cambio de escena, se recortan del vídeo original
   (trim+concat de vídeo y audio) y se desplazan todos los tiempos posteriores del edit.json y words.json.
   Un sonido que "no pega" con lo que se dice se quita.
