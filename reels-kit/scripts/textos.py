@@ -60,6 +60,8 @@ for K in E["keys"]:
     for j,(txt,t,red,size) in enumerate(K["lines"]):
         col=RED if red else WH; dur=int((K["en"]-t)*1000); xo=170
         ent=r"\fscx25\fscy25\fsp30\alpha&HFF&\t(0,70,\alpha&H00&)\t(0,190,0.6,\fscx112\fscy112\fsp0)\t(190,300,\fscx100\fscy100)"
+        if K.get("style")=="title":   # como el título del inicio: grande, en el centro, cada línea con pop al decirla
+            ent=r"\fscx55\fscy55\alpha&HFF&\t(0,60,\alpha&H00&)\t(0,150,0.7,\fscx107\fscy107)\t(150,240,\fscx100\fscy100)"
         ex=f"\\t({dur-xo},{dur},\\fscx150\\blur8\\alpha&HFF&)"
         mv=lambda yy: f"\\move(540,{int(yy)},1400,{int(yy)},{dur-xo},{dur})"
         D(4,t,K["en"],"H",f"\\an5{mv(y+8)}\\fs{size}\\c&H000000&\\bord5\\3c&H000000&\\blur14\\1a&H50&\\3a&H90&{ent}{ex}",txt)

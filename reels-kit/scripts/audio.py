@@ -3,6 +3,7 @@
 #   entrada  = doble clic  -> entra una palabra clave, imagen, animación o el @usuario (NO al inicio del título)
 #   salida   = barrido     -> solo al salir el título, las palabras clave principales y las imágenes pequeñas de apoyo
 #              (no en animaciones a pantalla completa). Volumen con "salida_gain"; "sfx_out": null lo quita.
+#   boop = cada elemento de una lista (p. ej. los 3 factores)
 #   destello / bien / trombon / error -> solo en momentos puntuales con sentido (campo "sfx" en edit.json)
 import sys, os, json, numpy as np
 from scipy.io import wavfile
