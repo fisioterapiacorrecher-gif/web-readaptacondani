@@ -108,6 +108,8 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 - Cuando enumera (efectos, beneficios), **lista** en vez de palabras sueltas (`anim_lista.py`):
   título pequeño + filas que entran al decirlas, icono en círculo coral.
   - Efectos que bajan algo: flecha ↓ (`scene = "SU EFECTO ES BAJAR|EL DOLOR|LA INFLAMACIÓN"`).
+  - Enumeración neutra (sin juzgar): **números** (`scene = "@1170;num:|MASAJES|ONDA DE CHOQUE|PUNCIÓN"`, título vacío
+    = sin título), un solo `entrada` al empezar.
   - Beneficios: **check ✓** (`scene = "check:UN TRATAMIENTO QUE|EVITA RECAÍDAS|NO TE PRODUCE DOLOR|SEGUIR ENTRENANDO"`)
     con sonido `acierto` en cada fila.
 - Sin desenfoque del fondo, **sombra negra suave** (que no tape la cara) y **más abajo** si la cara queda tapada
@@ -215,7 +217,8 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `anim_calendario.py` | hojas de calendario tachándose cada vez más rápido (un año en 6 s) | "vas a esperar mucho tiempo" (sobre el b-roll) |
 | `anim_compartir.py` | botón de enviar + aviones de papel repetidos hasta el amigo | CTA "envíaselo a ese amigo" |
 | `anim_sin.py` | jeringa y electrodo que se tachan con señal de prohibido | "sin agujas y sin corrientes molestas" |
-| `anim_carga.py` | barras que crecen + flecha menta que sube | "aumenta la capacidad de carga del tendón" |
+| `anim_carga.py` | barras que crecen + flecha menta que sube | "aumenta la capacidad de carga del tendón" · "aguantar carga de forma progresiva" |
+| `anim_pesas.py` | mancuerna que se levanta sola (repeticiones) → se tacha con la señal de prohibido. pulses = [sube sola, prohibido] | "es como ir al gimnasio y que alguien levante las pesas por ti" («Tu tendón quiere decirte algo») |
 | `animacion_estabilidad.py` | `eje`: modelo anatómico de frente (silueta de `assets/modelo_frontal.png`, la lámina de Dani) con CADERA → RODILLA → PIE que se encienden y se unen · `cintilla`: zoom-out desde la cintilla iliotibial hasta la pierna entera con dolor en la cara externa de la rodilla · (`fisio`, `correr`, `fuerza`: personas planas, sustituidas por vídeos reales) | «La clave para recuperar tu cintilla» |
 
 Para una idea nueva, crea un módulo con `anim_base.py` (canvas ×2, `to_full`, `fade_io`, easings, colores) y ponlo
