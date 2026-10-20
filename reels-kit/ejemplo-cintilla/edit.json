@@ -1,0 +1,412 @@
+{
+ "END": 29.75,
+ "video": "ENTRADA/video.mov",
+ "video_end": 29.75,
+ "graphic_cy": 920,
+ "salida_gain": 0.5,
+ "sombra_suave": true,
+ "keydark": 0.1,
+ "hook": {
+  "y0": 600,
+  "lh": 128,
+  "size": 140,
+  "end": 2.2,
+  "sfx_in": null,
+  "sfx_out": null,
+  "lines": [
+   [
+    "TE CUENTO",
+    0.0,
+    false
+   ],
+   [
+    "LA CLAVE",
+    0.38,
+    true
+   ],
+   [
+    "PARA",
+    0.76,
+    false
+   ],
+   [
+    "RECUPERAR",
+    1.0,
+    false
+   ],
+   [
+    "TU",
+    1.45,
+    false
+   ],
+   [
+    "CINTILLA",
+    1.52,
+    true
+   ]
+  ]
+ },
+ "keys": [
+  {
+   "st": 3.0,
+   "en": 4.28,
+   "lines": [
+    [
+     "FISIOS",
+     3.0,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 4.86,
+   "en": 5.62,
+   "lines": [
+    [
+     "ESTANCADO",
+     4.86,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "error",
+   "sfx_out": null
+  },
+  {
+   "st": 6.2,
+   "en": 7.39,
+   "lines": [
+    [
+     "CACOS",
+     6.2,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 7.39,
+   "en": 8.95,
+   "lines": [
+    [
+     "EJERCICIOS",
+     7.39,
+     false,
+     140
+    ],
+    [
+     "DE FUERZA",
+     7.84,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 13.27,
+   "en": 14.1,
+   "lines": [
+    [
+     "ALGO",
+     13.27,
+     false,
+     140
+    ],
+    [
+     "CLAVE",
+     13.54,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "golpe",
+   "sfx_out": null
+  },
+  {
+   "st": 15.43,
+   "en": 17.06,
+   "lines": [
+    [
+     "ESTABILIDAD",
+     15.43,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "eureka",
+     0.0,
+     2.6
+    ]
+   ]
+  },
+  {
+   "st": 17.29,
+   "en": 19.02,
+   "lines": [
+    [
+     "EL EJE",
+     17.29,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "bien",
+   "sfx_out": null
+  },
+  {
+   "st": 20.3,
+   "en": 21.36,
+   "lines": [
+    [
+     "TENDÓN DE",
+     20.3,
+     false,
+     140
+    ],
+    [
+     "LA CINTILLA",
+     20.69,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": null,
+   "sfx_out": null
+  },
+  {
+   "st": 21.4,
+   "en": 22.9,
+   "lines": [
+    [
+     "LA CAUSA",
+     21.4,
+     false,
+     110
+    ],
+    [
+     "SEGUIRÁ",
+     21.67,
+     false,
+     110
+    ],
+    [
+     "EXISTIENDO",
+     22.06,
+     false,
+     110
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": null,
+   "sfx_out": null
+  },
+  {
+   "st": 27.4,
+   "en": 29.75,
+   "lines": [
+    [
+     "ESCRÍBEME",
+     27.4,
+     false,
+     140
+    ],
+    [
+     "CINTILLA",
+     28.34,
+     false,
+     140
+    ]
+   ],
+   "y": 1330,
+   "glow": "red",
+   "sfx_out": null
+  }
+ ],
+ "cards": [],
+ "graphics": [
+  {
+   "module": "animacion_estabilidad",
+   "scene": "eje",
+   "st": 17.29,
+   "en": 19.02,
+   "pulses": [
+    17.52,
+    17.86,
+    18.32
+   ],
+   "broken": [],
+   "hide_subs": true,
+   "sfx_in": null,
+   "sfx_out": null
+  },
+  {
+   "module": "animacion_estabilidad",
+   "scene": "cintilla",
+   "st": 20.3,
+   "en": 22.9,
+   "pulses": [],
+   "broken": [],
+   "hide_subs": true,
+   "sfx_out": null
+  }
+ ],
+ "broll": [
+  {
+   "st": 3.0,
+   "en": 4.28,
+   "offset": 8.0,
+   "path": "ENTRADA/fisio.mp4"
+  },
+  {
+   "st": 6.2,
+   "en": 7.39,
+   "offset": 1.0,
+   "path": "ENTRADA/cacos.mp4",
+   "hdr": true
+  },
+  {
+   "st": 7.39,
+   "en": 8.95,
+   "offset": 0.3,
+   "path": "ENTRADA/fuerza.mp4"
+  }
+ ],
+ "sfx": [
+  [
+   "trombon",
+   9.48,
+   1.0
+  ],
+  [
+   "error",
+   23.06,
+   1.0
+  ]
+ ],
+ "zoom": [
+  [
+   0.0,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   2.45,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   4.28,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   5.72,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   8.27,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   10.35,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   12.07,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   13.27,
+   1.0,
+   1.06,
+   "S"
+  ],
+  [
+   14.02,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   14.94,
+   1.0,
+   1.01,
+   "L"
+  ],
+  [
+   15.43,
+   1.0,
+   1.06,
+   "S"
+  ],
+  [
+   17.17,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   19.07,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   21.24,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   22.96,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   24.96,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   27.4,
+   1.0,
+   1.02,
+   "L"
+  ]
+ ]
+}
