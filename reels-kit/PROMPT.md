@@ -26,11 +26,11 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 ## 1. Arranque de la sesión (hazlo tú, sin preguntar)
 
 1. **Kit** (programas, sonidos, fuentes, ilustraciones y ejemplos) en el repo `fisioterapiacorrecher-gif/web-readaptacondani`,
-   rama **`claude/funny-goldberg-ebx6mx`** (la más completa), carpeta `reels-kit/`:
+   rama **`claude/new-session-mvstl8`** (la más completa), carpeta `reels-kit/`:
    ```bash
    cd /home/user/web-readaptacondani
-   git fetch origin claude/funny-goldberg-ebx6mx
-   git checkout origin/claude/funny-goldberg-ebx6mx -- reels-kit   # si no está ya
+   git fetch origin claude/new-session-mvstl8
+   git checkout origin/claude/new-session-mvstl8 -- reels-kit   # si no está ya
    git reset -q reels-kit                                           # que no quede "staged" en tu rama
    bash reels-kit/scripts/preparar.sh                               # pip + modelo Whisper large-v3 (GitHub)
    ```
