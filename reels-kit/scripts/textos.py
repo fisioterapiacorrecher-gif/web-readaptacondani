@@ -69,9 +69,9 @@ for K in E["keys"]:
         y+=gap[j]
 # 4) outro: Instagram handle under the subtitle line, whip in / whip out, white with shadow + glow
 END=E["END"]; txt,t2,s2,y2=E.get("outro",{}).get("handle") or ("",0,0,0)
-XO=END-0.24
+XO=END+1.0 if E.get("outro",{}).get("keep") else END-0.24     # keep: el @ no se va (hasta el último fotograma)
 for lay,tags,dy,bl in ((9,"\\c&H000000&\\bord6\\3c&H000000&\\1a&H30&\\3a&H80&",8,16),(10,"\\c&H3434FF&\\bord8\\3c&H3434FF&\\1a&H20&\\3a&H40&",0,24),(11,"\\c&HFFFFFF&",0,0)):
     if not txt: break
     D(lay,t2,XO,"H",f"\\an5\\move(-420,{y2+dy},540,{y2+dy},0,280)\\fs{s2}\\fsp0{tags}\\fscx160\\t(0,280,0.5,\\fscx100)\\blur10\\t(0,280,\\blur{bl})",txt)
-    D(lay,XO,END,"H",f"\\an5\\move(540,{y2+dy},1550,{y2+dy},0,240)\\fs{s2}\\fsp0{tags}\\blur{bl}\\t(0,240,0.5,\\fscx170\\blur12)",txt)
+    if XO<END: D(lay,XO,END,"H",f"\\an5\\move(540,{y2+dy},1550,{y2+dy},0,240)\\fs{s2}\\fsp0{tags}\\blur{bl}\\t(0,240,0.5,\\fscx170\\blur12)",txt)
 open(sys.argv[3],"w").write(hdr+"\n".join(ev)+"\n"); print(len(ev),"events")

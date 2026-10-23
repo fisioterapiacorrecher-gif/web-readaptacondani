@@ -3,6 +3,7 @@
 #   entrada  = doble clic  -> entra una palabra clave, imagen, animación o el @usuario (NO al inicio del título)
 #   salida   = barrido     -> solo al salir el título, las palabras clave principales y las imágenes pequeñas de apoyo
 #              (no en animaciones a pantalla completa). Volumen con "salida_gain"; "sfx_out": null lo quita.
+#   mensaje  = notificación de mensaje (pop + dos notas) -> se publica un comentario / llega un mensaje
 #   destello / bien / trombon / error -> solo en momentos puntuales con sentido (campo "sfx" en edit.json)
 import sys, os, json, numpy as np
 from scipy.io import wavfile
@@ -32,6 +33,9 @@ for G in E.get("graphics",[]):
     for name,t,*g in G.get("sfx",[]): put(name,t,(g or [1.0])[0])
 for name,t,*g in E.get("sfx",[]): put(name,t,(g or [1.0])[0])   # efectos sueltos sobre una frase (tiempo absoluto)
 h=E.get("outro",{}).get("handle")
-if h: put("entrada",h[1]); put("salida",END-0.24)
+O=E.get("outro",{})
+if h:
+    put(O.get("sfx_in","entrada"),h[1],O.get("gain",1.0))
+    if not O.get("keep"): put("salida",END-0.24)
 wavfile.write(sys.argv[3],SR,(voice+fx).astype(np.float32))
 print(sorted(log))

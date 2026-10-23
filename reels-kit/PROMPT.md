@@ -137,7 +137,11 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
   `broll` como **lista**. Los clips SDR (bt709) pasan por `to_hlg`; los del iPhone en HLG llevan `"hdr": true`.
 
 ### 3.8 Final
-- **Sin @usuario por defecto** (en los dos últimos reels lo quitó). Según la llamada a la acción:
+- **Sin @usuario por defecto** (en dos reels lo quitó), **pero en «Tu tendón quiere decirte algo» lo pidió**: si lo pide,
+  `"outro":{"handle":["@readaptacondani",t,110,1330],"keep":true,"sfx_in":"golpe","gain":0.8}` (blanco con resplandor,
+  `keep` = no se va, hasta el último fotograma, sin barrido).
+  - "Te leo en comentarios" / "cuéntame en comentarios": **no** en texto destacado (no lo quiere); animación de
+    comentario (`anim_comentario.py`) + sonido `mensaje` + el @. Según la llamada a la acción:
   - "Escríbeme TENDÓN": texto destacado ESCRÍBEME / TENDÓN donde iba el @ (§3.4), hasta el último fotograma.
   - "Envíaselo a un amigo": **animación de compartir** (`anim_compartir.py`): botón coral con avión de papel que
     se pulsa varias veces, el avión vuela con estela blanca hasta el amigo, insignia con el número de envíos.
@@ -171,6 +175,7 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `subida.wav` | ruido que crece y corta en seco 0,55 s | justo antes de un corte importante (crea tensión) |
 | `arpegio.wav` | acorde de Do mayor + 2 ecos | revelación positiva / respuesta ("estará…", la solución). Imitado de «placa de carbono» y «meses con dolor» |
 | `acorde_brillante.wav` | acorde agudo sostenido 1 s | la gran frase final positiva (SOLUCIÓN DEFINITIVA). Imitado de «no entiendes nada» |
+| `mensaje.wav` | pop + dos notas ascendentes (notificación) | se publica un comentario / entra un mensaje (CTA de comentarios). Ganancia 1.6 |
 | `ding.wav` | ding-ding agudo corto | aparece el logo/marca (READAPTA CON DANI) o un icono |
 
 - **Cómo edita Dani sus propios reels** (analizados 6: «dolor lateral», «no entiendes nada», «placa de carbono»,
@@ -218,7 +223,8 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `anim_compartir.py` | botón de enviar + aviones de papel repetidos hasta el amigo | CTA "envíaselo a ese amigo" |
 | `anim_sin.py` | jeringa y electrodo que se tachan con señal de prohibido | "sin agujas y sin corrientes molestas" |
 | `anim_carga.py` | barras que crecen + flecha menta que sube | "aumenta la capacidad de carga del tendón" · "aguantar carga de forma progresiva" |
-| `anim_pesas.py` | mancuerna que se levanta sola (repeticiones) → se tacha con la señal de prohibido. pulses = [sube sola, prohibido] | "es como ir al gimnasio y que alguien levante las pesas por ti" («Tu tendón quiere decirte algo») |
+| `anim_gimnasio.py` | dos personas con el muñeco de Dani: TÚ sentado en un banco con el móvil + OTRO que entra andando y hace curl alterno con mancuernas. pulses = [entra el otro, empieza el curl] | "es como ir al gimnasio y que otro levante las pesas por ti" («Tu tendón quiere decirte algo»). **Sustituye a `anim_pesas.py`** (mancuerna sola + prohibido): a Dani no le gustó nada; quería las dos personas como dice el texto |
+| `anim_comentario.py` | tarjeta de comentario de Instagram arriba (zona del cielo): se escribe letra a letra, se envía, se publica y le llega el ❤ de readaptacondani. scene = "usuario|texto|quien_da_like", pulses = [escribir, enviar, me gusta]; `blur: false`, sin `hide_subs` | CTA "cuéntame / te leo en comentarios". Sonido `mensaje` al enviar |
 | `animacion_estabilidad.py` | `eje`: modelo anatómico de frente (silueta de `assets/modelo_frontal.png`, la lámina de Dani) con CADERA → RODILLA → PIE que se encienden y se unen · `cintilla`: zoom-out desde la cintilla iliotibial hasta la pierna entera con dolor en la cara externa de la rodilla · (`fisio`, `correr`, `fuerza`: personas planas, sustituidas por vídeos reales) | «La clave para recuperar tu cintilla» |
 
 Para una idea nueva, crea un módulo con `anim_base.py` (canvas ×2, `to_full`, `fade_io`, easings, colores) y ponlo
@@ -241,6 +247,10 @@ en `graphics` con `"module"`. Ideas que encajan: sol-luna (paso de días), reloj
 ---
 
 ## 7. Lo que a Dani NO le gusta (no repetir)
+- Objetos sueltos que "representan" una comparación con personas (una mancuerna que sube sola): si el texto habla de
+  personas, dibuja las personas con el muñeco (`anim_gimnasio.py` muestra cómo reutilizar el rig en otras posturas).
+- Palabras del título mal oídas: **lee siempre el Guion de Drive antes de escribir el título** (aunque llegue tarde:
+  vuelve a mirar la carpeta). «criándote» era «pidiéndote».
 - Mezcla de muchas palabras destacadas + sonidos + zooms (agresivo). Frases enteras como texto destacado.
 - Clic/barrido en el título; barrido al salir animaciones; sonidos que se pisan; sonidos especiales que no se oyen.
 - Punch-ins de zoom rápidos en cada palabra.
