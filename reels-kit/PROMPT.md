@@ -146,7 +146,10 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 
 ## 4. SONIDO
 
-- **Sin música de fondo.** Voz a ~-11 dB RMS activo (+14 dB sobre el iPhone) + limitador.
+- **Sin música de fondo** en los reels. **Anuncios** (vídeo sin voz, oct 2026): sí lleva música, la compone
+  `scripts/musica.py` (129 BPM, riff + subida con corte en seco antes del CTA); subtítulos con `"subs_llamativos": true`
+  (MAYÚSCULAS, Black, `subs_size` 130) y texto del guion repartido por sílabas.
+- Voz a ~-11 dB RMS activo (+14 dB sobre el iPhone) + limitador.
 - **Cada sonido tiene un significado** y siempre es el mismo para lo mismo. Pocos por vídeo.
 
 | Archivo | Qué es | Cuándo (y cómo) |
