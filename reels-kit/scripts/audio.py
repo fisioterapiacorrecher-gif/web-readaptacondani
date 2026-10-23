@@ -9,7 +9,7 @@ from scipy.io import wavfile
 KIT=os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 E=json.load(open(sys.argv[1])); SR=48000; END=E["END"]; N=int(END*SR)
 def load(p):
-    sr,x=wavfile.read(p); x=x.astype(np.float32)/32768
+    sr,x=wavfile.read(p); x=x.astype(np.float32)/(32768 if x.dtype==np.int16 else 1)   # wav en float ya va en ±1
     return x if x.ndim>1 else np.stack([x,x],1)
 LIB={os.path.splitext(k)[0]:load(f"{KIT}/sfx/{k}") for k in os.listdir(f"{KIT}/sfx") if k.endswith(".wav")}
 v=load(sys.argv[2]); voice=np.zeros((N,2),np.float32); n=min(N,len(v)); voice[:n]=v[:n]

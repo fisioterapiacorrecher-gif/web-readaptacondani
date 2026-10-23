@@ -40,10 +40,10 @@ for st,en,txt,red in W:
     txt=re.sub(r'[¿?¡!.,:;]','',txt).lower()
     y=1180
     if E.get("subs_llamativos"):   # anuncios: MAYÚSCULAS, Montserrat Black más grande, contorno negro y rebote marcado
-        txt=txt.upper(); fs=E.get("subs_size",104)
+        txt=txt.upper(); fs=E.get("subs_size",104)   # palabras clave en rojo: red=true en words.json
         pop=r"\fscx55\fscy55\t(0,90,0.6,\fscx116\fscy116)\t(90,170,\fscx100\fscy100)"
         D(0,st,en,"H",f"\\an5\\pos(540,{y+7})\\fs{fs}\\fsp0\\c&H000000&\\bord6\\3c&H000000&\\1a&H60&\\3a&H80&\\blur12{pop}",txt)
-        D(1,st,en,"H",f"\\an5\\pos(540,{y})\\fs{fs}\\fsp0\\c{WH}\\bord5\\3c&H000000&{pop}",txt)
+        D(1,st,en,"H",f"\\an5\\pos(540,{y})\\fs{fs}\\fsp0\\c{RED if red else WH}\\bord5\\3c&H000000&{pop}",txt)
         continue
     pop=r"\fscx86\fscy86\t(0,110,0.6,\fscx100\fscy100)"
     D(0,st,en,"W",f"\\an5\\pos(540,{y+4})\\c&H000000&\\alpha{'&HA8&' if SOFT else '&H70&'}\\blur9{pop}",txt)
