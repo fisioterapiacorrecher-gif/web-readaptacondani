@@ -194,6 +194,8 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
   en ENTRENAR. Para una palabra que debe sonar seguro: `transicion` (whoosh) en la pausa justo antes (−0.32 s, ganancia 2.2) +
   `impacto` en la palabra (ganancia 2.4) — así quedó ENTRENAR.
 - Listas: **un clic `entrada` por fila** (lo pidió en las 3 terapias), no uno solo al empezar.
+- **El eureka, ahora que suena, a Dani le parece demasiado**: en «Tu tendón quiere decirte algo» lo cambió por `bien`
+  también en la solución (EJERCICIO TERAPÉUTICO). Usa `bien` (ganancia 3.0) para la solución salvo que pida otra cosa.
 - Positivo final (VOLVER A CORRER): `bien` (campanita + "¡bieeen!") a ganancia 3.0 (es flojo de origen), sin barrido de salida.
 - Un sonido que no pega con lo que se dice se quita. Dos sonidos que se pisan (barrido + disco rayado) → quita uno.
 - No puedes escuchar el resultado: dile a Dani qué sonidos revisar.
