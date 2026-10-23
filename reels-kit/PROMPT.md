@@ -186,8 +186,13 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
   analizar un vídeo suyo, el canal lateral (L-R) aísla los efectos.
 - Los sonidos "especiales" deben **oírse** (Dani no notó el eureka/acierto a volumen normal): comprueba que su RMS
   quede al nivel de la voz (ganancia 2-3 en `sfx`: `["eureka", 0.0, 2.6]`).
+- **ERROR CORREGIDO (oct 2026) en `audio.py`:** los wav en coma flotante (golpe, golpe_largo, impacto, eureka, acierto,
+  arpegio, ding, transicion, subida, reloj, alarma, disco_rayado, acorde_brillante) se dividían por 32768 y quedaban
+  MUDOS. Las ganancias altas (eureka/acierto 2.6) se pusieron cuando no sonaban: ahora el eureka a 2.6 ya va al nivel
+  de la voz. Si un sonido "no se oye", mide su nivel en la mezcla (por encima de 300 Hz frente a la voz) antes de tocar ganancias.
 - **`golpe`/`golpe_largo` son casi todo sub-bajo (<150 Hz): en altavoces de móvil/tablet NO se oyen.** Dani no oyó el golpe
-  en ENTRENAR. Para una palabra que debe sonar seguro usa `impacto` (barrido + golpe); el golpe solo como capa grave.
+  en ENTRENAR. Para una palabra que debe sonar seguro: `transicion` (whoosh) en la pausa justo antes (−0.32 s, ganancia 2.2) +
+  `impacto` en la palabra (ganancia 2.4) — así quedó ENTRENAR.
 - Listas: **un clic `entrada` por fila** (lo pidió en las 3 terapias), no uno solo al empezar.
 - Positivo final (VOLVER A CORRER): `bien` (campanita + "¡bieeen!") a ganancia 3.0 (es flojo de origen), sin barrido de salida.
 - Un sonido que no pega con lo que se dice se quita. Dos sonidos que se pisan (barrido + disco rayado) → quita uno.
