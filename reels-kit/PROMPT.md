@@ -109,7 +109,7 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
   título pequeño + filas que entran al decirlas, icono en círculo coral.
   - Efectos que bajan algo: flecha ↓ (`scene = "SU EFECTO ES BAJAR|EL DOLOR|LA INFLAMACIÓN"`).
   - Enumeración neutra (sin juzgar): **números** (`scene = "@1170;num:|MASAJES|ONDA DE CHOQUE|PUNCIÓN"`, título vacío
-    = sin título), un solo `entrada` al empezar.
+    = sin título), un `entrada` por fila.
   - Beneficios: **check ✓** (`scene = "check:UN TRATAMIENTO QUE|EVITA RECAÍDAS|NO TE PRODUCE DOLOR|SEGUIR ENTRENANDO"`)
     con sonido `acierto` en cada fila.
 - Sin desenfoque del fondo, **sombra negra suave** (que no tape la cara) y **más abajo** si la cara queda tapada
@@ -186,6 +186,10 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
   analizar un vídeo suyo, el canal lateral (L-R) aísla los efectos.
 - Los sonidos "especiales" deben **oírse** (Dani no notó el eureka/acierto a volumen normal): comprueba que su RMS
   quede al nivel de la voz (ganancia 2-3 en `sfx`: `["eureka", 0.0, 2.6]`).
+- **`golpe`/`golpe_largo` son casi todo sub-bajo (<150 Hz): en altavoces de móvil/tablet NO se oyen.** Dani no oyó el golpe
+  en ENTRENAR. Para una palabra que debe sonar seguro usa `impacto` (barrido + golpe); el golpe solo como capa grave.
+- Listas: **un clic `entrada` por fila** (lo pidió en las 3 terapias), no uno solo al empezar.
+- Positivo final (VOLVER A CORRER): `bien` (campanita + "¡bieeen!") a ganancia 3.0 (es flojo de origen), sin barrido de salida.
 - Un sonido que no pega con lo que se dice se quita. Dos sonidos que se pisan (barrido + disco rayado) → quita uno.
 - No puedes escuchar el resultado: dile a Dani qué sonidos revisar.
 
