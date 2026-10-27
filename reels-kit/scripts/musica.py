@@ -1,11 +1,11 @@
 # Música v2 (más gancho): 129 BPM, La menor (Am-F-C-G), riff de sintetizador sincopado (3-3-2), stabs en contratiempo,
 # bajo rodante con sidechain. Compás 5 = subida con redoble y corte en seco; en DROP2 (el "sígueme") vuelve todo con crash.
-# Uso: python3 -I musica.py salida.wav T0 DROP2 END
+# Uso: python3 -I musica.py salida.wav T0 DROP2 END [compases_hasta_DROP2=5]
 import sys, numpy as np
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
-SR=48000; T0,DROP2,END=map(float,sys.argv[2:5]); N=int(END*SR)
-BAR=(DROP2-T0)/5; B=BAR/4; S16=B/4; rng=np.random.default_rng(3)
+SR=48000; T0,DROP2,END=map(float,sys.argv[2:5]); N=int(END*SR); NB=int(sys.argv[5]) if len(sys.argv)>5 else 5
+BAR=(DROP2-T0)/NB; B=BAR/4; S16=B/4; rng=np.random.default_rng(3)
 bus={k:np.zeros((N,2)) for k in("kick","drums","music")}
 def add(k,x,t,pan=0.0,g=1.0):
     s=int(round(t*SR))
@@ -50,7 +50,7 @@ def bass(m,n):
 pump=np.ones(N)
 nbars=int(np.ceil((END-T0)/BAR))
 for b in range(nbars):
-    tb=T0+b*BAR; ci=b%4; build=(b==4)
+    tb=T0+b*BAR; ci=b%4; build=(b==NB-1)
     for q in range(4):
         tq=tb+q*B; last=build and q==3
         if not last:
