@@ -1,5 +1,6 @@
 # Uso: python3 -I textos.py edit.json words.json subs.ass
-import sys, json, re
+import sys, json, re, os
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 E=json.load(open(sys.argv[1])); W=json.load(open(sys.argv[2]))
 def ts(t):
     t=max(0,t); return f"{int(t//3600)}:{int(t%3600//60):02d}:{t%60:05.2f}"
@@ -34,17 +35,38 @@ def clip_to_key(st,en):
         if st<a<en: en=a
     return en
 # 1) white one-word subtitles (hidden while a key text is on screen)
+ITEMS=[]   # (inicio, fin, [(palabra, roja)])
 for st,en,txt,red in W:
     if st<E["hook"]["end"]-0.07 or in_key(st): continue
-    en=clip_to_key(st,min(en,E["END"]))
     txt=re.sub(r'[¿?¡!.,:;]','',txt).lower()
+    ITEMS.append([st,min(en,E["END"]),[(txt,red)]])
+G_=E.get("subs_grupo")   # [palabras_max, ancho_max_px]: subtítulos de 2-3 palabras que duran más (Dani: "van muy rápidos")
+if G_ and E.get("subs_llamativos"):
+    from medir import width
+    fs_=E.get("subs_size",104); out=[]
+    for it in ITEMS:
+        if out:
+            g=out[-1]; cand=" ".join(w for w,_ in g[2]+it[2]).upper()
+            seguido=it[0]-g[1]<0.12 and not any(g[1]-0.01<=a<=it[0]+0.01 for a,b in keys)
+            if seguido and len(g[2])<G_[0] and width(cand,fs_)<=G_[1]:
+                g[1]=it[1]; g[2]+=it[2]; continue
+        out.append([it[0],it[1],list(it[2])])
+    for i,g in enumerate(out):   # aguanta en pantalla hasta el siguiente grupo si está cerca
+        if i+1<len(out) and out[i+1][0]-g[1]<0.6: g[1]=out[i+1][0]
+        else: g[1]=min(g[1]+0.3,E["END"])
+    ITEMS=out
+for st,en,ws in ITEMS:
+    en=clip_to_key(st,en)
     y=E.get("subs_y",1180)   # altura fija de los subtítulos (1180 salvo que la cara quede debajo)
     if E.get("subs_llamativos"):   # anuncios: MAYÚSCULAS, Montserrat Black más grande, sin reborde y rebote marcado
-        txt=txt.upper(); fs=E.get("subs_size",104)   # palabras clave en rojo: red=true en words.json
+        fs=E.get("subs_size",104)   # palabras clave en rojo: red=true en words.json
+        plain=" ".join(w for w,_ in ws).upper()
+        col=" ".join(f"{{\\c{RED if r else WH}}}{w.upper()}" for w,r in ws)
         pop=r"\fscx55\fscy55\t(0,90,0.6,\fscx116\fscy116)\t(90,170,\fscx100\fscy100)"
-        D(0,st,en,"H",f"\\an5\\pos(540,{y+8})\\fs{fs}\\fsp0\\c&H000000&\\bord5\\3c&H000000&\\blur{KBL}\\1a{KA}\\3a{KB}{pop}",txt)   # misma sombra suave que los textos destacados, sin reborde
-        D(1,st,en,"H",f"\\an5\\pos(540,{y})\\fs{fs}\\fsp0\\c{RED if red else WH}{pop}",txt)
+        D(0,st,en,"H",f"\\an5\\pos(540,{y+8})\\fs{fs}\\fsp0\\c&H000000&\\bord5\\3c&H000000&\\blur{KBL}\\1a{KA}\\3a{KB}{pop}",plain)   # misma sombra suave que los textos destacados, sin reborde
+        D(1,st,en,"H",f"\\an5\\pos(540,{y})\\fs{fs}\\fsp0{pop}",col)
         continue
+    txt=ws[0][0]
     pop=r"\fscx86\fscy86\t(0,110,0.6,\fscx100\fscy100)"
     D(0,st,en,"W",f"\\an5\\pos(540,{y+4})\\c&H000000&\\alpha{'&HA8&' if SOFT else '&H70&'}\\blur9{pop}",txt)
     D(1,st,en,"W",f"\\an5\\pos(540,{y})\\c{WH}{pop}",txt)

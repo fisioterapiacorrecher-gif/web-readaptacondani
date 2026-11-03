@@ -157,6 +157,13 @@ for i in range(NF):
         if G["st"]<=t<=G["en"]:
             if G.get("blur",True): f=blurbg(f,max(0,min(1,(t-G["st"])/0.2,(G["en"]-t)/0.2)))
             g=G["_mod"].draw(t,G.get("scene",""),G["st"],G["en"],G.get("pulses",[]),G.get("broken",[]))
+            IR=G.get("iris")   # transición: la animación se abre en círculo desde un punto (p. ej. el agujero de la camilla)
+            if g is not None and IR and t<G["st"]+IR["d"]:
+                q=(t-G["st"])/IR["d"]; q=q*q*(3-2*q); r=IR.get("r0",0)+(1300-IR.get("r0",0))*q
+                dist=np.sqrt((_vx-IR["cx"])**2+(_vy-IR["cy"])**2)
+                m=np.clip((r-dist)/6+0.5,0,1); g=g.copy(); g[...,3]*=m
+                ring=np.exp(-((dist-r)/9)**2)+0.45*np.exp(-((dist-r)/40)**2)   # aro coral con halo en el borde
+                f=f*(1-np.clip(ring,0,1)[...,None])+to_hlg(np.array([[[1.0,0.204,0.204]]],np.float32),0.30)*np.clip(ring,0,1)[...,None]
             if g is not None:
                 ys=np.where(g[...,3].max(1)>0)[0]
                 if len(ys):
