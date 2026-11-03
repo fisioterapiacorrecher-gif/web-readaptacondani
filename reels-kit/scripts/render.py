@@ -39,11 +39,12 @@ BRS=E.get("broll") or []                 # uno o varios vídeos de apoyo: {"st",
 if isinstance(BRS,dict): BRS=[BRS]
 for BR in BRS:
     nb=int(round((BR["en"]-BR["st"])*FPS))
+    sp=f"setpts=PTS/{BR['speed']}," if BR.get("speed") else ""   # "speed": 1.6 -> el clip va más rápido (grabación de pantalla)
     if BR.get("hdr"):   # vídeo de apoyo grabado en HLG (iPhone): se usa tal cual, sin to_hlg()
-        brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf","fps=30,scale=1080:1920:flags=lanczos:in_color_matrix=bt2020:in_range=tv:out_range=pc,format=rgb48le","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb48le","-"],stdout=subprocess.PIPE)
+        brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf",sp+"fps=30,scale=1080:1920:flags=lanczos:in_color_matrix=bt2020:in_range=tv:out_range=pc,format=rgb48le","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb48le","-"],stdout=subprocess.PIPE)
         BR["_f"]=[np.frombuffer(brp.stdout.read(W*H*6),np.uint16).reshape(H,W,3) for _ in range(nb)]
     else:
-        brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf","fps=30,scale=1080:1920:flags=lanczos","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb24","-"],stdout=subprocess.PIPE)
+        brp=subprocess.Popen(["ffmpeg","-nostdin","-v","error","-ss",str(BR["offset"]),"-i",BR["path"],"-vf",sp+"fps=30,scale=1080:1920:flags=lanczos","-frames:v",str(nb),"-f","rawvideo","-pix_fmt","rgb24","-"],stdout=subprocess.PIPE)
         BR["_f"]=[np.frombuffer(brp.stdout.read(W*H*3),np.uint8).reshape(H,W,3) for _ in range(nb)]
 Z=E["zoom"]
 def eo(x): x=min(1,max(0,x)); return 1-(1-x)**3
@@ -55,7 +56,7 @@ def zoom(t):
         if t-t0<0.22: return za+(zb-za)*eo((t-t0)/0.22)
         return zb+0.015*(t-t0-0.22)/max(0.01,t1-t0-0.22)
     return za+(zb-za)*(t-t0)/max(0.01,t1-t0)
-CX,CY=520,860
+CX,CY=520,E.get("zoom_cy",860)   # centro del zoom (la cara)
 cards=[]
 for C in E["cards"]:
     im=cv2.imread(C["png"],cv2.IMREAD_UNCHANGED).astype(np.float32)/255
@@ -93,6 +94,35 @@ def blurbg(f,amt):
     small=cv2.resize(f,(W//8,H//8),interpolation=cv2.INTER_AREA); small=cv2.GaussianBlur(small,(0,0),5)
     bl=cv2.resize(small,(W,H),interpolation=cv2.INTER_LINEAR)*0.62
     return f*(1-amt)+bl*amt
+# ---- vídeo como tarjeta flotante (grabación de pantalla): entra con rebote y giro, zoom suave y sale hacia arriba
+_cm={}
+def card_mask(r):
+    if r not in _cm:
+        m=np.zeros((H,W),np.uint8); cv2.rectangle(m,(r,0),(W-r,H),255,-1); cv2.rectangle(m,(0,r),(W,H-r),255,-1)
+        for cx_,cy_ in ((r,r),(W-r,r),(r,H-r),(W-r,H-r)): cv2.circle(m,(cx_,cy_),r,255,-1,cv2.LINE_AA)
+        _cm[r]=m.astype(np.float32)/255
+    return _cm[r]
+def card(f,CB,t):
+    C=CB["card"]; u=t-CB["st"]; d_=CB["en"]-CB["st"]; ti,to=C.get("in",0.45),C.get("out",0.32)
+    S0=C.get("scale",0.64); cy=C.get("cy",820)
+    def back_(x,s_=1.6): x=min(1,max(0,x))-1; return x*x*((s_+1)*x+s_)+1
+    sc=0.22+(S0-0.22)*back_(u/ti); rot=C.get("rot",-9)*(1-eo(u/ti)); dy=0.0; al=min(1,u/0.08)
+    sc+=C.get("push",0.05)*max(0,u-ti)/max(0.1,d_-ti-to)                    # zoom suave mientras se ve
+    if u>d_-to:                                                            # sale: se encoge un poco y sube rápido
+        q=(u-(d_-to))/to; q2=q*q; sc*=1-0.18*q; dy=-1500*q2; rot+=6*q2; al*=1-q2*0.5
+    brf=CB["_f"]; k=min(len(brf)-1,int(u*FPS)); b=brf[k].astype(np.float32)/(65535 if CB.get("hdr") else 255)
+    if not CB.get("hdr"): b=to_hlg(b)
+    M_=cv2.getRotationMatrix2D((540,960),rot,sc); M_[1,2]+=cy-960+dy
+    m=card_mask(C.get("radius",70)); mw=cv2.warpAffine(m,M_,(W,H),flags=cv2.INTER_LINEAR)
+    bw=cv2.warpAffine(b,M_,(W,H),flags=cv2.INTER_LINEAR)
+    sm=cv2.resize(mw,(W//8,H//8),interpolation=cv2.INTER_AREA); sm=cv2.GaussianBlur(sm,(0,0),6)
+    shd=cv2.resize(sm,(W,H)); shd=np.roll(shd,30,0)*0.75*al
+    f=f*(1-shd[...,None])
+    if "ring" not in _cm: _cm["ring"]=np.clip(cv2.GaussianBlur(cv2.dilate(m,np.ones((25,25),np.uint8)),(0,0),2)-m,0,1)
+    rw=cv2.warpAffine(_cm["ring"],M_,(W,H),flags=cv2.INTER_LINEAR)*al        # borde fino blanco hueso
+    f=f*(1-rw[...,None])+to_hlg(np.array([[[1.0,0.984,0.91]]],np.float32),0.30)*rw[...,None]
+    a=(mw*al)[...,None]
+    return f*(1-a)+bw*a
 fb=W*H*6; ob=W*H*2*3; last=None
 for i in range(NF):
     raw=dec.stdout.read(fb)
@@ -103,13 +133,17 @@ for i in range(NF):
     if abs(z-1)>1e-4:
         Mz=np.array([[z,0,CX*(1-z)],[0,z,CY*(1-z)]],np.float32)
         f=cv2.warpAffine(f,Mz,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)
-    BR=next((B for B in BRS if B["st"]<=t<B["en"]),None)
+    BR=next((B for B in BRS if B["st"]<=t<B["en"] and not B.get("card")),None)
     if BR:
         brf=BR["_f"]; k=min(len(brf)-1,int((t-BR["st"])*FPS)); b=brf[k].astype(np.float32)/(65535 if BR.get("hdr") else 255)
         zb=1.0+BR.get("zoom",0.08)*(t-BR["st"])/(BR["en"]-BR["st"])
+        if BR.get("punch"): zb+=BR["punch"]*(1-eo((t-BR["st"])/0.35))   # golpe de zoom al entrar el clip (montaje con música)
         Mb=np.array([[zb,0,540*(1-zb)],[0,zb,960*(1-zb)]],np.float32)
         b=cv2.warpAffine(b,Mb,(W,H),flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_REFLECT)*BR.get("dark",0.82)
         f=b if BR.get("hdr") else to_hlg(b)
+        if BR.get("blur"): f=blurbg(f,1.0)
+    for CB in BRS:
+        if CB.get("card") and CB["st"]<=t<CB["en"]: f=card(f,CB,t)
     f=look(f,t)
     kd=keydark(t)
     if kd.max()>0: f=f*(1-kd[:,None,None])

@@ -38,7 +38,7 @@ for st,en,txt,red in W:
     if st<E["hook"]["end"]-0.07 or in_key(st): continue
     en=clip_to_key(st,min(en,E["END"]))
     txt=re.sub(r'[¿?¡!.,:;]','',txt).lower()
-    y=1180
+    y=E.get("subs_y",1180)   # altura fija de los subtítulos (1180 salvo que la cara quede debajo)
     if E.get("subs_llamativos"):   # anuncios: MAYÚSCULAS, Montserrat Black más grande, sin reborde y rebote marcado
         txt=txt.upper(); fs=E.get("subs_size",104)   # palabras clave en rojo: red=true en words.json
         pop=r"\fscx55\fscy55\t(0,90,0.6,\fscx116\fscy116)\t(90,170,\fscx100\fscy100)"
