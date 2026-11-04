@@ -41,6 +41,10 @@ for st,en,txt,red in W:
     txt=re.sub(r'[¿?¡!.,:;]','',txt).lower()
     ITEMS.append([st,min(en,E["END"]),[(txt,red)]])
 G_=E.get("subs_grupo")   # [palabras_max, ancho_max_px]: subtítulos de 2-3 palabras que duran más (Dani: "van muy rápidos")
+# o por tramos: [[desde_s, palabras_max, ancho_max_px], ...] (p. ej. 1-2 palabras cortas al principio y 3 después)
+def regla(t):
+    if G_ and isinstance(G_[0],list): return [r for r in G_ if r[0]<=t+1e-6][-1][1:]
+    return G_
 if G_ and E.get("subs_llamativos"):
     from medir import width
     fs_=E.get("subs_size",104); out=[]
@@ -48,7 +52,9 @@ if G_ and E.get("subs_llamativos"):
         if out:
             g=out[-1]; cand=" ".join(w for w,_ in g[2]+it[2]).upper()
             seguido=it[0]-g[1]<0.12 and not any(g[1]-0.01<=a<=it[0]+0.01 for a,b in keys)
-            if seguido and len(g[2])<G_[0] and width(cand,fs_)<=G_[1]:
+            n_,w_=regla(g[0])
+            sola=it[2][0][0] in ("y","e","o")   # la "y" no se queda colgando al final: empieza el grupo siguiente
+            if seguido and not sola and len(g[2])<n_ and width(cand,fs_)<=w_:
                 g[1]=it[1]; g[2]+=it[2]; continue
         out.append([it[0],it[1],list(it[2])])
     for i,g in enumerate(out):   # aguanta en pantalla hasta el siguiente grupo si está cerca
