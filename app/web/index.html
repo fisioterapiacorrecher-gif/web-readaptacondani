@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RCD Clinic · Tu app</title>
+<meta name="description" content="Tu plan de readaptación con Dani: ejercicios del día, dolor, encuesta semanal y progreso.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="RCD">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="img/icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/paciente.css">
+<link rel="stylesheet" href="css/comun.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="spark" viewBox="0 0 100 100"><path fill="currentColor" d="M50 1 C 53.5 37, 63 46.5, 99 50 C 63 53.5, 53.5 63, 50 99 C 46.5 63, 37 53.5, 1 50 C 37 46.5, 46.5 37, 50 1 Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z" fill="currentColor"/></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></g></symbol>
+  <symbol id="i-pain" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 5 12 2.5-6H21"/></g></symbol>
+  <symbol id="i-week" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></g></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M7.5 15l3.5-4 3 2.5L19 7"/></g></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></g></symbol>
+</svg>
+
+<div id="acceso" hidden></div>
+<div class="cargando" id="cargando">Cargando…</div>
+
+<div id="app" hidden>
+<div class="app">
+  <header class="top">
+    <svg class="spark"><use href="#spark"></use></svg>
+    <div class="brand">RCD CLINIC<small>Readapta con Dani</small></div>
+    <button class="avatar" id="avatar" type="button" aria-label="Cerrar sesión">·</button>
+  </header>
+
+  <!-- ================= HOY ================= -->
+  <section class="view" id="view-hoy" aria-labelledby="t-hoy">
+    <div><p class="eyebrow" id="hoy-eyebrow"></p><h1 id="t-hoy">Hola</h1></div>
+    <div class="card dani-msg" id="dani-card" hidden>
+      <span class="dav" aria-hidden="true"><svg><use href="#spark"></use></svg></span>
+      <div><p class="eyebrow" id="dani-eyebrow">Mensaje de Dani</p><p id="dani-text"></p></div>
+    </div>
+    <div class="chips" id="dias" role="group" aria-label="Elige el día de tu plan"></div>
+    <div class="card session" id="sesion-card">
+      <div class="row"><p class="eyebrow" id="sesion-eyebrow">Sesión</p><p class="mute num" id="sesion-min"></p></div>
+      <p class="title" id="sesion-title"></p>
+      <div class="bar" aria-hidden="true"><i id="progress-bar"></i></div>
+      <div class="row"><p class="soft" id="progress-text"></p><p class="mute">Objetivo: dolor ≤ 4</p></div>
+    </div>
+    <div class="card q" id="before-card">
+      <p class="label">Antes de empezar: puntúa tu molestia</p>
+      <div class="scale" data-scale="before"></div>
+      <p class="pain-word" id="before-word">Toca un número de 0 a 10</p>
+    </div>
+    <h2>Ejercicios</h2>
+    <div class="list" id="ex-list"></div>
+    <div class="card q" id="finish-card" hidden>
+      <p class="label">Puntúa tu molestia después de entrenar</p>
+      <div class="scale" data-scale="session"></div>
+      <p class="pain-word" id="session-word">Toca un número de 0 a 10</p>
+      <div class="notice warn" id="session-warn"><svg><use href="#i-alert"></use></svg><p>Has marcado más de 4. Dani lo verá en su panel y te escribirá antes de la próxima sesión.</p></div>
+      <label for="session-min">Tiempo de la sesión (minutos)</label>
+      <input id="session-min" type="number" inputmode="numeric" min="0" placeholder="45">
+      <label for="session-note">¿Algo que comentarme sobre la sesión de hoy?</label>
+      <textarea id="session-note" placeholder="Ej.: en la búlgara noté tirantez en el gemelo"></textarea>
+      <button class="btn btn-primary btn-block" type="button" id="finish-btn" disabled>Terminar sesión</button>
+    </div>
+  </section>
+
+  <!-- ================= DOLOR ================= -->
+  <section class="view" id="view-dolor" hidden aria-labelledby="t-dolor">
+    <div><p class="eyebrow">Diario de dolor · 10 segundos</p><h1 id="t-dolor">¿Cuánto te duele hoy?</h1></div>
+    <div class="card q">
+      <p class="label">Dolor de hoy en el tendón</p>
+      <div class="scale" data-scale="daily"></div>
+      <p class="pain-word" id="daily-word">Toca un número de 0 a 10</p>
+      <div class="notice good" id="pain-good"><svg><use href="#i-check"></use></svg><p>Dentro de lo esperado. Sigue con el plan.</p></div>
+      <div class="notice warn" id="pain-warn"><svg><use href="#i-alert"></use></svg><p>Por encima de 4. Dani lo verá en su panel y revisará tu carga.</p></div>
+      <label for="daily-note">Anotaciones (opcional)</label>
+      <textarea id="daily-note" placeholder="Ej.: me ha molestado al bajar escaleras"></textarea>
+    </div>
+    <button class="btn btn-primary btn-block" type="button" id="pain-save" disabled>Guardar</button>
+    <h2>Esta semana</h2>
+    <div class="weekpain" id="weekpain" aria-label="Dolor de cada día de esta semana"></div>
+    <h2>Últimos 14 días</h2>
+    <div class="card">
+      <svg class="chart" id="chart-daily" viewBox="0 0 340 150" role="img" aria-label="Dolor diario de los últimos 14 días"></svg>
+      <div class="legend-row"><span><i></i>Dolor diario</span><span><i class="dash"></i>Límite 4/10</span></div>
+    </div>
+  </section>
+
+  <!-- ================= SEMANA ================= -->
+  <section class="view" id="view-semana" hidden aria-labelledby="t-semana">
+    <div><p class="eyebrow" id="semana-eyebrow">Diario de progreso semanal</p><h1 id="t-semana">¿Qué tal la semana?</h1>
+      <p class="soft" style="margin-top:8px" id="semana-sub"></p></div>
+    <div class="card month" id="month-card" hidden>
+      <p class="eyebrow" id="month-eyebrow">Revisión mensual</p>
+      <p id="month-text"></p>
+      <button class="btn btn-primary btn-block" type="button" id="visa-start">Hacer el cuestionario</button>
+      <p class="label">¿Quieres una videollamada de seguimiento?</p>
+      <p class="mute">Escríbele a Dani y la cuadráis.</p>
+      <div class="row2">
+        <a class="btn btn-ghost" id="call-wa" href="#" target="_blank" rel="noopener">Escribir a Dani por WhatsApp</a>
+        <a class="btn btn-ghost" id="call-cal" href="#" target="_blank" rel="noopener" hidden>Reservar en su calendario</a>
+      </div>
+    </div>
+    <div class="card" id="survey-done" hidden><p><b>Encuesta enviada.</b> Dani ya la tiene para preparar tu próxima semana. ¡Gracias!</p></div>
+    <div id="survey-wrap">
+      <div class="survey-progress card">
+        <div class="row"><p class="soft" id="survey-count"></p></div>
+        <div class="bar" aria-hidden="true"><i id="survey-bar"></i></div>
+      </div>
+      <div id="survey" style="margin-top:14px"></div>
+      <button class="btn btn-primary btn-block" type="button" id="week-send" disabled style="margin-top:14px">Enviar a Dani</button>
+    </div>
+  </section>
+
+  <!-- ================= PROGRESO ================= -->
+  <section class="view" id="view-progreso" hidden aria-labelledby="t-prog">
+    <div><p class="eyebrow" id="prog-eyebrow">Gráficas de mejora</p><h1 id="t-prog">Tu progreso</h1></div>
+    <div class="stats" id="stats"></div>
+    <h2>Camino al alta</h2>
+    <div class="card q">
+      <div class="phases" id="phases"></div>
+      <p class="soft" id="phase-text"></p>
+      <p class="mute">Antes de terminar harás estas pruebas con Dani. Tienen que salir superadas para darte el alta.</p>
+      <ul class="alta-list" id="alta-list"></ul>
+    </div>
+    <h2>Mejora del dolor</h2>
+    <div class="card"><svg class="chart" id="chart-weekly" viewBox="0 0 340 150" role="img" aria-label="Dolor medio por semana"></svg>
+      <div class="legend-row"><span><i></i>Dolor medio de la semana</span><span><i class="dash"></i>Límite 4/10</span></div></div>
+    <h2>Adherencia</h2>
+    <div class="card"><svg class="chart" id="chart-adh" viewBox="0 0 340 150" role="img" aria-label="Adherencia por semana"></svg>
+      <div class="legend-row"><span>Sesiones hechas sobre las programadas</span></div></div>
+    <h2>Fuerza</h2>
+    <div class="card q">
+      <div class="chips" id="ex-pick" role="group" aria-label="Elige ejercicio"></div>
+      <p class="mini-title">Tonelaje (kg movidos en la semana)</p>
+      <svg class="chart" id="chart-ton" viewBox="0 0 340 150" role="img" aria-label="Tonelaje por semana"></svg>
+      <p class="mini-title">RM estimado (kg)</p>
+      <svg class="chart" id="chart-rm" viewBox="0 0 340 150" role="img" aria-label="RM estimado por semana"></svg>
+    </div>
+    <h2>Cardio</h2>
+    <div class="card q">
+      <p class="mini-title">Distancia total (km)</p>
+      <svg class="chart" id="chart-dist" viewBox="0 0 340 150" role="img" aria-label="Distancia por semana"></svg>
+      <p class="mini-title">Velocidad máxima (km/h)</p>
+      <svg class="chart" id="chart-vel" viewBox="0 0 340 150" role="img" aria-label="Velocidad máxima por semana"></svg>
+    </div>
+    <h2>Actividad física</h2>
+    <div class="card"><svg class="chart" id="chart-steps" viewBox="0 0 340 150" role="img" aria-label="Media diaria de pasos"></svg>
+      <div class="legend-row"><span>Media diaria de pasos (de tu encuesta semanal)</span></div></div>
+  </section>
+</div>
+
+<div class="tabs">
+  <nav role="tablist" aria-label="Secciones">
+    <button class="tab" role="tab" aria-selected="true" data-view="hoy" type="button"><svg><use href="#i-today"></use></svg>Hoy</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="dolor" type="button"><svg><use href="#i-pain"></use></svg>Dolor<span class="dot" id="dot-dolor" hidden></span></button>
+    <button class="tab" role="tab" aria-selected="false" data-view="semana" type="button"><svg><use href="#i-week"></use></svg>Semana<span class="dot" id="dot-semana" hidden></span></button>
+    <button class="tab" role="tab" aria-selected="false" data-view="progreso" type="button"><svg><use href="#i-chart"></use></svg>Progreso</button>
+  </nav>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head">
+    <div><p class="eyebrow" id="sheet-cat">Ejercicio</p><h3 id="sheet-title" tabindex="-1">Ejercicio</h3></div>
+    <button class="close" type="button" id="sheet-close" aria-label="Cerrar">✕</button>
+  </div>
+  <a class="video" id="video-btn" href="#" target="_blank" rel="noopener">
+    <span class="play"><svg><use href="#i-play"></use></svg></span>
+    <small id="video-note">Ver el vídeo de Dani</small>
+  </a>
+  <div class="rx" id="sheet-rx"></div>
+  <p class="cue" id="sheet-cue" hidden></p>
+  <div id="strength-block">
+    <div class="set-head"><span>Serie</span><span id="col-a">Reps</span><span>Kg extra</span><span>Hecha</span></div>
+    <div class="sets" id="sheet-sets"></div>
+  </div>
+  <div id="cardio-block" class="cardio-grid" hidden>
+    <label>Distancia (km)<input id="c-dist" type="number" inputmode="decimal" step="0.1" placeholder="2,5"></label>
+    <label>Tiempo (min)<input id="c-time" type="number" inputmode="numeric" placeholder="24"></label>
+    <label>Vel. máx (km/h)<input id="c-vel" type="number" inputmode="decimal" step="0.1" placeholder="10,5"></label>
+  </div>
+  <div class="q">
+    <p class="label">Dolor durante este ejercicio</p>
+    <div class="scale" data-scale="exercise"></div>
+    <p class="pain-word" id="exercise-word">Toca un número de 0 a 10</p>
+  </div>
+  <button class="btn btn-primary btn-block" type="button" id="sheet-done">Marcar como hecho</button>
+</div>
+
+<div class="qsheet" id="qsheet" role="dialog" aria-modal="true" aria-labelledby="q-title">
+  <div class="qhead"><div><p class="eyebrow" id="q-eyebrow">Revisión mensual</p><h3 id="q-title">Cuestionario</h3></div><button class="close" type="button" id="q-close" aria-label="Cerrar">✕</button></div>
+  <p class="soft" id="q-intro"></p>
+  <p class="draft" id="q-draft" hidden>Traducción provisional de RCD. Se cambiará por la versión española validada.</p>
+  <div id="q-items" style="display:grid;gap:14px"></div>
+</div>
+<div class="qfoot" id="q-foot" hidden>
+  <div class="qscore"><b id="q-score">0</b><span id="q-left">de 100</span></div>
+  <button class="btn btn-primary" type="button" id="q-send" disabled>Enviar a Dani</button>
+</div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/config.js"></script>
+<script src="data/rcd-datos.js"></script>
+<script src="data/rcd-cuestionarios.js"></script>
+<script src="js/comun.js"></script>
+<script src="js/paciente.js"></script>
+</body>
+</html>

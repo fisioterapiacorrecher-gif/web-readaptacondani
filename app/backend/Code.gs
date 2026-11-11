@@ -479,7 +479,7 @@ function resumenProgreso_(p) {
     semanas,
     dolor,
     adherencia: semanas.map(s => ({ semana: s, valor: adherencia_(p, s) })),
-    fuerza: Object.keys(fuerza).map(n => ({ ejercicio: n, semanas: Object.keys(fuerza[n]).map(Number).sort((a, b) => a - b).map(s => ({ semana: s, tonelaje: Math.round(fuerza[n][s].tonelaje), rm: redondear_(fuerza[n][s].rm, 1) })) })),
+    fuerza: Object.keys(fuerza).filter(n => Object.keys(fuerza[n]).some(s => fuerza[n][s].tonelaje > 0)).map(n => ({ ejercicio: n, semanas: Object.keys(fuerza[n]).map(Number).sort((a, b) => a - b).map(s => ({ semana: s, tonelaje: Math.round(fuerza[n][s].tonelaje), rm: redondear_(fuerza[n][s].rm, 1) })) })),
     cardio: Object.keys(cardio).map(Number).sort((a, b) => a - b).map(s => ({ semana: s, distancia: redondear_(cardio[s].distancia, 1), velMax: redondear_(cardio[s].velMax, 1) })),
     pasos,
     cuestionarios: buscar_('Cuestionarios', c => c.pacienteId === p.id).map(c => ({ tipo: c.tipo, semana: Number(c.semana), puntuacion: num_(c.puntuacion) })),

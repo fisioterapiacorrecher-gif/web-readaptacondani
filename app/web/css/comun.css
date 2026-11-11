@@ -1,0 +1,22 @@
+/* RCD · estilos comunes de las apps: tipografías de marca autoalojadas y pantalla de acceso. */
+@font-face { font-family: 'Geist'; src: url('../fonts/geist-latin.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Outfit'; src: url('../fonts/outfit-latin.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); }
+.login { max-width: 420px; margin: 0 auto; min-height: 100dvh; display: grid; align-content: center; gap: 16px;
+  padding: 32px max(20px, env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
+.login-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.login-brand .spark { width: 26px; height: 26px; color: var(--coral); }
+.login-brand b { font-weight: 800; letter-spacing: .02em; }
+.login-brand small { display: block; font-family: var(--font-accent); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-mute); }
+.login h1 { font-size: 30px; font-weight: 800; text-transform: uppercase; line-height: 1.05; margin: 0; text-wrap: balance; }
+.login-form { display: grid; gap: 10px; margin-top: 8px; }
+.login-form label { font-weight: 600; }
+.login-form input { width: 100%; font: inherit; font-size: 18px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+#l-code { font-family: var(--font-accent); font-size: 28px; letter-spacing: .4em; text-align: center; }
+.login-error { color: var(--coral); min-height: 1.5em; font-size: 14px; }
+.cargando { min-height: 60vh; display: grid; place-items: center; color: var(--text-mute); font-family: var(--font-accent); letter-spacing: .1em; }
+.vacio { padding: 18px; border: 1px dashed var(--border); border-radius: 16px; color: var(--text-soft); font-size: 14px; }
+a.video { text-decoration: none; color: inherit; }
+.video.off { opacity: .55; cursor: default; }
+button.avatar { color: var(--text); cursor: pointer; }

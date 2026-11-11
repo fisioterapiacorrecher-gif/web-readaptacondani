@@ -79,6 +79,18 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
 - `INSTALAR.md`: guía paso a paso para Dani.
 - Dominio: `rcdclinic.com` = landing; `app.rcdclinic.com` = app del paciente; `app.rcdclinic.com/panel` = panel.
 
+## Apps reales · `web/` (lo que se publica en app.rcdclinic.com)
+
+- `web/index.html` + `js/paciente.js`: app del paciente (acceso con código por email).
+- `web/panel/index.html` + `js/panel.js`: panel de Dani (solo entra info@rcdclinic.com).
+- `js/config.js`: dirección del motor. `js/comun.js`: conexión, acceso, avisos y gráficas.
+- `data/`: plantillas, encuesta, mensajes y cuestionarios (fuente de verdad para las apps reales;
+  `app/data/` solo la usan los prototipos).
+- PWA: `manifest.webmanifest`, `sw.js`, iconos en `img/`. Cabeceras de seguridad en `_headers` (Netlify).
+- Probar en local sin tocar datos reales: `node app/backend/servidor-pruebas.js` → http://localhost:8787
+  (el código de acceso se ve en `/__codigo?email=…`).
+- Publicación: `web/PUBLICAR.md` (Netlify + CNAME `app` en IONOS).
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).
