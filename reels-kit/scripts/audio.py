@@ -26,7 +26,7 @@ for K in E["keys"]:
     put(K.get("sfx_in","entrada"),K["st"])
     for name,off,*g in K.get("sfx",[]): put(name,K["st"]+off,(g or [1.0])[0])
     put(K.get("sfx_out","salida"),K["en"]-0.17,E.get("salida_gain",1.0))
-for C in E.get("cards",[]): put("entrada",C["st"]); put("salida",C["en"]-0.2)
+for C in E.get("cards",[]): put(C.get("sfx_in","entrada"),C["st"]); put(C.get("sfx_out","salida"),C["en"]-0.2)   # imagen grande: "golpe"
 for G in E.get("graphics",[]):
     put(G.get("sfx_in","entrada"),G["st"]); put(G.get("sfx_out","salida"),G["en"]-0.25,E.get("salida_gain",1.0))
     for name,t,*g in G.get("sfx",[]): put(name,t,(g or [1.0])[0])
