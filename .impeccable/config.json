@@ -20,6 +20,42 @@
         ],
         "createdAt": "2026-11-11T11:27:56.851Z",
         "reason": "Brand manual (CLAUDE.md, Canva p.04): bold uppercase titles and tracked uppercase labels; flagged elements are short headings/eyebrows/table headers"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "app/web/index.html"
+        ],
+        "createdAt": "2026-11-11T13:21:39.807Z",
+        "reason": "Brand manual (CLAUDE.md, Canva p.04): bold uppercase titles and tracked uppercase subtitles; flagged elements are short headings/labels"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "app/web/index.html"
+        ],
+        "createdAt": "2026-11-11T13:21:39.815Z",
+        "reason": "Eyebrows carry live state (week/day, plan, phase), same layout as the prototypes Dani approved ('me encanta')"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "app/web/panel/index.html"
+        ],
+        "createdAt": "2026-11-11T13:21:39.824Z",
+        "reason": "Brand manual (CLAUDE.md, Canva p.04): bold uppercase titles and tracked uppercase subtitles; flagged elements are short headings/labels"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "app/web/panel/index.html"
+        ],
+        "createdAt": "2026-11-11T13:21:39.832Z",
+        "reason": "Eyebrows carry live state (week/day, plan, phase), same layout as the prototypes Dani approved ('me encanta')"
       }
     ]
   }
