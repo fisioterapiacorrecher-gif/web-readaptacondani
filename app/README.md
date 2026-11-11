@@ -78,4 +78,9 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
 - Workspace: plan **Business Standard** en **info@rcdclinic.com**. Los datos actuales de PhysiOne están en la
   cuenta personal de Gmail. La app nueva irá en la cuenta de Workspace (contrato de tratamiento de datos para el RGPD).
 - Revisar las plantillas de isquios y cintilla, las semanas propuestas de Aquiles y todas las pruebas de alta.
-- Pasar el texto en castellano de los cuestionarios VISA-A, VISA-P, VISA-H y LEFS que use.
+- Cuestionarios en `data/rcd-cuestionarios.js`, con puntuación automática (VISA 0–100, LEFS 0–80).
+  VISA-H: preguntas de la versión española validada (Medina-Porqueres 2022). VISA-A, VISA-P y LEFS:
+  traducción provisional de RCD desde el inglés. Si Dani consigue los artículos validados (JOSPT 2011 y 2018,
+  Disabil Rehabil 2014), se sustituye el texto; la puntuación no cambia.
+- Plantillas de tratamiento y de alta: se quedan así de momento. Cuando Dani deje en Drive su documento
+  nuevo, se actualizan desde ahí.

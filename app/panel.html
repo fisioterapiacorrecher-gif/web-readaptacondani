@@ -464,6 +464,7 @@ a.btn.btn-primary { color: var(--black); }
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="data/rcd-datos.js"></script>
+<script src="data/rcd-cuestionarios.js"></script>
 <script>
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
@@ -702,7 +703,7 @@ a.btn.btn-primary { color: var(--black); }
         <div class="rx-top"><div><b style="font-size:18px">${esc(t.nombre)}</b><p class="mute">${esc(t.nota)}</p></div>
           <span class="pill ${t.origen === 'dani' ? 'ok' : 'warnp'}">${t.origen === 'dani' ? 'Tu protocolo' : 'Propuesta · revisar'}</span></div>
         ${phaseBar(t)}
-        <p class="mute">Revisión mensual con el cuestionario <b>${t.cuestionario}</b>.</p>
+        <p class="mute">Revisión mensual con el cuestionario <b>${t.cuestionario}</b> (${D.cuestionarios?.[t.cuestionario]?.items.length ?? '—'} preguntas · ${D.cuestionarios?.[t.cuestionario]?.texto === 'traduccion' ? 'traducción provisional' : 'preguntas de la versión española validada'}).</p>
       </div>
       <p class="sec-title">Semanas</p><div class="hc">${weeks}</div>
       <p class="sec-title">Pruebas de alta</p>

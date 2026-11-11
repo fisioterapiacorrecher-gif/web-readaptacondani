@@ -263,6 +263,27 @@ a.btn { text-decoration: none; color: var(--text); }
 .alta-list span { font-size: 13px; color: var(--text-soft); grid-column: 1; }
 .alta-list em { font-style: normal; grid-column: 2; grid-row: 1 / span 2; align-self: center; font-family: var(--font-accent); font-size: 12px; color: var(--text-mute); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
 
+/* ---------- Cuestionario mensual ---------- */
+.qsheet { position: fixed; z-index: 45; inset: 0; max-width: 440px; margin-inline: auto; background: var(--bg); overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(120px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: grid; gap: 14px; align-content: start; transform: translateY(100%); transition: transform .32s var(--ease); }
+.qsheet.open { transform: translateY(0); }
+.qsheet:not(.open) { visibility: hidden; transition: transform .32s var(--ease), visibility 0s linear .32s; }
+.qhead { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.qhead h3 { margin: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
+.qnum { font-family: var(--font-accent); font-size: 12px; letter-spacing: .1em; color: var(--coral); }
+.optlist { display: grid; gap: 6px; }
+.opt { text-align: left; min-height: 46px; padding: 10px 14px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); font-size: 14px; font-weight: 500;
+  transition: transform .16s var(--ease), background-color .16s var(--ease); }
+.opt:active { transform: scale(0.98); }
+.opt[aria-pressed="true"] { background: var(--hueso); color: var(--black); border-color: var(--hueso); font-weight: 700; }
+.qfoot { position: fixed; z-index: 46; left: 0; right: 0; bottom: 0; max-width: 440px; margin-inline: auto; background: rgba(0,0,0,.94); border-top: 1px solid var(--border);
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; }
+.qfoot[hidden] { display: none; }
+.qscore b { font-family: var(--font-accent); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.qscore span { display: block; font-size: 12px; color: var(--text-mute); }
+.draft { font-family: var(--font-accent); font-size: 12px; color: var(--warn); border: 1px dashed currentColor; border-radius: 12px; padding: 8px 12px; }
+
 @media (prefers-reduced-motion: reduce) {
   .sheet, .toast, .ex, .btn, .tab, .chip, .scale button, .set .tick { transition-property: opacity, background-color, color; }
   .sheet { transition: none; }
@@ -495,9 +516,21 @@ a.btn { text-decoration: none; color: var(--text); }
   <button class="btn btn-primary btn-block" type="button" id="sheet-done">Marcar como hecho</button>
 </div>
 
+<div class="qsheet" id="qsheet" role="dialog" aria-modal="true" aria-labelledby="q-title">
+  <div class="qhead"><div><p class="eyebrow">Revisión del mes 1</p><h3 id="q-title">Cuestionario</h3></div><button class="close" type="button" id="q-close" aria-label="Cerrar">✕</button></div>
+  <p class="soft" id="q-intro"></p>
+  <p class="draft" id="q-draft" hidden>Traducción provisional de RCD. Se cambiará por la versión española validada.</p>
+  <div id="q-items" style="display:grid;gap:14px"></div>
+</div>
+<div class="qfoot" id="q-foot" hidden>
+  <div class="qscore"><b id="q-score">0</b><span id="q-left">de 100</span></div>
+  <button class="btn btn-primary" type="button" id="q-send" disabled>Enviar a Dani</button>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="data/rcd-datos.js"></script>
+<script src="data/rcd-cuestionarios.js"></script>
 <script>
 (() => {
   /* ---------- Datos de ejemplo (paciente de prueba) ---------- */
@@ -762,7 +795,52 @@ a.btn { text-decoration: none; color: var(--text); }
     $('#phases').innerHTML = tA.fases.map(f => `<div class="ph ${cur > f.a ? 'done' : cur >= f.de ? 'now' : ''}" style="flex-basis:${(f.a - f.de + 1) / tA.semanas * 100}%"><i></i><b>${f.nombre}</b></div>`).join('');
     $('#alta-list').innerHTML = tA.alta.map(a => `<li><b>${a.prueba}</b><span>${a.criterio}</span><em>Pendiente</em></li>`).join('');
   }
-  $('#visa-start').addEventListener('click', () => toast('Aquí irá el cuestionario VISA-A'));
+
+  /* ---------- Cuestionario mensual (rcd-cuestionarios.js) ---------- */
+  function openQ(id) {
+    const C = window.RCD?.cuestionarios?.[id]; if (!C) return;
+    const ans = [];
+    $('#q-title').textContent = 'Cuestionario ' + C.nombre;
+    $('#q-intro').textContent = C.intro;
+    $('#q-draft').hidden = C.texto !== 'traduccion';
+    const box = $('#q-items'); box.innerHTML = '';
+    const update = () => {
+      const done = C.items.filter((it, i) => it.tipo === 'rama' ? ans[i]?.i != null : ans[i] != null).length;
+      $('#q-score').textContent = window.RCD.puntuar(id, ans);
+      $('#q-left').textContent = `de ${C.max} · ${done}/${C.items.length} respondidas`;
+      $('#q-send').disabled = done < C.items.length;
+    };
+    const optList = (opts, cb) => { const d = document.createElement('div'); d.className = 'optlist';
+      opts.forEach((o, k) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.textContent = o; b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('click', () => { $$('.opt', d).forEach(x => x.setAttribute('aria-pressed', String(x === b))); cb(k); }); d.appendChild(b); });
+      return d; };
+    C.items.forEach((it, i) => {
+      const c = document.createElement('div'); c.className = 'card q';
+      c.innerHTML = `<p class="qnum">${i + 1} de ${C.items.length}</p><p class="label">${it.q}</p>${it.ayuda ? `<p class="mute">${it.ayuda}</p>` : ''}`;
+      if (it.tipo === 'escala') {
+        const sc = document.createElement('div'); sc.className = 'scale'; c.appendChild(sc);
+        const lg = document.createElement('div'); lg.className = 'scale-legend'; lg.innerHTML = `<span>0 · ${it.lo}</span><span>10 · ${it.hi}</span>`; c.appendChild(lg);
+        buildScale(sc, { min: 0, max: 10, neutral: true, onPick: n => { ans[i] = n; update(); } });
+      } else if (it.tipo === 'opciones') {
+        c.appendChild(optList(it.opciones.map(o => o[0]), k => { ans[i] = k; update(); }));
+      } else if (it.tipo === 'rama') {
+        const sub = document.createElement('div'); sub.style.cssText = 'display:grid;gap:10px';
+        c.appendChild(optList(it.ramas.map(r => r.id + '. ' + r.q.split('. ')[0] + '.'), k => {
+          const r = it.ramas[k]; ans[i] = { rama: r.id, i: null }; update();
+          sub.innerHTML = `<p class="soft">${r.q}</p>`;
+          sub.appendChild(optList(it.tiempos, t => { ans[i] = { rama: r.id, i: t }; update(); }));
+        }));
+        c.appendChild(sub);
+      }
+      box.appendChild(c);
+    });
+    update();
+    $('#qsheet').scrollTop = 0; $('#qsheet').classList.add('open'); $('#q-foot').hidden = false;
+  }
+  function closeQ() { $('#qsheet').classList.remove('open'); $('#q-foot').hidden = true; }
+  $('#q-close').addEventListener('click', closeQ);
+  $('#q-send').addEventListener('click', () => { toast(`Enviado · ${$('#q-score').textContent} puntos`); closeQ(); $('#visa-start').textContent = 'Cuestionario enviado'; $('#visa-start').disabled = true; });
+  $('#visa-start').addEventListener('click', () => openQ('VISA-A'));
   // WhatsApp con el mensaje ya escrito; el botón del calendario solo aparece cuando Dani lo active (config.reservaCalendario)
   $('#call-wa').href = 'https://wa.me/34684780066?text=' + encodeURIComponent('Hola Dani, soy Ricardo. Me gustaría hacer la videollamada de seguimiento del mes 1.');
   const cal = window.RCD?.config?.reservaCalendario;
