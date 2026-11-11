@@ -31,7 +31,11 @@ App propia de RCD Clinic que sustituirá al sistema de hojas de Google + formula
 
 ## Archivos
 
-- `prototipo.html` — prototipo visual con datos de ejemplo. Es el cuerpo de un Artifact, por eso no lleva `<!doctype>`.
+- `prototipo.html` — app del paciente (prototipo visual, datos de ejemplo).
+- `panel.html` — panel de Dani (prototipo): bandeja «Para hoy», lista de pacientes, revisión semanal con
+  botones de decisión por ejercicio (mantener / + reps / + tiempo bajo tensión / + peso / bajar), historia clínica y registros.
+- Ambos son el cuerpo de un Artifact, por eso no llevan `<!doctype>`.
+- Colores del dolor en las dos apps: ≤ 4 menta (se progresa), 5 ámbar, ≥ 6 coral.
 
 ## Lo que registra el paciente (de las capturas de RICARDO, 11/11/2026)
 
@@ -51,5 +55,7 @@ App propia de RCD Clinic que sustituirá al sistema de hojas de Google + formula
 
 ## Pendiente de Dani
 
-- Confirmar las 3 preguntas deducidas y qué hay en la sección 3 del formulario semanal.
-- Plan de Google Workspace (Starter/Standard…).
+- Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. Falta confirmar «Malestar asociado a la lesión».
+- La sección 3 del formulario solo tiene campos técnicos ocultos (ID del cuaderno y semana): en la app no hacen falta.
+- Workspace: plan **Business Standard** en **info@rcdclinic.com**. Los datos actuales de PhysiOne están en la
+  cuenta personal de Gmail. La app nueva irá en la cuenta de Workspace (contrato de tratamiento de datos para el RGPD).

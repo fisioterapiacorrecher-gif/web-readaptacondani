@@ -468,7 +468,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     { id: 'arranque', q: 'Dolor de arranque', hint: 'Dolor en los primeros pasos después de estar un rato sin moverte', lo: 'Nada de molestias', hi: 'Súper dolorido' },
     { id: 'rigidez', q: 'Rigidez matutina', lo: 'Nada de rigidez', hi: 'Me levanto hecho un tronco' },
     { id: 'malestar', q: 'Malestar asociado a la lesión', lo: 'Nada', hi: 'Muchísimo', guess: true },
-    { id: 'recfuerza', q: 'Recuperación entre sesiones de fuerza', lo: 'Me siento nada cansado', hi: 'Me siento muy cansado', guess: true },
+    { id: 'recfuerza', q: 'Recuperación entre sesiones de fuerza', lo: 'Me siento nada cansado', hi: 'Me siento muy cansado' },
     { id: 'reccardio', q: 'Recuperación entre sesiones de cardio', lo: 'Me siento nada cansado', hi: 'Me siento muy cansado' },
     { section: 'Aspectos relacionados con el contexto', intro: 'Cómo de ajetreada ha sido tu semana, qué tal has descansado y todo lo que pasa en paralelo a la lesión.' },
     { id: 'miedo', q: '¿Cuánto miedo has tenido durante la semana?', lo: 'No he pensado nada en la lesión', hi: 'No me lo he quitado de la cabeza' },
@@ -476,7 +476,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     { id: 'motivacion', q: 'Grado de motivación para seguir el tratamiento', lo: 'Nada motivado', hi: 'A tope con el tratamiento' },
     { id: 'sueno', q: 'Horas de sueño (media diaria)', num: true, placeholder: '7,5', step: 0.5 },
     { id: 'descanso', q: 'Calidad del descanso', lo: 'No he descansado nada', hi: 'Nunca he dormido tan bien' },
-    { id: 'cansancio', q: 'Cansancio general', lo: 'Nada cansado', hi: 'Agotado', guess: true },
+    { id: 'cansancio', q: 'Cansancio general', lo: 'Nada cansado', hi: 'Agotado' },
     { id: 'estres', q: 'Nivel de estrés', lo: 'Nada de estrés', hi: 'Necesito unas vacaciones' },
     { id: 'cambios', q: '¿Notas cambios en la lesión respecto a la semana pasada?', opts: ['Nada', 'Ligeramente mejor', 'Cambio notable', 'Muy buen cambio'] },
   ];
@@ -497,7 +497,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   }));
 
   /* ---------- Escalas ---------- */
-  const level = n => n <= 3 ? 'ok' : n <= 5 ? 'mid' : 'high';
+  const level = n => n <= 4 ? 'ok' : n <= 5 ? 'mid' : 'high'; // regla de Dani: hasta 4 es aceptable
   function buildScale(el, { min = 0, max = 10, neutral = false, onPick } = {}) {
     el.innerHTML = '';
     el.style.gridTemplateColumns = `repeat(${max - min + 1}, minmax(0, 1fr))`;

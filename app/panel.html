@@ -1,0 +1,477 @@
+<title>RCD Panel Dani</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Outfit:wght@400;500;600&display=swap">
+<style>
+/* Layout: maestro-detalle. Escritorio: barra lateral con la bandeja y los pacientes + zona principal.
+   Móvil: lista a pantalla completa y, al tocar, la ficha con botón de volver.
+   Tema oscuro de marca RCD (un solo tema a propósito): negro, hueso, gris translúcido, coral; menta solo para "bien". */
+:root {
+  --black: #000000; --hueso: #FFFBE8; --coral: #FF3434; --coral-700: #E62E2E; --mint: #E9FFB9;
+  --bg: var(--black);
+  --side: #070707;
+  --surface:   rgba(241,241,241,.045);
+  --surface-2: rgba(241,241,241,.075);
+  --surface-3: rgba(241,241,241,.11);
+  --border:    rgba(241,241,241,.14);
+  --text: var(--hueso);
+  --text-soft: rgba(255,251,232,.72);
+  --text-mute: rgba(255,251,232,.60);
+  --warn: #FFB23F;
+  --font: 'Pragmatica', 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-accent: 'Stavok Groteske', 'Outfit', system-ui, sans-serif;
+  --r: 16px; --r-in: 14px;
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; touch-action: manipulation; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+p { margin: 0; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+.num { font-family: var(--font-accent); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--font-accent); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-mute); }
+.mute { color: var(--text-mute); font-size: 13px; }
+.soft { color: var(--text-soft); }
+
+/* ---------- Estructura ---------- */
+.shell { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100%; }
+.side { background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; min-width: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 16px; padding-block: 0 24px; }
+.main { min-width: 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px; }
+@media (min-width: 960px) {
+  .shell { grid-template-columns: 320px minmax(0, 1fr); height: 100%; }
+  .side { overflow-y: auto; }
+  .main { overflow-y: auto; padding-inline: 36px; }
+  .back { display: none !important; }
+}
+@media (max-width: 959px) {
+  .shell[data-screen="detail"] .side { display: none; }
+  .shell[data-screen="list"] .main { display: none; }
+  .side { padding-right: max(16px, env(safe-area-inset-right, 0px)); border-right: 0; }
+}
+
+.brandbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--side); display: flex; align-items: center; gap: 10px; padding-block: 16px 14px; }
+.brandbar svg { width: 22px; height: 22px; color: var(--coral); flex: none; }
+.brandbar b { font-weight: 800; font-size: 15px; letter-spacing: .02em; }
+.brandbar small { display: block; font-family: var(--font-accent); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-mute); line-height: 1.2; font-weight: 400; }
+.demo { font-family: var(--font-accent); font-size: 12px; color: var(--text-mute); border: 1px dashed var(--border); border-radius: 999px; padding: 5px 12px; text-align: center; margin-bottom: 16px; }
+
+.side h2 { font-family: var(--font-accent); font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--text-soft); margin: 18px 0 8px; display: flex; justify-content: space-between; align-items: center; }
+.side h2 .count { background: var(--coral); color: var(--black); border-radius: 999px; padding: 0 8px; font-weight: 700; letter-spacing: 0; font-size: 12px; }
+
+/* Bandeja */
+.inbox { display: grid; gap: 6px; }
+.task { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; width: 100%; padding: 10px 12px; border-radius: 12px;
+  background: var(--surface); border: 1px solid transparent; transition: background-color .16s var(--ease), transform .16s var(--ease); }
+.task:active { transform: scale(0.98); }
+.task i { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; }
+.task[data-kind="review"] i { background: var(--hueso); }
+.task[data-kind="pain"] i { background: var(--coral); }
+.task[data-kind="silent"] i { background: var(--warn); }
+.task[data-kind="new"] i { background: var(--mint); }
+.task b { font-weight: 600; font-size: 14px; display: block; line-height: 1.35; color: var(--text); }
+.task span { font-size: 12px; color: var(--text-mute); }
+
+/* Lista de pacientes */
+.patients { display: grid; gap: 6px; }
+.pt { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; width: 100%; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid transparent; transition: background-color .16s var(--ease), transform .16s var(--ease); }
+.pt:active { transform: scale(0.98); }
+.pt[aria-current="true"] { background: var(--surface-2); border-color: var(--border); }
+.av { width: 38px; height: 38px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+.pt b { display: block; font-weight: 600; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt span { font-size: 12px; color: var(--text-mute); }
+.pt .spark-wrap { display: grid; justify-items: end; gap: 2px; }
+.pt .spark-wrap em { font-style: normal; font-family: var(--font-accent); font-size: 12px; font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) { .task:hover, .pt:hover { background: var(--surface-2); } .btn-ghost:hover { background: var(--surface-3); } .btn-primary:hover { background: var(--coral-700); } }
+
+.lvl-ok { color: var(--mint); } .lvl-mid { color: var(--warn); } .lvl-high { color: var(--coral); }
+
+/* Botones */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; font-weight: 700; font-size: 14px;
+  transition: transform .16s var(--ease), background-color .16s var(--ease), opacity .16s var(--ease); white-space: nowrap; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--coral); color: var(--black); }
+.btn-ghost { background: var(--surface-2); border: 1px solid var(--border); }
+.btn-block { width: 100%; }
+.btn[disabled] { opacity: .4; pointer-events: none; }
+
+/* ---------- Ficha ---------- */
+.head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--bg); padding-block: 16px 0; display: grid; gap: 14px; }
+.head-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.back { min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 600; font-size: 14px; }
+.who { display: flex; gap: 12px; align-items: center; min-width: 0; flex: 1 1 260px; }
+.who .av { width: 48px; height: 48px; font-size: 18px; background: var(--coral); color: var(--black); border: 0; }
+.who h1 { font-size: 26px; font-weight: 800; text-transform: uppercase; line-height: 1.05; }
+.who p { font-size: 13px; color: var(--text-soft); }
+.head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 12px 14px; font-weight: 600; font-size: 14px; color: var(--text-mute); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color .16s var(--ease); }
+.tab[aria-selected="true"] { color: var(--hueso); border-bottom-color: var(--coral); }
+.pane { display: grid; gap: 18px; padding-top: 20px; }
+.pane[hidden] { display: none; }
+.sec-title { font-family: var(--font-accent); font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--text-soft); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; min-width: 0; }
+
+.grid-2 { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1240px) { .grid-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: start; } }
+
+/* Resumen de la semana */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: grid; gap: 2px; }
+.kpi span { font-size: 12px; color: var(--text-mute); }
+.kpi b { font-family: var(--font-accent); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.kpi em { font-style: normal; font-size: 12px; font-family: var(--font-accent); }
+
+.rule { display: flex; gap: 10px; align-items: start; padding: 12px 14px; border-radius: var(--r-in); background: rgba(233,255,185,.07); border: 1px solid rgba(233,255,185,.28); font-size: 14px; }
+.rule.stop { background: rgba(255,52,52,.08); border-color: rgba(255,52,52,.4); }
+.rule svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+
+/* Tabla de encuesta */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-family: var(--font-accent); font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-mute); padding: 0 8px 8px 0; }
+th.n, td.n { text-align: right; padding-right: 0; padding-left: 8px; }
+td { padding: 9px 8px 9px 0; border-top: 1px solid var(--border); vertical-align: top; }
+td.n { font-family: var(--font-accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta { font-size: 12px; margin-left: 6px; }
+tr.flag td:first-child { box-shadow: inset 2px 0 0 var(--coral); padding-left: 10px; }
+
+/* Prescripción */
+.rx-list { display: grid; gap: 10px; }
+.rx { border: 1px solid var(--border); border-radius: var(--r); padding: 14px; display: grid; gap: 10px; background: var(--surface); }
+.rx-top { display: flex; justify-content: space-between; gap: 10px; align-items: start; flex-wrap: wrap; }
+.rx-top b { font-weight: 700; display: block; }
+.rx-top .tag { font-family: var(--font-accent); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mute); }
+.rx-dose { font-family: var(--font-accent); font-variant-numeric: tabular-nums; font-size: 14px; color: var(--text-soft); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.rx-dose .old { text-decoration: line-through; color: var(--text-mute); }
+.rx-dose .new { color: var(--hueso); font-weight: 600; }
+.rx-stats { font-size: 12px; color: var(--text-mute); }
+.acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.act { min-height: 36px; padding: 0 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 600;
+  transition: transform .16s var(--ease), background-color .16s var(--ease), color .16s var(--ease); }
+.act:active { transform: scale(0.96); }
+.act[aria-pressed="true"] { background: var(--hueso); color: var(--black); border-color: var(--hueso); }
+.act[data-a="down"][aria-pressed="true"] { background: var(--coral); border-color: var(--coral); }
+textarea, input[type="text"], input[type="search"] { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-in); padding: 12px 14px; }
+textarea { min-height: 84px; resize: vertical; }
+.publish { display: grid; gap: 10px; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.switch button { width: 48px; height: 28px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--border); position: relative; flex: none; transition: background-color .16s var(--ease); }
+.switch button::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--hueso); transition: transform .16s var(--ease); }
+.switch button[aria-checked="true"] { background: var(--coral); border-color: var(--coral); }
+.switch button[aria-checked="true"]::after { transform: translateX(20px); }
+
+/* Historia clínica */
+.hc { display: grid; gap: 8px; }
+details { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); }
+summary { list-style: none; cursor: pointer; padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; align-items: center; font-weight: 700; }
+summary::-webkit-details-marker { display: none; }
+summary span { font-weight: 400; font-size: 13px; color: var(--text-mute); }
+summary::after { content: "+"; font-family: var(--font-accent); font-size: 20px; color: var(--text-mute); line-height: 1; }
+details[open] summary::after { content: "−"; }
+.hc-body { padding: 0 16px 16px; display: grid; gap: 10px; }
+.qa { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding-top: 10px; border-top: 1px solid var(--border); }
+@media (min-width: 700px) { .qa { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; } }
+.qa dt { color: var(--text-mute); font-size: 13px; }
+.qa dd { margin: 0; font-size: 14px; }
+.chipline { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-family: var(--font-accent); font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-soft); }
+.pill.ok { color: var(--mint); border-color: rgba(233,255,185,.4); }
+.pill.no { color: var(--coral); border-color: rgba(255,52,52,.5); }
+
+/* Registros */
+.log { display: grid; gap: 0; }
+.log-item { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); align-items: start; }
+.log-item:first-child { border-top: 0; }
+.log-item .d { font-family: var(--font-accent); font-size: 13px; color: var(--text-mute); }
+.log-item .v { font-family: var(--font-accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--text-mute); font-family: var(--font-accent); font-size: 11px; }
+.chart .grid { stroke: var(--border); }
+.chart .lim { stroke: var(--coral); stroke-dasharray: 3 4; opacity: .7; }
+.chart .val { fill: var(--hueso); font-size: 12px; }
+
+.toast { position: fixed; z-index: 50; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 12px); opacity: 0; background: var(--hueso); color: var(--black);
+  font-weight: 700; font-size: 14px; padding: 12px 18px; border-radius: 999px; pointer-events: none; transition: opacity .2s var(--ease), transform .2s var(--ease); max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) {
+  .task:active, .pt:active, .btn:active, .act:active { transform: none; }
+  .toast { transition: opacity .2s var(--ease); transform: translate(-50%, 0); }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="spark" viewBox="0 0 100 100"><path fill="currentColor" d="M50 1 C 53.5 37, 63 46.5, 99 50 C 63 53.5, 53.5 63, 50 99 C 46.5 63, 37 53.5, 1 50 C 37 46.5, 46.5 37, 50 1 Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></g></symbol>
+</svg>
+
+<div class="shell" id="shell" data-screen="list">
+  <!-- ============ Barra lateral ============ -->
+  <aside class="side" aria-label="Bandeja y pacientes">
+    <div class="brandbar"><svg><use href="#spark"></use></svg><div><b>RCD CLINIC</b><small>Panel de Dani</small></div></div>
+    <p class="demo">Prototipo · pacientes de ejemplo</p>
+    <button class="btn btn-primary btn-block" type="button" id="new-patient">+ Nuevo paciente</button>
+
+    <h2>Para hoy <span class="count" id="task-count">4</span></h2>
+    <div class="inbox" id="inbox"></div>
+
+    <h2>Pacientes <span class="mute" style="letter-spacing:0">dolor medio</span></h2>
+    <div class="patients" id="patients"></div>
+  </aside>
+
+  <!-- ============ Ficha del paciente ============ -->
+  <main class="main" id="main">
+    <div class="head">
+      <div class="head-row">
+        <button class="back" type="button" id="back">← Pacientes</button>
+        <div class="who">
+          <div class="av" id="p-av">R</div>
+          <div><h1 id="p-name">Ricardo</h1><p id="p-sub">Tendinopatía aquílea derecha · Semana 3 · Readaptación Completa</p></div>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" type="button" id="copy-code">Código de acceso</button>
+          <button class="btn btn-ghost" type="button" id="wa">WhatsApp</button>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Secciones del paciente">
+        <button class="tab" role="tab" aria-selected="true" data-pane="review" type="button">Revisión semanal</button>
+        <button class="tab" role="tab" aria-selected="false" data-pane="hc" type="button">Historia clínica</button>
+        <button class="tab" role="tab" aria-selected="false" data-pane="log" type="button">Registros</button>
+      </div>
+    </div>
+
+    <!-- ---- Revisión semanal ---- -->
+    <section class="pane" id="pane-review" aria-label="Revisión semanal">
+      <div class="kpis" id="kpis"></div>
+      <div class="rule" id="rule"></div>
+
+      <div class="grid-2">
+        <div style="display:grid;gap:18px;min-width:0">
+          <p class="sec-title">Encuesta de la semana 3 · comparada con la 2</p>
+          <div class="card tbl-wrap">
+            <table>
+              <thead><tr><th>Pregunta</th><th class="n">S2</th><th class="n">S3</th></tr></thead>
+              <tbody id="survey-rows"></tbody>
+            </table>
+          </div>
+          <p class="sec-title">Dolor diario</p>
+          <div class="card"><svg class="chart" id="chart-daily" viewBox="0 0 340 140" role="img" aria-label="Dolor diario de las dos últimas semanas"></svg></div>
+        </div>
+
+        <div style="display:grid;gap:18px;min-width:0">
+          <p class="sec-title">Preparar semana 4 · Día 1 y Día 2</p>
+          <div class="rx-list" id="rx-list"></div>
+          <button class="btn btn-ghost" type="button" id="add-ex">+ Añadir ejercicio de la biblioteca</button>
+          <div class="card publish">
+            <label class="sec-title" for="note">Mensaje para el paciente</label>
+            <textarea id="note">Muy buena semana, Ricardo. Subimos un poco la carga en las elevaciones. Si el dolor pasa de 4, vuelve a la carga de la semana pasada y me escribes.</textarea>
+            <div class="switch"><span class="soft">Enviar la encuesta semanal cada domingo a las 18:00</span><button type="button" role="switch" aria-checked="true" id="auto" aria-label="Envío automático de la encuesta"></button></div>
+            <button class="btn btn-primary btn-block" type="button" id="publish">Publicar semana 4</button>
+            <p class="mute" id="decisions">0 decisiones tomadas · se guardan para aprender tu criterio</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- Historia clínica ---- -->
+    <section class="pane" id="pane-hc" hidden aria-label="Historia clínica">
+      <p class="mute">Las respuestas del formulario pre-sesión se vuelcan solas. Lo que corriges tú se guarda aparte, sin borrar lo que escribió el paciente.</p>
+      <div class="hc" id="hc"></div>
+    </section>
+
+    <!-- ---- Registros ---- -->
+    <section class="pane" id="pane-log" hidden aria-label="Registros">
+      <p class="sec-title">Últimas sesiones y comentarios</p>
+      <div class="card log" id="log"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  let tt;
+  const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); };
+  const fmt = v => String(v).replace('.', ',');
+  const lvl = v => v <= 4 ? 'ok' : v <= 5 ? 'mid' : 'high'; // tu regla: hasta 4 se progresa
+
+  /* ---------- Datos de ejemplo (todos inventados salvo el paciente de prueba) ---------- */
+  const patients = [
+    { id: 'ricardo', name: 'Ricardo', sub: 'Tendinopatía aquílea derecha · Semana 3 · Readaptación Completa', week: 3, pain: [5.2, 4.1, 3.4], adh: 92, last: 'Hoy' },
+    { id: 'laura', name: 'Laura (ejemplo)', sub: 'Tendinopatía rotuliana · Semana 5 · Vuelta a Competir', week: 5, pain: [4.2, 3.8, 3.1, 3.4, 4.6], adh: 80, last: 'Ayer' },
+    { id: 'sergio', name: 'Sergio (ejemplo)', sub: 'Tendinopatía glútea · Semana 2 · Readaptación Completa', week: 2, pain: [3.9, 3.6], adh: 58, last: 'Hace 3 días' },
+    { id: 'paula', name: 'Paula (ejemplo)', sub: 'Pendiente de valoración', week: 0, pain: [], adh: null, last: 'Formulario recibido' },
+  ];
+  const tasks = [
+    { kind: 'review', p: 'ricardo', t: 'Revisar la semana 3 de Ricardo', s: 'Encuesta recibida el domingo a las 19:42' },
+    { kind: 'pain', p: 'laura', t: 'Laura: dolor 6/10 tras la sesión de ayer', s: 'Comentario: «molestia al bajar el step»' },
+    { kind: 'silent', p: 'sergio', t: 'Sergio lleva 3 días sin registrar', s: 'Último registro: viernes' },
+    { kind: 'new', p: 'paula', t: 'Nueva valoración: Paula', s: 'Rellenó el formulario pre-sesión · crear historia clínica' },
+  ];
+  const survey = [
+    ['Seguimiento de las pautas', 7, 9, 'up'], ['Dolor de arranque', 5, 3, 'down'], ['Rigidez matutina', 6, 4, 'down'],
+    ['Malestar asociado a la lesión', 4, 3, 'down'], ['Recuperación tras fuerza', 5, 4, 'down'], ['Recuperación tras cardio', 4, 5, 'down'],
+    ['Miedo', 6, 4, 'down'], ['Pasos / día', '8.200', '8.900', 'up'], ['Motivación', 8, 9, 'up'], ['Horas de sueño', '6,5', '7', 'up'],
+    ['Calidad del descanso', 6, 7, 'up'], ['Cansancio general', 5, 5, 'down'], ['Estrés', 5, 7, 'down'], ['Cambios en la lesión', '—', 'Ligeramente mejor', null],
+  ];
+  const rx = [
+    { day: 'Día 1', tag: 'Fuerza · isométrico', name: 'Elevación de talones isométrica', s: 5, r: 45, u: 's', kg: 0, t: '—', done: '10/10 series', p: 2 },
+    { day: 'Día 1', tag: 'Fuerza · tendón', name: 'Elevación de talones en escalón', s: 4, r: 10, u: 'reps', kg: 10, t: '3-0-3', done: '8/8 series', p: 3 },
+    { day: 'Día 1', tag: 'Fuerza · sóleo', name: 'Elevación de talones sentado', s: 3, r: 12, u: 'reps', kg: 20, t: '2-1-3', done: '6/6 series', p: 2 },
+    { day: 'Día 2', tag: 'Fuerza · cadera', name: 'Sentadilla búlgara', s: 3, r: 8, u: 'reps', kg: 8, t: '3-0-1', done: '5/6 series', p: 4 },
+    { day: 'Día 2', tag: 'Cardio · correr-caminar', name: 'Correr-caminar', cardio: true, blocks: 4, run: 5, walk: 1, done: '2/2 sesiones · 7,5 km', p: 3 },
+  ];
+  const hc = [
+    { t: 'Exploración subjetiva', s: 'Del formulario pre-sesión', qa: [
+      ['Motivo de consulta', 'Dolor en el tendón de Aquiles derecho al correr'], ['¿Desde cuándo?', 'Hace 4 meses, tras subir kilómetros para una media maratón'],
+      ['Dolor en reposo', 'No'], ['Rigidez matutina', 'Sí, los primeros 5–6 pasos'], ['Dolor de arranque', 'Sí'], ['Lo empeora', 'Cuestas y series rápidas'],
+      ['Creencias', '«Si corro se va a romper»'], ['Objetivo', 'Volver a correr 10 km sin dolor'] ] },
+    { t: 'Banderas rojas', s: 'Todas negativas', flags: ['Traumatismo previo', 'Pérdida de peso inexplicable', 'Dolor nocturno constante', 'Fiebre', 'Antecedentes de cáncer', 'Fluoroquinolonas recientes'] },
+    { t: 'Exploración objetiva', s: '3 pruebas registradas', qa: [
+      ['Arco doloroso (Aquiles)', 'Positivo · dolor 2–6 cm de la inserción'], ['Test de Royal London', 'Positivo'], ['Elevaciones de talón a una pierna', 'Dcha. 14 · Izda. 25 (dolor 4/10)'] ] },
+    { t: 'Diagnóstico diferencial', s: 'Tu conclusión', qa: [['Hipótesis principal', 'Tendinopatía de la porción media del Aquiles'], ['A descartar', 'Bursitis retrocalcánea · tendinopatía insercional · atrapamiento del sural']] },
+    { t: 'Prescripción general', s: 'Objetivo del plan', qa: [['Organización de la semana', '2 días de fuerza + 2 de correr-caminar, con un día de descanso entre fuerza'], ['Objetivo', 'Correr 30 min continuos con dolor ≤ 3 en 8 semanas']] },
+  ];
+  const log = [
+    ['Hoy', 'Día 2 · fuerza + cardio', 'Antes 3 · después 3', '«En la búlgara noté tirantez en el gemelo»', 3],
+    ['Dom', 'Encuesta semanal', 'Ligeramente mejor', '', null],
+    ['Sáb', 'Dolor diario', '', '', 2],
+    ['Jue', 'Día 1 · fuerza', 'Antes 4 · después 3', '', 3],
+    ['Mar', 'Día 2 · fuerza + cardio', 'Antes 4 · después 5', '«Me dolió en la última repetición del correr-caminar»', 5],
+  ];
+
+  /* ---------- Bandeja y lista ---------- */
+  const shell = $('#shell');
+  function renderSide(current) {
+    $('#inbox').innerHTML = tasks.map((t, i) => `<button class="task" type="button" data-kind="${t.kind}" data-i="${i}"><i></i><span><b>${t.t}</b><span>${t.s}</span></span></button>`).join('');
+    $('#task-count').textContent = tasks.length;
+    $$('#inbox .task').forEach(b => b.addEventListener('click', () => open(tasks[b.dataset.i].p)));
+    $('#patients').innerHTML = patients.map(p => {
+      const last = p.pain[p.pain.length - 1];
+      return `<button class="pt" type="button" data-id="${p.id}" aria-current="${p.id === current}">
+        <span class="av">${p.name[0]}</span>
+        <span style="min-width:0"><b>${p.name}</b><span>${p.week ? 'Semana ' + p.week + ' · ' : ''}${p.last}</span></span>
+        <span class="spark-wrap">${p.pain.length ? sparkline(p.pain) + `<em class="lvl-${lvl(last)}">${fmt(last)}</em>` : '<em class="mute">—</em>'}</span>
+      </button>`;
+    }).join('');
+    $$('#patients .pt').forEach(b => b.addEventListener('click', () => open(b.dataset.id)));
+  }
+  function sparkline(v) {
+    const w = 56, h = 18, max = 10, x = i => v.length === 1 ? w / 2 : i * w / (v.length - 1), y = n => h - 2 - n / max * (h - 4);
+    return `<svg width="${w}" height="${h}" aria-hidden="true"><polyline points="${v.map((n, i) => x(i) + ',' + y(n)).join(' ')}" fill="none" stroke="#FF3434" stroke-width="1.5" stroke-linejoin="round"/><circle cx="${x(v.length - 1)}" cy="${y(v[v.length - 1])}" r="2.5" fill="#FFFBE8"/></svg>`;
+  }
+
+  function open(id) {
+    const p = patients.find(x => x.id === id);
+    if (id !== 'ricardo') { toast(`En el prototipo solo está completa la ficha de Ricardo`); }
+    const show = id === 'ricardo' ? p : patients[0];
+    $('#p-name').textContent = show.name; $('#p-av').textContent = show.name[0]; $('#p-sub').textContent = show.sub;
+    renderSide(show.id);
+    shell.dataset.screen = 'detail';
+    $('#main').scrollTop = 0; window.scrollTo({ top: 0 });
+  }
+  $('#back').addEventListener('click', () => { shell.dataset.screen = 'list'; });
+
+  /* ---------- Pestañas de la ficha ---------- */
+  $$('.tab').forEach(t => t.addEventListener('click', () => {
+    $$('.tab').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+    $$('.pane').forEach(p => p.hidden = p.id !== 'pane-' + t.dataset.pane);
+  }));
+
+  /* ---------- Revisión semanal ---------- */
+  $('#kpis').innerHTML = [
+    ['Dolor medio S3', '3,4', '−0,7 vs S2', 'ok'], ['Adherencia', '92%', '11 de 12 sesiones', 'ok'],
+    ['Dolor máx. tras sesión', '5', 'martes', 'high'], ['Km corriendo', '7,5', '+1,5 vs S2', 'ok'],
+  ].map(([l, v, d, c]) => `<div class="kpi"><span>${l}</span><b class="${c === 'high' ? 'lvl-high' : ''}">${v}</b><em class="${c === 'high' ? 'lvl-high' : 'lvl-ok'}">${d}</em></div>`).join('');
+  $('#rule').innerHTML = `<svg><use href="#i-check"></use></svg><p><b>Dolor general 3,4: por debajo de tu límite de 4.</b> Puedes progresar. Ojo: el martes llegó a 5 tras el correr-caminar, y el estrés ha subido de 5 a 7.</p>`;
+
+  $('#survey-rows').innerHTML = survey.map(([q, a, b, good]) => {
+    let d = '', flag = false;
+    if (typeof a === 'number' && typeof b === 'number' && a !== b) {
+      const better = good === 'up' ? b > a : b < a; flag = !better && Math.abs(b - a) >= 2;
+      d = `<span class="delta ${better ? 'lvl-ok' : 'lvl-high'}">${b > a ? '▲' : '▼'}${Math.abs(b - a)}</span>`;
+    }
+    return `<tr class="${flag ? 'flag' : ''}"><td>${q}</td><td class="n mute">${a}</td><td class="n">${b}${d}</td></tr>`;
+  }).join('');
+
+  // Dolor diario: 14 días
+  (function () {
+    const v = [5, 5, 4, 5, 4, 4, 3, 4, 5, 3, 4, 3, 2, 3], W = 340, H = 140, L = 26, R = 10, T = 12, B = 22, max = 10;
+    const x = i => L + i * (W - L - R) / (v.length - 1), y = n => T + (1 - n / max) * (H - T - B);
+    let g = [0, 5, 10].map(t => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('');
+    g += `<line class="lim" x1="${L}" x2="${W - R}" y1="${y(4)}" y2="${y(4)}"/>`;
+    g += `<polyline points="${v.map((n, i) => x(i) + ',' + y(n)).join(' ')}" fill="none" stroke="#FF3434" stroke-width="2" stroke-linejoin="round"/>`;
+    v.forEach((n, i) => g += `<circle cx="${x(i)}" cy="${y(n)}" r="${n > 4 ? 3.5 : 2.2}" fill="${n > 4 ? '#FF3434' : '#FFFBE8'}"/>`);
+    g += `<text x="${L}" y="${H - 5}">S2 · lunes</text><text x="${W - R}" y="${H - 5}" text-anchor="end">Hoy</text><text x="${W - R}" y="${y(4) - 6}" text-anchor="end" style="fill:#FF3434">límite 4</text>`;
+    $('#chart-daily').innerHTML = g;
+  })();
+
+  // Prescripción: botones rápidos para tu criterio (dolor ≤ 4 → reps, tiempo bajo tensión o peso)
+  const decisions = {};
+  function doseText(e, a) {
+    if (e.cardio) {
+      const b = { blocks: e.blocks, run: e.run, walk: e.walk };
+      if (a === 'reps') b.blocks++; if (a === 'tut') b.run++; if (a === 'kg') { b.run += 1; b.walk = Math.max(0, b.walk - 0.5); } if (a === 'down') b.blocks = Math.max(1, b.blocks - 1);
+      return `${b.blocks} × (${fmt(b.run)}′ correr + ${fmt(b.walk)}′ caminar)`;
+    }
+    let { s, r, kg, t } = e;
+    if (a === 'reps') r += e.u === 's' ? 15 : 2;
+    if (a === 'tut') t = t === '—' ? '4-2-4' : t.split('-').map((n, i) => i === 1 ? +n + 1 : +n + 1).join('-');
+    if (a === 'kg') kg += e.u === 's' ? 5 : 2.5;
+    if (a === 'down') { kg = Math.max(0, kg - 2.5); r = Math.max(1, r - (e.u === 's' ? 15 : 2)); }
+    return `${s} × ${r} ${e.u}${kg ? ' · +' + fmt(kg) + ' kg' : ''}${t !== '—' ? ' · ' + t : ''}`;
+  }
+  const labels = { keep: 'Mantener', reps: '+ Reps', tut: '+ Tiempo bajo tensión', kg: '+ Peso', down: 'Bajar' };
+  const cardioLabels = { keep: 'Mantener', reps: '+ Bloque', tut: '+ Min. corriendo', kg: 'Menos caminar', down: 'Bajar' };
+  function renderRx() {
+    $('#rx-list').innerHTML = rx.map((e, i) => {
+      const a = decisions[i], L = e.cardio ? cardioLabels : labels, cur = doseText(e), nxt = a && a !== 'keep' ? doseText(e, a) : null;
+      return `<div class="rx">
+        <div class="rx-top"><div><span class="tag">${e.day} · ${e.tag}</span><b>${e.name}</b></div><span class="rx-stats">${e.done} · dolor <span class="lvl-${lvl(e.p)} num">${e.p}</span></span></div>
+        <div class="rx-dose">${nxt ? `<span class="old">${cur}</span><span>→</span><span class="new">${nxt}</span>` : `<span>${cur}</span>`}</div>
+        <div class="acts" role="group" aria-label="Decisión para ${e.name}">${Object.entries(L).map(([k, l]) => `<button class="act" type="button" data-i="${i}" data-a="${k}" aria-pressed="${a === k}">${l}</button>`).join('')}</div>
+      </div>`;
+    }).join('');
+    $$('#rx-list .act').forEach(b => b.addEventListener('click', () => { decisions[b.dataset.i] = b.dataset.a; renderRx(); }));
+    const n = Object.keys(decisions).length;
+    $('#decisions').textContent = `${n} de ${rx.length} decisiones tomadas · se guardan para aprender tu criterio`;
+    $('#publish').disabled = n < rx.length;
+  }
+  renderRx();
+  $('#auto').addEventListener('click', e => { const on = e.currentTarget.getAttribute('aria-checked') !== 'true'; e.currentTarget.setAttribute('aria-checked', String(on)); toast(on ? 'Encuesta automática activada' : 'Encuesta automática desactivada'); });
+  $('#publish').addEventListener('click', () => {
+    toast('Semana 4 publicada · Ricardo la verá en su app');
+    tasks.shift(); renderSide('ricardo'); $('#publish').disabled = true; $('#publish').textContent = 'Semana 4 publicada';
+  });
+  $('#add-ex').addEventListener('click', () => toast('Aquí se abrirá el buscador de tu listado de ejercicios con vídeo'));
+  $('#copy-code').addEventListener('click', () => toast('Código de Ricardo: RCD-4821 (de ejemplo)'));
+  $('#wa').addEventListener('click', () => toast('Abriría WhatsApp con Ricardo'));
+  $('#new-patient').addEventListener('click', () => toast('Generaría el enlace del formulario pre-sesión para enviárselo'));
+
+  /* ---------- Historia clínica ---------- */
+  $('#hc').innerHTML = hc.map((s, i) => `<details ${i === 0 ? 'open' : ''}><summary>${s.t} <span>${s.s}</span></summary><div class="hc-body">
+    ${s.qa ? `<dl style="margin:0;display:grid;gap:0">${s.qa.map(([q, a]) => `<div class="qa"><dt>${q}</dt><dd>${a}</dd></div>`).join('')}</dl>` : ''}
+    ${s.flags ? `<div class="chipline">${s.flags.map(f => `<span class="pill ok">${f}: no</span>`).join('')}</div>` : ''}
+  </div></details>`).join('');
+
+  /* ---------- Registros ---------- */
+  $('#log').innerHTML = log.map(([d, t, s, c, p]) => `<div class="log-item"><span class="d">${d}</span><div><b>${t}</b>${s ? `<p class="mute">${s}</p>` : ''}${c ? `<p class="soft" style="font-size:14px;margin-top:4px">${c}</p>` : ''}</div>${p !== null ? `<span class="v lvl-${lvl(p)}">${p}</span>` : '<span></span>'}</div>`).join('');
+
+  renderSide('ricardo');
+  if (window.matchMedia('(min-width: 960px)').matches) shell.dataset.screen = 'detail';
+})();
+</script>
