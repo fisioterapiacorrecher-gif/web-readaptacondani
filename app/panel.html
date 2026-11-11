@@ -76,6 +76,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .task[data-kind="pain"] i { background: var(--coral); }
 .task[data-kind="silent"] i { background: var(--warn); }
 .task[data-kind="new"] i { background: var(--mint); }
+.task[data-kind="call"] i { background: transparent; border: 2px solid var(--hueso); }
 .task b { font-weight: 600; font-size: 14px; display: block; line-height: 1.35; color: var(--text); }
 .task span { font-size: 12px; color: var(--text-mute); }
 
@@ -210,6 +211,91 @@ details[open] summary::after { content: "−"; }
 .toast { position: fixed; z-index: 50; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 12px); opacity: 0; background: var(--hueso); color: var(--black);
   font-weight: 700; font-size: 14px; padding: 12px 18px; border-radius: 999px; pointer-events: none; transition: opacity .2s var(--ease), transform .2s var(--ease); max-width: calc(100% - 32px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+/* ---------- Añadidos v3: menú, plantillas, biblioteca, mensajes, alta, nuevo paciente ---------- */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sidenav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.sidenav button { min-height: 40px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text-soft);
+  transition: background-color .16s var(--ease), transform .16s var(--ease); }
+.sidenav button:active { transform: scale(0.97); }
+.sidenav button[aria-current="true"] { background: var(--hueso); color: var(--black); border-color: var(--hueso); }
+.view { display: grid; gap: 18px; padding-top: 18px; }
+.view[hidden] { display: none; }
+#v-patient { padding-top: 0; gap: 0; }
+.vhead { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.vtitle { font-size: 26px; font-weight: 800; text-transform: uppercase; line-height: 1.05; }
+.chip { min-height: 40px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: 14px; font-weight: 600; transition: transform .16s var(--ease); }
+.chip:active { transform: scale(0.97); }
+.chip[aria-pressed="true"] { background: var(--hueso); color: var(--black); border-color: var(--hueso); }
+.pill.warnp { color: var(--warn); border-color: rgba(255,178,63,.5); }
+.prop { font-style: normal; font-family: var(--font-accent); font-size: 11px; color: var(--warn); border: 1px solid currentColor; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.phases { display: flex; gap: 4px; }
+.ph { display: grid; gap: 4px; min-width: 0; }
+.ph i { height: 6px; border-radius: 999px; background: var(--surface-3); }
+.ph.done i { background: rgba(255,52,52,.5); }
+.ph.now i { background: var(--coral); }
+.ph b { font-size: 12px; font-weight: 600; line-height: 1.25; }
+@media (max-width: 640px) {
+  .phases { flex-direction: column; gap: 8px; }
+  .ph { flex-basis: auto !important; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 10px; }
+  .ph i { grid-column: 1 / -1; }
+}
+.ph span { font-family: var(--font-accent); font-size: 11px; color: var(--text-mute); }
+.ph.now b { color: var(--coral); }
+.days3 { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .days3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.days3 ul, .alta-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.days3 li { font-size: 14px; padding-left: 14px; position: relative; }
+.days3 li::before { content: ""; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
+.dayname { font-family: var(--font-accent); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 6px; }
+.alta-list li { display: grid; gap: 2px; padding: 10px 0; border-top: 1px solid var(--border); }
+.alta-list li:first-child { border-top: 0; padding-top: 0; }
+.alta-list span { font-size: 13px; color: var(--text-soft); }
+.alta-list .prop { justify-self: start; margin-top: 2px; }
+.lib { display: grid; gap: 0; padding-block: 6px; }
+.lib-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--border); align-items: center; }
+.lib-row:first-child { border-top: 0; }
+.lib-row .chipline { grid-column: 1; }
+.lib-row > .mute { grid-row: 1 / span 2; grid-column: 2; }
+.rem-row { padding: 10px 0; border-top: 1px solid var(--border); }
+.rem-row:first-child { border-top: 0; padding-top: 0; }
+.msg { display: grid; gap: 10px; }
+.preview { font-size: 14px; background: var(--surface-2); border-radius: 14px 14px 14px 4px; padding: 10px 14px; color: var(--text-soft); max-width: 46ch; }
+.alta-rows { display: grid; gap: 0; }
+.alta-row { display: grid; gap: 8px; padding: 12px 0; border-top: 1px solid var(--border); grid-template-columns: minmax(0, 1fr); }
+.alta-row:first-child { border-top: 0; padding-top: 0; }
+@media (min-width: 760px) { .alta-row { grid-template-columns: minmax(0, 1fr) 180px auto; align-items: center; } }
+.alta-row input { font-size: 15px; padding: 9px 12px; }
+.alta-row .act[aria-pressed="true"] { background: var(--mint); border-color: var(--mint); color: var(--black); }
+input[type="search"] { -webkit-appearance: none; }
+select { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-in); padding: 12px 14px; }
+.scrim { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.6); opacity: 0; pointer-events: none; transition: opacity .2s var(--ease); }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.modal { position: fixed; z-index: 41; left: 50%; top: 50%; width: min(520px, calc(100% - 32px)); max-height: calc(100% - 48px); overflow-y: auto; transform: translate(-50%, -48%) scale(.98); opacity: 0;
+  background: #0d0d0d; border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: grid; gap: 16px; transition: opacity .2s var(--ease), transform .2s var(--ease); }
+.modal.open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.modal[hidden] { display: none; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; }
+.modal-head h2 { font-size: 22px; font-weight: 800; text-transform: uppercase; }
+.x { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); }
+.np-step { display: grid; gap: 14px; }
+.np-step[hidden] { display: none; }
+.np-step label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { counter-increment: s; font-size: 12px; font-family: var(--font-accent); color: var(--text-mute); border-top: 3px solid var(--surface-3); padding-top: 6px; }
+.steps li::before { content: counter(s) " · "; }
+.steps li.on { color: var(--hueso); border-top-color: var(--coral); }
+.linkbox { display: flex; gap: 8px; align-items: center; justify-content: space-between; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 8px 8px 8px 14px; }
+.linkbox span { font-family: var(--font-accent); font-size: 15px; overflow-wrap: anywhere; user-select: all; }
+a.btn { text-decoration: none; color: var(--text); }
+a.btn.btn-primary { color: var(--black); }
+.timeline { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.timeline li { display: grid; gap: 2px; padding: 10px 0 10px 22px; position: relative; border-left: 2px solid var(--surface-3); margin-left: 5px; }
+.timeline li::before { content: ""; position: absolute; left: -7px; top: 14px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface-3); border: 2px solid #0d0d0d; }
+.timeline li.on::before { background: var(--coral); }
+.timeline span { font-size: 13px; color: var(--text-mute); }
+@media (prefers-reduced-motion: reduce) { .modal { transition: opacity .2s var(--ease); transform: translate(-50%, -50%); } .sidenav button:active, .chip:active { transform: none; } }
+
 @media (prefers-reduced-motion: reduce) {
   .task:active, .pt:active, .btn:active, .act:active { transform: none; }
   .toast { transition: opacity .2s var(--ease); transform: translate(-50%, 0); }
@@ -228,8 +314,14 @@ details[open] summary::after { content: "−"; }
     <div class="brandbar"><svg><use href="#spark"></use></svg><div><b>RCD CLINIC</b><small>Panel de Dani</small></div></div>
     <p class="demo">Prototipo · pacientes de ejemplo</p>
     <button class="btn btn-primary btn-block" type="button" id="new-patient">+ Nuevo paciente</button>
+    <nav class="sidenav" aria-label="Menú">
+      <button type="button" data-v="v-patient" aria-current="true">Pacientes</button>
+      <button type="button" data-v="v-plantillas" aria-current="false">Plantillas</button>
+      <button type="button" data-v="v-biblioteca" aria-current="false">Biblioteca</button>
+      <button type="button" data-v="v-mensajes" aria-current="false">Mensajes</button>
+    </nav>
 
-    <h2>Para hoy <span class="count" id="task-count">4</span></h2>
+    <h2>Para hoy <span class="count" id="task-count">5</span></h2>
     <div class="inbox" id="inbox"></div>
 
     <h2>Pacientes <span class="mute" style="letter-spacing:0">dolor medio</span></h2>
@@ -238,6 +330,7 @@ details[open] summary::after { content: "−"; }
 
   <!-- ============ Ficha del paciente ============ -->
   <main class="main" id="main">
+    <div class="view" id="v-patient">
     <div class="head">
       <div class="head-row">
         <button class="back" type="button" id="back">← Pacientes</button>
@@ -254,6 +347,7 @@ details[open] summary::after { content: "−"; }
         <button class="tab" role="tab" aria-selected="true" data-pane="review" type="button">Revisión semanal</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="hc" type="button">Historia clínica</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="log" type="button">Registros</button>
+        <button class="tab" role="tab" aria-selected="false" data-pane="alta" type="button">Alta</button>
       </div>
     </div>
 
@@ -296,16 +390,80 @@ details[open] summary::after { content: "−"; }
       <div class="hc" id="hc"></div>
     </section>
 
+    <!-- ---- Alta ---- -->
+    <section class="pane" id="pane-alta" hidden aria-label="Alta">
+      <div id="alta" style="display:grid;gap:18px"></div>
+    </section>
+
     <!-- ---- Registros ---- -->
     <section class="pane" id="pane-log" hidden aria-label="Registros">
       <p class="sec-title">Últimas sesiones y comentarios</p>
       <div class="card log" id="log"></div>
     </section>
+    </div>
+    <!-- ============ Plantillas ============ -->
+    <div class="view" id="v-plantillas" hidden>
+      <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Planes base de 12 semanas</p><h1 class="vtitle">Plantillas</h1></div></div>
+      <p class="soft">Ejercicios por semana y día. Las dosis las pones tú al usarla con cada paciente. Iremos creando más plantillas según vayan llegando pacientes.</p>
+      <div class="chipline" id="tpl-pick" role="group" aria-label="Elige plantilla"></div>
+      <div id="tpl-body" style="display:grid;gap:18px"></div>
+    </div>
+
+    <!-- ============ Biblioteca ============ -->
+    <div class="view" id="v-biblioteca" hidden>
+      <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Por nombre, como los tienes tú</p><h1 class="vtitle">Biblioteca de ejercicios</h1></div></div>
+      <label class="sr" for="lib-q">Buscar ejercicio</label>
+      <input id="lib-q" type="search" placeholder="Buscar: sentadilla, gemelo, puente…" autocomplete="off">
+      <p class="mute" id="lib-count"></p>
+      <div class="card lib" id="lib"></div>
+      <p class="mute">Los vídeos se enlazarán desde tu «Listado de ejercicios» de Drive al conectar la app.</p>
+    </div>
+
+    <!-- ============ Mensajes y recordatorios ============ -->
+    <div class="view" id="v-mensajes" hidden>
+      <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Se envían solos</p><h1 class="vtitle">Mensajes y recordatorios</h1></div></div>
+      <p class="sec-title">Recordatorios al paciente</p>
+      <div class="card" id="rem"></div>
+      <p class="sec-title">Mensajes de ánimo</p>
+      <p class="mute">Cambia el texto como quieras. Las palabras entre llaves se rellenan solas para cada paciente. Debajo ves cómo le llegaría a Ricardo.</p>
+      <div id="msgs" style="display:grid;gap:10px"></div>
+    </div>
   </main>
+</div>
+
+<!-- ============ Nuevo paciente ============ -->
+<div class="scrim" id="np-scrim"></div>
+<div class="modal" id="np" role="dialog" aria-modal="true" aria-labelledby="np-title" hidden>
+  <div class="modal-head"><h2 id="np-title">Nuevo paciente</h2><button class="x" type="button" id="np-close" aria-label="Cerrar">✕</button></div>
+  <ol class="steps" id="np-steps">
+    <li data-s="1" class="on">Datos</li><li data-s="2">Enlace</li><li data-s="3">Seguimiento</li>
+  </ol>
+  <div class="np-step" data-step="1">
+    <label>Nombre<input type="text" id="np-name" placeholder="Nombre y apellidos" autocomplete="off"></label>
+    <label>Teléfono (WhatsApp)<input type="text" id="np-phone" inputmode="tel" placeholder="+34 …" autocomplete="off"></label>
+    <label>Lesión · plantilla<select id="np-tpl"></select></label>
+    <div class="two">
+      <label>Plan<select id="np-plan"><option>Readaptación Completa</option><option>Vuelta a Competir</option><option>¿Encajas en RCD?</option></select></label>
+      <label>Duración<select id="np-weeks"><option value="8">8 semanas</option><option value="12" selected>12 semanas</option><option value="16">16 semanas</option></select></label>
+    </div>
+    <button class="btn btn-primary btn-block" type="button" id="np-next" disabled>Crear y generar enlace</button>
+  </div>
+  <div class="np-step" data-step="2" hidden>
+    <p class="soft">Mándale este enlace. Rellenará el formulario pre-sesión y aceptará el consentimiento de datos de salud. Al terminar se le crea la historia clínica sola.</p>
+    <div class="linkbox"><span id="np-link">rcdclinic.com/alta/9F2K-7Q</span><button class="btn btn-ghost" type="button" id="np-copy">Copiar</button></div>
+    <a class="btn btn-primary btn-block" id="np-wa" href="https://wa.me/" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+    <button class="btn btn-ghost btn-block" type="button" id="np-done">Hecho</button>
+  </div>
+  <div class="np-step" data-step="3" hidden>
+    <p class="soft">Lo verás en «Para hoy» en cada paso:</p>
+    <ol class="timeline" id="np-timeline"></ol>
+    <button class="btn btn-primary btn-block" type="button" id="np-finish">Entendido</button>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="data/rcd-datos.js"></script>
 <script>
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
@@ -326,6 +484,7 @@ details[open] summary::after { content: "−"; }
     { kind: 'review', p: 'ricardo', t: 'Revisar la semana 3 de Ricardo', s: 'Encuesta recibida el domingo a las 19:42' },
     { kind: 'pain', p: 'laura', t: 'Laura: dolor 6/10 tras la sesión de ayer', s: 'Comentario: «molestia al bajar el step»' },
     { kind: 'silent', p: 'sergio', t: 'Sergio lleva 3 días sin registrar', s: 'Último registro: viernes' },
+    { kind: 'call', p: 'ricardo', t: 'Ricardo pide videollamada de seguimiento', s: 'Revisión del mes 1 · prefiere martes o jueves por la tarde' },
     { kind: 'new', p: 'paula', t: 'Nueva valoración: Paula', s: 'Rellenó el formulario pre-sesión · crear historia clínica' },
   ];
   const survey = [
@@ -503,6 +662,138 @@ details[open] summary::after { content: "−"; }
 
   /* ---------- Registros ---------- */
   $('#log').innerHTML = log.map(([d, t, s, c, p]) => `<div class="log-item"><span class="d">${d}</span><div><b>${t}</b>${s ? `<p class="mute">${s}</p>` : ''}${c ? `<p class="soft" style="font-size:14px;margin-top:4px">${c}</p>` : ''}</div>${p !== null ? `<span class="v lvl-${lvl(p)}">${p}</span>` : '<span></span>'}</div>`).join('');
+
+
+  /* ================= Añadidos: menú, plantillas, biblioteca, mensajes, alta ================= */
+  const D = window.RCD;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const views = ['v-patient', 'v-plantillas', 'v-biblioteca', 'v-mensajes'];
+  function showView(id) {
+    views.forEach(v => $('#' + v).hidden = v !== id);
+    $$('.sidenav button').forEach(b => b.setAttribute('aria-current', String(b.dataset.v === id)));
+    shell.dataset.screen = 'detail'; $('#main').scrollTop = 0; window.scrollTo({ top: 0 });
+  }
+  $$('.sidenav button').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.v === 'v-patient') { showView('v-patient'); if (!window.matchMedia('(min-width: 960px)').matches) shell.dataset.screen = 'list'; return; }
+    showView(b.dataset.v);
+  }));
+  $$('[data-back]').forEach(b => b.addEventListener('click', () => { shell.dataset.screen = 'list'; }));
+  const _open = open;
+  open = id => { showView('v-patient'); _open(id); };
+
+  /* ---------- Plantillas ---------- */
+  const phaseBar = (t, cur) => `<div class="phases" role="img" aria-label="Fases del tratamiento">${t.fases.map(f => {
+    const w = (f.a - f.de + 1) / t.semanas * 100, state = cur ? (cur > f.a ? 'done' : cur >= f.de ? 'now' : '') : '';
+    return `<div class="ph ${state}" style="flex-basis:${w}%"><i></i><b>${esc(f.nombre)}</b><span>S${f.de}${f.a > f.de ? '–' + f.a : ''}</span></div>`;
+  }).join('')}</div>`;
+  function renderTpl(id) {
+    const t = D.plantillas.find(p => p.id === id);
+    $$('#tpl-pick .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === id)));
+    const weeks = t.plan.map(w => {
+      const prop = w.origen === 'propuesta' || t.origen === 'propuesta';
+      const body = w.progresar
+        ? `<p class="soft">↻ Se copia la semana anterior y se progresa: ${esc(w.progresar)}${w.cambios ? `<br>${esc(w.cambios)}` : ''}</p>`
+        : `<div class="days3">${w.dias.map((d, i) => `<div><p class="dayname">Día ${i + 1}${w.titulos ? ' · ' + esc(w.titulos[i]) : ''}</p><ul>${d.map(e => `<li>${esc(e)}</li>`).join('')}</ul></div>`).join('')}</div>`;
+      return `<details ${w.n === 1 ? 'open' : ''}><summary>Semana ${w.n} <span>${esc(w.fase)}${w.progresar ? ' · progresión' : ''}${prop && t.origen !== 'propuesta' ? ' · <em class="prop">propuesta</em>' : ''}</span></summary>
+        <div class="hc-body">${body}${w.cardio ? `<p class="mute">Cardio: ${esc(w.cardio)}</p>` : ''}</div></details>`;
+    }).join('');
+    $('#tpl-body').innerHTML = `
+      <div class="card" style="display:grid;gap:14px">
+        <div class="rx-top"><div><b style="font-size:18px">${esc(t.nombre)}</b><p class="mute">${esc(t.nota)}</p></div>
+          <span class="pill ${t.origen === 'dani' ? 'ok' : 'warnp'}">${t.origen === 'dani' ? 'Tu protocolo' : 'Propuesta · revisar'}</span></div>
+        ${phaseBar(t)}
+        <p class="mute">Revisión mensual con el cuestionario <b>${t.cuestionario}</b>.</p>
+      </div>
+      <p class="sec-title">Semanas</p><div class="hc">${weeks}</div>
+      <p class="sec-title">Pruebas de alta</p>
+      <div class="card"><p class="mute" style="margin-bottom:8px">El paciente las ve desde el primer día. Tienen que salir superadas para darle el alta.</p>
+        <ul class="alta-list">${t.alta.map(a => `<li><b>${esc(a.prueba)}</b><span>${esc(a.criterio)}</span>${a.origen === 'propuesta' ? '<em class="prop">propuesta</em>' : ''}</li>`).join('')}</ul></div>
+      <button class="btn btn-primary" type="button" id="tpl-use">Usar con un paciente nuevo</button>`;
+    $('#tpl-use').addEventListener('click', () => openNP(t.id));
+  }
+  $('#tpl-pick').innerHTML = D.plantillas.map(p => `<button class="chip" type="button" data-id="${p.id}" aria-pressed="false">${p.corto}</button>`).join('');
+  $$('#tpl-pick .chip').forEach(c => c.addEventListener('click', () => renderTpl(c.dataset.id)));
+  renderTpl('rotuliana');
+
+  /* ---------- Biblioteca ---------- */
+  function renderLib(q = '') {
+    const n = q.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const list = D.biblioteca.filter(e => e.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(n));
+    $('#lib-count').textContent = `${list.length} de ${D.biblioteca.length} ejercicios`;
+    $('#lib').innerHTML = list.length ? list.map(e => `<div class="lib-row"><b>${esc(e.nombre)}</b><span class="chipline">${e.en.map(x => `<span class="pill">${x}</span>`).join('')}</span><span class="mute">sin vídeo</span></div>`).join('')
+      : `<p class="mute">Ningún ejercicio contiene «${esc(q)}». Al conectar la app podrás crearlo aquí con su vídeo.</p>`;
+  }
+  $('#lib-q').addEventListener('input', e => renderLib(e.target.value));
+  renderLib();
+
+  /* ---------- Mensajes y recordatorios ---------- */
+  $('#rem').innerHTML = D.recordatorios.map(r => `<div class="switch rem-row"><span><b>${r.que}</b><br><span class="mute">${r.cuando}</span></span><button type="button" role="switch" aria-checked="true" aria-label="Recordatorio de ${r.que}"></button></div>`).join('');
+  $$('#rem [role="switch"]').forEach(b => b.addEventListener('click', () => b.setAttribute('aria-checked', String(b.getAttribute('aria-checked') !== 'true'))));
+  const sample = { nombre: 'Ricardo', semana: 3, semana_siguiente: 4, semanas_restantes: 9, dolor_medio: '3,4', meses: '1 mes', cuestionario: 'VISA-A' };
+  const fill = s => s.replace(/\{(\w+)\}/g, (m, k) => sample[k] ?? m);
+  $('#msgs').innerHTML = D.mensajes.map(m => `<div class="card msg"><p class="eyebrow">${m.cuando}</p>
+    <label class="sr" for="m-${m.id}">Texto del mensaje</label><textarea id="m-${m.id}" data-id="${m.id}">${esc(m.texto)}</textarea>
+    <p class="preview" id="pv-${m.id}">${esc(fill(m.texto))}</p></div>`).join('');
+  $$('#msgs textarea').forEach(t => t.addEventListener('input', () => { $('#pv-' + t.dataset.id).textContent = fill(t.value); }));
+
+  /* ---------- Pestaña Alta del paciente ---------- */
+  const tA = D.plantillas.find(p => p.id === 'aquiles');
+  const altaState = tA.alta.map(() => ({ res: '', ok: false }));
+  function renderAlta() {
+    const all = altaState.every(a => a.ok);
+    $('#alta').innerHTML = `
+      <div class="card" style="display:grid;gap:12px"><p class="sec-title">Plantilla: ${tA.nombre} · semana 3 de 12</p>${phaseBar(tA, 3)}</div>
+      <div class="card"><p class="mute" style="margin-bottom:10px">Ricardo ve esta lista en su app desde el primer día. Apunta el resultado de cada prueba y márcala cuando la supere.</p>
+      <div class="alta-rows">${tA.alta.map((a, i) => `<div class="alta-row">
+        <div><b>${esc(a.prueba)}</b><p class="mute">Criterio: ${esc(a.criterio)}</p></div>
+        <label class="sr" for="ar-${i}">Resultado</label><input type="text" id="ar-${i}" data-i="${i}" placeholder="Resultado" value="${esc(altaState[i].res)}">
+        <button class="act" type="button" data-ok="${i}" aria-pressed="${altaState[i].ok}">${altaState[i].ok ? 'Superada' : 'Marcar superada'}</button>
+      </div>`).join('')}</div></div>
+      <button class="btn btn-primary" type="button" id="give-alta" ${all ? '' : 'disabled'}>Dar el alta a Ricardo</button>
+      <p class="mute">${altaState.filter(a => a.ok).length} de ${tA.alta.length} pruebas superadas.</p>`;
+    $$('#alta input').forEach(inp => inp.addEventListener('input', () => { altaState[inp.dataset.i].res = inp.value; }));
+    $$('#alta [data-ok]').forEach(b => b.addEventListener('click', () => { const s = altaState[b.dataset.ok]; s.ok = !s.ok; renderAlta(); }));
+    $('#give-alta').addEventListener('click', () => toast('Alta registrada · Ricardo recibirá su informe final'));
+  }
+  renderAlta();
+
+  /* ---------- Nuevo paciente ---------- */
+  $('#np-tpl').innerHTML = D.plantillas.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+  function npStep(n) {
+    $$('#np .np-step').forEach(s => s.hidden = s.dataset.step !== String(n));
+    $$('#np-steps li').forEach(l => l.classList.toggle('on', +l.dataset.s <= n));
+  }
+  function openNP(tpl) {
+    if (tpl) $('#np-tpl').value = tpl;
+    npStep(1); $('#np').hidden = false; $('#np-scrim').classList.add('open');
+    requestAnimationFrame(() => $('#np').classList.add('open')); $('#np-name').focus();
+  }
+  function closeNP() { $('#np').classList.remove('open'); $('#np-scrim').classList.remove('open'); setTimeout(() => { $('#np').hidden = true; }, 200); }
+  $('#new-patient').replaceWith($('#new-patient').cloneNode(true));
+  $('#new-patient').addEventListener('click', () => openNP());
+  $('#np-close').addEventListener('click', closeNP); $('#np-scrim').addEventListener('click', closeNP);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#np').hidden) closeNP(); });
+  $('#np-name').addEventListener('input', e => { $('#np-next').disabled = e.target.value.trim().length < 2; });
+  $('#np-next').addEventListener('click', () => {
+    const name = $('#np-name').value.trim().split(' ')[0];
+    const msg = `Hola ${name}, soy Dani de RCD Clinic. Para preparar tu valoración, rellena este formulario (10 min): https://rcdclinic.com/alta/9F2K-7Q`;
+    $('#np-wa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    npStep(2);
+  });
+  $('#np-copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('#np-link').textContent); toast('Enlace copiado'); }
+    catch { const r = document.createRange(); r.selectNodeContents($('#np-link')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selecciona y copia el enlace'); }
+  });
+  $('#np-done').addEventListener('click', () => {
+    const t = D.plantillas.find(p => p.id === $('#np-tpl').value);
+    $('#np-timeline').innerHTML = [
+      ['Enlace enviado', 'Ahora'], ['Formulario pre-sesión y consentimiento firmados', 'Se crea su historia clínica'],
+      ['Valoración por videollamada', 'Rellenas la exploración objetiva'], [`Semana 1 desde la plantilla «${t.corto}»`, 'Pones las dosis y publicas'],
+      ['Recibe su código de acceso a la app', 'Empieza el seguimiento'],
+    ].map(([a, b], i) => `<li class="${i === 0 ? 'on' : ''}"><b>${a}</b><span>${b}</span></li>`).join('');
+    npStep(3);
+  });
+  $('#np-finish').addEventListener('click', () => { closeNP(); toast('Paciente creado · esperando su formulario'); });
 
   renderSide('ricardo');
   if (window.matchMedia('(min-width: 960px)').matches) shell.dataset.screen = 'detail';

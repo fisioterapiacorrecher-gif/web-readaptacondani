@@ -238,6 +238,30 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 .wp span[data-level="mid"] { color: var(--warn); }
 .wp span[data-level="high"] { color: var(--coral); }
 
+.text-coral { color: var(--coral); }
+/* ---------- Añadidos v3: mensaje de Dani, revisión mensual, camino al alta ---------- */
+.dani-msg { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; background: var(--surface-2); }
+.dani-msg .dav { width: 36px; height: 36px; border-radius: 50%; background: var(--coral); color: var(--black); display: grid; place-items: center; }
+.dani-msg .dav svg { width: 18px; height: 18px; }
+.dani-msg p { font-size: 15px; }
+.month { display: grid; gap: 12px; border-color: rgba(255,52,52,.45); }
+.month .row2 { display: flex; gap: 8px; flex-wrap: wrap; }
+.month select { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-in); padding: 12px 14px; }
+a.btn { text-decoration: none; color: var(--text); }
+.phases { display: flex; gap: 4px; }
+.ph { display: grid; gap: 4px; min-width: 0; }
+.ph i { height: 6px; border-radius: 999px; background: var(--surface-3); }
+.ph.done i { background: rgba(255,52,52,.5); }
+.ph.now i { background: var(--coral); }
+.ph b { display: none; } /* el nombre de la fase actual va en el texto de debajo */
+.ph.now b { color: var(--coral); }
+.alta-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.alta-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+.alta-list li:first-child { border-top: 0; padding-top: 0; }
+.alta-list b { font-weight: 600; font-size: 14px; }
+.alta-list span { font-size: 13px; color: var(--text-soft); grid-column: 1; }
+.alta-list em { font-style: normal; grid-column: 2; grid-row: 1 / span 2; align-self: center; font-family: var(--font-accent); font-size: 12px; color: var(--text-mute); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+
 @media (prefers-reduced-motion: reduce) {
   .sheet, .toast, .ex, .btn, .tab, .chip, .scale button, .set .tick { transition-property: opacity, background-color, color; }
   .sheet { transition: none; }
@@ -269,6 +293,11 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     <div>
       <p class="eyebrow">Semana 3 · Día 2 · Martes</p>
       <h1 id="t-hoy">Hola, Ricardo</h1>
+    </div>
+
+    <div class="card dani-msg">
+      <span class="dav" aria-hidden="true"><svg><use href="#spark"></use></svg></span>
+      <div><p class="eyebrow">Mensaje de Dani · semana 3</p><p id="dani-text">¡Semana 2 hecha, Ricardo! Ahora lo importante es la constancia, no la carga. Esta semana subimos un poco las elevaciones.</p></div>
     </div>
 
     <div class="days" aria-label="Tu semana">
@@ -344,6 +373,24 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
       <h1 id="t-semana">¿Qué tal la semana?</h1>
       <p class="soft" style="margin-top:8px">Con esto Dani prepara tu semana 4. Te lleva 2 minutos.</p>
     </div>
+    <div class="card month">
+      <p class="eyebrow">Revisión del mes 1 · toca esta semana</p>
+      <p><b>Cuestionario VISA-A</b> · 5 minutos. Sirve para medir tu mejora de forma objetiva.</p>
+      <button class="btn btn-primary btn-block" type="button" id="visa-start">Hacer el cuestionario</button>
+      <label for="call">¿Quieres una videollamada de seguimiento con Dani?</label>
+      <select id="call">
+        <option value="">Elige una opción</option>
+        <option>Sí, esta semana por la mañana</option>
+        <option>Sí, esta semana por la tarde</option>
+        <option>Sí, la semana que viene</option>
+        <option>No hace falta, voy bien</option>
+      </select>
+      <div class="row2">
+        <button class="btn btn-ghost" type="button" id="call-send" disabled>Enviar a Dani</button>
+        <a class="btn btn-ghost" id="call-wa" href="https://wa.me/34684780066" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      </div>
+    </div>
+
     <div class="survey-progress card">
       <div class="row"><p class="soft" id="survey-count">0 de 13 respondidas</p></div>
       <div class="bar" aria-hidden="true"><i id="survey-bar"></i></div>
@@ -362,6 +409,14 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
       <div class="stat"><span>Dolor medio</span><b>3,4</b><em class="up">−1,8 vs S1</em></div>
       <div class="stat"><span>Adherencia</span><b>92%</b><em class="up">11 de 12</em></div>
       <div class="stat"><span>Pasos / día</span><b>8,9k</b><em class="up">+1,4k vs S1</em></div>
+    </div>
+
+    <h2>Camino al alta</h2>
+    <div class="card q">
+      <div class="phases" id="phases"></div>
+      <p class="soft">Estás en la fase <b class="text-coral" id="phase-now">Isotónicos</b> · semana 3 de 12.</p>
+      <p class="mute">Antes de terminar harás estas pruebas con Dani. Tienen que salir superadas para darte el alta.</p>
+      <ul class="alta-list" id="alta-list"></ul>
     </div>
 
     <h2>Mejora del dolor</h2>
@@ -447,6 +502,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="data/rcd-datos.js"></script>
 <script>
 (() => {
   /* ---------- Datos de ejemplo (paciente de prueba) ---------- */
@@ -703,6 +759,17 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     c.addEventListener('click', () => showStrength(n)); pick.appendChild(c);
   });
   showStrength('Talones en escalón');
+
+  /* ---------- v3: revisión mensual y camino al alta (datos de rcd-datos.js) ---------- */
+  const tA = window.RCD?.plantillas.find(x => x.id === 'aquiles');
+  if (tA) {
+    const cur = 3;
+    $('#phases').innerHTML = tA.fases.map(f => `<div class="ph ${cur > f.a ? 'done' : cur >= f.de ? 'now' : ''}" style="flex-basis:${(f.a - f.de + 1) / tA.semanas * 100}%"><i></i><b>${f.nombre}</b></div>`).join('');
+    $('#alta-list').innerHTML = tA.alta.map(a => `<li><b>${a.prueba}</b><span>${a.criterio}</span><em>Pendiente</em></li>`).join('');
+  }
+  $('#visa-start').addEventListener('click', () => toast('Aquí irá el cuestionario VISA-A'));
+  $('#call').addEventListener('change', e => { $('#call-send').disabled = !e.target.value; });
+  $('#call-send').addEventListener('click', () => { toast('Dani lo verá en su panel y te propondrá hora'); $('#call-send').disabled = true; });
 
   renderList();
 })();

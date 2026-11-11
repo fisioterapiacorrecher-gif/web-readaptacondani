@@ -53,6 +53,23 @@ App propia de RCD Clinic que sustituirá al sistema de hojas de Google + formula
 - **Gráficas**: mejora del dolor, adherencia, actividad física (pasos), cardio (distancia y velocidad máxima
   por protocolo), tonelaje y RM estimado por ejercicio.
 
+## Plantillas, alta, revisión mensual y mensajes (11/11/2026)
+
+Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
+- **Plantillas de 12 semanas**: rotuliana y Aquiles salen de los protocolos de Dani (Drive › ANAMNESIS).
+  En Aquiles, las semanas 8 y 10–12 estaban vacías: van como *propuesta*. Isquiotibiales (tendinopatía
+  proximal) y cintilla iliotibial son *propuestas* enteras de Claude para que Dani las revise.
+  Solo llevan ejercicios por nombre; las dosis las pone Dani al usarlas.
+- **Pruebas de alta** por plantilla (todas *propuesta*, Dani las tiene que diseñar o confirmar).
+  El paciente las ve desde el día 1 en «Progreso › Camino al alta». Dani las marca en la pestaña «Alta».
+- **Revisión mensual**: cuestionario validado (VISA-P / VISA-A / VISA-H / LEFS; el texto en castellano
+  lo aporta Dani) y desplegable para pedir videollamada (va a la bandeja de Dani) + enlace a WhatsApp.
+- **Recordatorios**: dolor diario 21:00 si falta · encuesta domingo 18:00 y lunes 12:00 si falta · revisión mensual.
+- **Mensajes de ánimo**: semanal (inicio / mitad / tramo final), mensual y última semana, con variables {nombre}…
+- **Biblioteca**: por nombre (como trabaja Dani), sacada de las plantillas. Falta importar su
+  «Listado de ejercicios» de Drive con los vídeos.
+- **Alta de paciente nuevo**: datos → enlace (formulario pre-sesión + consentimiento RGPD) → seguimiento.
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).
@@ -60,3 +77,5 @@ App propia de RCD Clinic que sustituirá al sistema de hojas de Google + formula
 - La sección 3 del formulario solo tiene campos técnicos ocultos (ID del cuaderno y semana): en la app no hacen falta.
 - Workspace: plan **Business Standard** en **info@rcdclinic.com**. Los datos actuales de PhysiOne están en la
   cuenta personal de Gmail. La app nueva irá en la cuenta de Workspace (contrato de tratamiento de datos para el RGPD).
+- Revisar las plantillas de isquios y cintilla, las semanas propuestas de Aquiles y todas las pruebas de alta.
+- Pasar el texto en castellano de los cuestionarios VISA-A, VISA-P, VISA-H y LEFS que use.
