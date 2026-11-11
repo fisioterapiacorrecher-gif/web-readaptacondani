@@ -90,6 +90,10 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
 - Probar en local sin tocar datos reales: `node app/backend/servidor-pruebas.js` → http://localhost:8787
   (el código de acceso se ve en `/__codigo?email=…`).
 - Publicación: `web/PUBLICAR.md` (Netlify + CNAME `app` en IONOS).
+- Notificaciones (Web Push): al publicar una semana, el motor llama a la función de Netlify
+  `web/netlify/functions/push.js` (empaquetada con web-push; fuente en `netlify/fuente/`), que firma y envía el aviso.
+  Claves VAPID generadas en el navegador de Dani (Ajustes del panel) y guardadas como variables de entorno en Netlify.
+  Móviles suscritos en la pestaña «Avisos». Si no hay notificación posible → email (configurable).
 
 ## Pendiente de Dani
 

@@ -20,3 +20,5 @@
 a.video { text-decoration: none; color: inherit; }
 .video.off { opacity: .55; cursor: default; }
 button.avatar { color: var(--text); cursor: pointer; }
+.avisos { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; border-color: rgba(255,52,52,.45); }
+.avisos.solo-texto { grid-template-columns: minmax(0, 1fr); }

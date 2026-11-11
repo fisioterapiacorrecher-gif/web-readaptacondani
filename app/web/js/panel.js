@@ -280,8 +280,9 @@
     });
     const decisiones = plan.filter(r => r.id).map(r => ({ prescripcionId: r.id, ejercicio: r.ejercicio, accion: r.accion, propuesta: r.auto || r.base || {}, final: r.vals || r.base || {}, dolorMedio: dmSem }));
     try {
-      await api('publicarSemana', { pacienteId: F.paciente.id, semana: destino, ejercicios, decisiones, mensaje: $('#note').value.trim(), avisar: true });
-      toast(`Semana ${destino} publicada · ${F.paciente.nombre.split(' ')[0]} recibirá un email`);
+      const r = await api('publicarSemana', { pacienteId: F.paciente.id, semana: destino, ejercicios, decisiones, mensaje: $('#note').value.trim(), avisar: true });
+      const quien = F.paciente.nombre.split(' ')[0];
+      toast(`Semana ${destino} publicada · ${r.aviso === 'notificacion' ? quien + ' recibirá una notificación en el móvil' : r.aviso === 'email' ? quien + ' recibirá un email' : 'la verá al abrir su app'}`);
       // Guarda en la biblioteca los vídeos nuevos para la próxima vez
       const nuevos = plan.filter(r => r.video && r.video !== videoDe(r.ejercicio));
       for (const r of nuevos) { try { CFG.biblioteca = (await api('guardarBiblioteca', { nombre: r.ejercicio, video: r.video })).biblioteca; } catch { } }
@@ -402,8 +403,42 @@
     $('#cfg').innerHTML = CAMPOS.map(([k, l, t]) => `<label class="cfg-row">${l}${t === 'select'
       ? `<select data-k="${k}"><option value="si" ${c[k] !== 'no' ? 'selected' : ''}>Activados</option><option value="no" ${c[k] === 'no' ? 'selected' : ''}>Desactivados</option></select>`
       : `<input data-k="${k}" type="${t}" ${t === 'number' ? 'min="0" max="23"' : ''} value="${esc(c[k] ?? '')}">`}</label>`).join('');
+    pintarPush();
     $('#msgs').innerHTML = D.mensajes.map(m => `<div class="card msg"><p class="eyebrow">${esc(m.cuando)}</p><p class="preview">${esc(m.texto)}</p></div>`).join('');
   }
+  /* ---------- Notificaciones: claves generadas en este navegador (solo se copian a Netlify y al motor) ---------- */
+  const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  function pintarPush(nuevas) {
+    const c = CFG.config || {}, activas = !!c.PUSH_CLAVE_PUBLICA;
+    const fila = (nombre, valor) => `<div class="clave"><div class="row"><b>${nombre}</b><button class="btn btn-ghost" type="button" data-copy="${esc(valor)}">Copiar</button></div><code>${esc(valor)}</code></div>`;
+    $('#push-card').innerHTML = nuevas ? `
+      <p><b>Claves generadas.</b> Cópialas ahora en Netlify: <b>Site configuration → Environment variables → Add a variable</b>, una por una, con estos nombres exactos.
+        La clave privada no se guarda en ningún otro sitio: si cierras esta página sin copiarla, genera otras.</p>
+      ${fila('VAPID_PUBLIC_KEY', nuevas.pub)}${fila('VAPID_PRIVATE_KEY', nuevas.priv)}${fila('PUSH_SECRETO', nuevas.secreto)}
+      <p class="mute">Después, en Netlify: <b>Deploys → Trigger deploy → Deploy site</b> para que las use. Listo: los pacientes verán «Activar notificaciones» en su app.</p>`
+      : `<p>${activas ? '<b>Activadas.</b> Los pacientes pueden activarlas desde su app; al publicar una semana les llega un aviso al móvil.' : 'Aún no están activadas. Genera las claves una vez y cópialas en Netlify.'}</p>
+      <label class="cfg-row">Si un paciente no tiene notificaciones activadas
+        <select id="push-email"><option value="si" ${c.EMAIL_SI_NO_HAY_NOTIFICACIONES !== 'no' ? 'selected' : ''}>Enviarle el aviso por email</option><option value="no" ${c.EMAIL_SI_NO_HAY_NOTIFICACIONES === 'no' ? 'selected' : ''}>No avisarle</option></select></label>
+      <button class="btn ${activas ? 'btn-ghost' : 'btn-primary'}" type="button" id="push-gen">${activas ? 'Generar claves nuevas' : 'Generar claves'}</button>
+      ${activas ? '<p class="mute">Ojo: con claves nuevas, cada paciente tendrá que volver a pulsar «Activar» en su app.</p>' : ''}`;
+    document.querySelectorAll('#push-card [data-copy]').forEach(b => b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copy); toast('Copiado'); } catch { toast('Selecciona el texto y cópialo'); }
+    }));
+    $('#push-email')?.addEventListener('change', async e => { try { CFG.config = (await api('guardarConfig', { cambios: { EMAIL_SI_NO_HAY_NOTIFICACIONES: e.target.value } })).config; toast('Guardado'); } catch (x) { toast(x.message); } });
+    $('#push-gen')?.addEventListener('click', async () => {
+      const btn = $('#push-gen'); btn.disabled = true;
+      try {
+        const k = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+        const pub = b64u(await crypto.subtle.exportKey('raw', k.publicKey));
+        const priv = (await crypto.subtle.exportKey('jwk', k.privateKey)).d;
+        const secreto = b64u(crypto.getRandomValues(new Uint8Array(32)));
+        const url = (c.APP_URL || 'https://app.rcdclinic.com').replace(/\/$/, '') + '/.netlify/functions/push';
+        CFG.config = (await api('guardarConfig', { cambios: { PUSH_CLAVE_PUBLICA: pub, PUSH_SECRETO: secreto, PUSH_URL: url } })).config;
+        pintarPush({ pub, priv, secreto });
+      } catch (x) { toast(x.message || 'No se han podido generar las claves.'); btn.disabled = false; }
+    });
+  }
+
   $('#cfg-save').addEventListener('click', async () => {
     const cambios = Object.fromEntries($$('#cfg [data-k]').map(i => [i.dataset.k, i.value.trim()]));
     try { CFG.config = (await api('guardarConfig', { cambios })).config; toast('Ajustes guardados'); } catch (e) { toast(e.message); }

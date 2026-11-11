@@ -89,6 +89,7 @@
     pintarSemana();
     $('#dot-dolor').hidden = Y.dolor.some(d => d.fecha === Y.hoy);
     $('#dot-semana').hidden = Y.encuestaHecha && !(Y.revisionMensual && !Y.revisionMensual.hecha);
+    pintarAvisos().catch(() => {});
   }
 
   function pintarDias(dias, hechos) {
@@ -381,8 +382,40 @@
     else vacio($('#chart-steps'), 'Aparecerá con tu encuesta semanal');
   }
 
-  /* ---------- Instalar como app (service worker) ---------- */
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  /* ---------- Instalar como app (service worker) y notificaciones ---------- */
+  const swListo = ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost'))
+    ? navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).catch(() => null) : Promise.resolve(null);
+  const b64aBytes = s => { const p = '='.repeat((4 - s.length % 4) % 4); const b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+  const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const instalada = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  async function pintarAvisos() {
+    const card = $('#avisos-card'), clave = Y?.avisos?.clave;
+    card.hidden = true; card.classList.remove('solo-texto'); $('#avisos-btn').hidden = false;
+    if (!clave) return;                                   // Dani aún no ha activado las notificaciones
+    if (esIOS && !instalada) {                            // en iPhone solo funcionan con la app en la pantalla de inicio
+      card.hidden = false; card.classList.add('solo-texto'); $('#avisos-btn').hidden = true;
+      $('#avisos-text').textContent = 'Para recibir avisos en el iPhone, añade la app a tu pantalla de inicio: botón Compartir → «Añadir a pantalla de inicio», y ábrela desde ahí.';
+      return;
+    }
+    if (!('PushManager' in window) || !('Notification' in window) || Notification.permission === 'denied') return;
+    const reg = await swListo; if (!reg) return;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub && Notification.permission === 'granted') return; // ya activadas en este móvil
+    card.hidden = false; $('#avisos-text').textContent = 'Te avisaremos en el móvil cuando Dani publique tu nueva semana.';
+  }
+  $('#avisos-btn').addEventListener('click', async () => {
+    const btn = $('#avisos-btn'); btn.disabled = true;
+    try {
+      const permiso = await Notification.requestPermission();
+      if (permiso !== 'granted') { toast('Sin permiso no podemos avisarte. Puedes activarlo en los ajustes del móvil.'); $('#avisos-card').hidden = true; return; }
+      const reg = await swListo;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64aBytes(Y.avisos.clave) });
+      await api('guardarAviso', { suscripcion: sub.toJSON() });
+      $('#avisos-card').hidden = true; toast('Notificaciones activadas en este móvil');
+    } catch (x) { toast(x.message || 'No se han podido activar las notificaciones.'); }
+    finally { btn.disabled = false; }
+  });
 
   api.conToken() ? cargar() : mostrarAcceso();
 })();

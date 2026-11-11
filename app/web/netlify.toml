@@ -1,0 +1,9 @@
+# Netlify: la carpeta app/web se publica tal cual, sin compilar.
+# La función de notificaciones ya va empaquetada en netlify/functions/push.js
+# (fuente en netlify/fuente/: npm install && npx esbuild push.js --bundle --platform=node --outfile=../functions/push.js).
+[build]
+  publish = "."
+  command = ""
+
+[functions]
+  directory = "netlify/functions"

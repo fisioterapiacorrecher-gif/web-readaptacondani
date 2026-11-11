@@ -5,6 +5,8 @@ const path = require('path');
 const crypto = require('crypto');
 
 function crearMotor() {
+  const peticiones = [];
+  let respuestaPush = b => ({ ok: true, resultados: b.subs.map(x => ({ endpoint: x.endpoint, ok: true })) });
 /* ---------- Simulación mínima de los servicios de Google ---------- */
   function crearHoja(nombre) {
     const rows = [];
@@ -58,6 +60,7 @@ function crearMotor() {
       newTrigger: h => ({ timeBased: () => ({ everyHours: () => ({ create: () => triggers.push(h) }) }) }),
     },
     MailApp: { sendEmail: o => correos.push(o) },
+    UrlFetchApp: { fetch: (url, o) => { peticiones.push({ url, o, cuerpo: JSON.parse(o.payload) }); const r = respuestaPush(JSON.parse(o.payload)); return { getResponseCode: () => r.codigo ?? 200, getContentText: () => JSON.stringify(r.cuerpo ?? r) }; } },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     ContentService: { createTextOutput: s => ({ s, setMimeType() { return this; }, getContent() { return this.s; } }), MimeType: { JSON: 'json' } },
     Logger: { log() {} },
@@ -68,6 +71,6 @@ function crearMotor() {
   
   const nueva = () => vm.runInContext('for (const k in _cache) delete _cache[k]; _ss = null;', ctx);
   const api = (body) => { nueva(); return JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(body) } }).getContent()); };
-  return { ctx, libro, correos, triggers, nueva, api };
+  return { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush: f => { respuestaPush = f; } };
 }
 module.exports = { crearMotor };

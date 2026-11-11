@@ -41,6 +41,17 @@ Usamos **Netlify** (gratis, con HTTPS automático) y en **IONOS** solo añadimos
 La landing (`rcdclinic.com`) es independiente: cuando la subas, irá en otro sitio de Netlify con la raíz del repositorio,
 y no hay que cambiar nada de esto.
 
+## 5. Activar las notificaciones en el móvil (cuando app.rcdclinic.com ya funcione)
+
+1. Entra en tu panel → **Ajustes** → **Notificaciones en el móvil** → **Generar claves**.
+2. Te salen 3 valores. En Netlify: **Site configuration → Environment variables → Add a variable**, y crea estas tres
+   (nombre exacto → valor que te da el panel, con el botón Copiar):
+   `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `PUSH_SECRETO`
+3. En Netlify: **Deploys → Trigger deploy → Deploy site**.
+4. Listo. Cada paciente verá en su app «Activa las notificaciones» y, al aceptarlo, le llegará un aviso al móvil
+   cada vez que publiques su semana. Quien no las active recibe el email (lo puedes desactivar en Ajustes).
+   En iPhone solo funcionan si el paciente ha añadido la app a la pantalla de inicio (iOS 16.4 o posterior).
+
 ## Instalar la app en el móvil (para ti y para los pacientes)
 
 - **iPhone (Safari)**: abre `app.rcdclinic.com` → botón **Compartir** → **Añadir a pantalla de inicio**.

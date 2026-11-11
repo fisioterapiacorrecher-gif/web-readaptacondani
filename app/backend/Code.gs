@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -38,6 +38,7 @@ const TABLAS = {
   Alta: ['id', 'pacienteId', 'prueba', 'criterio', 'resultado', 'superada', 'fecha'],
   Biblioteca: ['nombre', 'video', 'notas'],
   Registro: ['fecha', 'tipo', 'detalle'],
+  Avisos: ['pacienteId', 'endpoint', 'p256dh', 'auth', 'creado'],   // móviles con notificaciones activadas
 };
 
 const CONFIG_INICIAL = {
@@ -51,6 +52,11 @@ const CONFIG_INICIAL = {
   RECORDATORIO_ENCUESTA_HORA: '18',
   RECORDATORIO_ENCUESTA_REPITE_HORA: '12', // lunes
   RECORDATORIOS_ACTIVOS: 'si',
+  // Notificaciones en el móvil (se rellenan desde el panel: Ajustes › Notificaciones)
+  PUSH_URL: 'https://app.rcdclinic.com/.netlify/functions/push',
+  PUSH_CLAVE_PUBLICA: '',
+  PUSH_SECRETO: '',
+  EMAIL_SI_NO_HAY_NOTIFICACIONES: 'si',
 };
 
 /* ============================== Instalación ============================== */
@@ -74,7 +80,7 @@ function instalar() {
   });
   const sobrante = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
   if (sobrante && ss.getSheets().length > 1) ss.deleteSheet(sobrante);
-  const cfg = leerConfig_(ss);
+  const cfg = leerConfig_(ss, true);
   Object.keys(CONFIG_INICIAL).forEach(k => { if (!(k in cfg)) anadir_('Config', { clave: k, valor: CONFIG_INICIAL[k] }, ss); });
 
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'recordatorios').forEach(t => ScriptApp.deleteTrigger(t));
@@ -106,7 +112,7 @@ function doPost(e) {
 }
 
 const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1 };
-const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1 };
+const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1 };
 const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1 };
 
 function enrutar_(req) {
@@ -201,6 +207,7 @@ const ACC = {
       revisionMensual: semana % 4 === 0 || (semana > 1 && (semana - 1) % 4 === 0) ? { tipo: p.cuestionario, mes, hecha: !!cuestionarioHecho } : null,
       alta: alta.map(a => ({ prueba: a.prueba, criterio: a.criterio, superada: esSi_(a.superada) })),
       contacto: { whatsapp: cfg.WHATSAPP, reservaCalendario: cfg.RESERVA_CALENDARIO },
+      avisos: { clave: cfg.PUSH_CLAVE_PUBLICA || '', activados: buscar_('Avisos', a => a.pacienteId === p.id).length },
     };
   },
 
@@ -350,10 +357,34 @@ const ACC = {
       if (req.mensaje) anadir_('Mensajes', { id: id_(), pacienteId: p.id, semana, texto: texto_(req.mensaje, 1500), fecha: new Date().toISOString() });
       if (semana > Number(p.semanaActual || 0)) actualizar_('Pacientes', x => x.id === p.id, { semanaActual: semana });
     });
+    let aviso = null;
     if (req.avisar && p.estado === 'activo') {
       const cfg = leerConfig_();
-      enviar_(cfg, p.email, `Tu semana ${semana} ya está lista`, `Hola ${nombrePila_(p.nombre)}`, `<p>Dani ha preparado tu semana ${semana}.</p>${req.mensaje ? `<p><i>«${escapar_(req.mensaje)}»</i></p>` : ''}`);
+      // Primero notificación en el móvil; el email solo si no tiene notificaciones activadas (y está permitido en Ajustes)
+      const enviadas = notificar_(cfg, p.id, `Tu semana ${semana} ya está lista`, 'Dani ha preparado tu plan. Ábrelo para ver tus ejercicios.', cfg.APP_URL);
+      if (enviadas > 0) aviso = 'notificacion';
+      else if (cfg.EMAIL_SI_NO_HAY_NOTIFICACIONES !== 'no') {
+        enviar_(cfg, p.email, `Tu semana ${semana} ya está lista`, `Hola ${nombrePila_(p.nombre)}`, `<p>Dani ha preparado tu semana ${semana}.</p>${req.mensaje ? `<p><i>«${escapar_(req.mensaje)}»</i></p>` : ''}`);
+        aviso = 'email';
+      }
     }
+    return { aviso };
+  },
+
+  /* ---------- Notificaciones en el móvil ---------- */
+  guardarAviso(req, q) {
+    const s = req.suscripcion || {};
+    const endpoint = String(s.endpoint || ''), keys = s.keys || {};
+    if (!/^https:\/\/[^\s]+$/.test(endpoint) || endpoint.length > 1000 || !keys.p256dh || !keys.auth) throw publico_('No se ha podido activar el aviso en este móvil.');
+    conBloqueo_(() => {
+      borrar_('Avisos', a => a.endpoint === endpoint);
+      anadir_('Avisos', { pacienteId: q.pacienteId, endpoint, p256dh: texto_(keys.p256dh, 200), auth: texto_(keys.auth, 100), creado: new Date().toISOString() });
+    });
+    return { activados: buscar_('Avisos', a => a.pacienteId === q.pacienteId).length };
+  },
+
+  quitarAviso(req, q) {
+    borrar_('Avisos', a => a.pacienteId === q.pacienteId && a.endpoint === String(req.endpoint || ''));
     return {};
   },
 
@@ -508,9 +539,21 @@ function hoja_(ss) {
   return _ss;
 }
 
+/** Devuelve la pestaña de una tabla y la crea si falta (así una versión nueva no obliga a reinstalar). */
+function pestana_(tabla, ss) {
+  const libro = hoja_(ss);
+  let sh = libro.getSheetByName(tabla);
+  if (!sh) {
+    sh = libro.insertSheet(tabla);
+    sh.getRange(1, 1, 1, TABLAS[tabla].length).setValues([TABLAS[tabla]]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
 function filas_(tabla, ss) {
   if (_cache[tabla]) return _cache[tabla];
-  const sh = hoja_(ss).getSheetByName(tabla);
+  const sh = pestana_(tabla, ss);
   const cols = TABLAS[tabla];
   const n = sh.getLastRow() - 1;
   const vals = n > 0 ? sh.getRange(2, 1, n, cols.length).getValues() : [];
@@ -523,13 +566,13 @@ function buscar_(tabla, filtro, ss) { return filas_(tabla, ss).filter(filtro); }
 function anadir_(tabla, obj, ss) {
   const cols = TABLAS[tabla];
   const fila = cols.map(c => (obj[c] === undefined || obj[c] === null) ? '' : obj[c]);
-  hoja_(ss).getSheetByName(tabla).appendRow(fila);
+  pestana_(tabla, ss).appendRow(fila);
   if (_cache[tabla]) { const o = {}; cols.forEach((c, i) => o[c] = fila[i]); _cache[tabla].push(o); }
 }
 
 function actualizar_(tabla, filtro, cambios) {
   const cols = TABLAS[tabla];
-  const sh = hoja_().getSheetByName(tabla);
+  const sh = pestana_(tabla);
   const filas = filas_(tabla);
   filas.forEach((f, i) => {
     if (!filtro(f)) return;
@@ -542,13 +585,14 @@ function actualizar_(tabla, filtro, cambios) {
 }
 
 function borrar_(tabla, filtro) {
-  const sh = hoja_().getSheetByName(tabla);
+  const sh = pestana_(tabla);
   const filas = filas_(tabla);
   for (let i = filas.length - 1; i >= 0; i--) if (filtro(filas[i])) { sh.deleteRow(i + 2); filas.splice(i, 1); }
 }
 
-function leerConfig_(ss) {
-  const o = {};
+/** Configuración guardada en la pestaña Config. Las claves que aún no existan toman su valor inicial. */
+function leerConfig_(ss, soloGuardada) {
+  const o = soloGuardada ? {} : Object.assign({}, CONFIG_INICIAL);
   filas_('Config', ss).forEach(r => o[r.clave] = String(r.valor));
   return o;
 }
@@ -595,6 +639,23 @@ function porDiaOrden_(a, b) { return (a.semana - b.semana) || (a.dia - b.dia) ||
 function ultimosDias_(lista, n) {
   const limite = Date.now() - n * 86400000;
   return lista.filter(d => new Date(d.fecha).getTime() >= limite).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+}
+
+/** Envía una notificación a todos los móviles del paciente a través del servicio de Netlify.
+    Devuelve cuántas se entregaron. Los móviles que ya no existen se borran solos. */
+function notificar_(cfg, pacienteId, titulo, texto, url) {
+  const subs = buscar_('Avisos', a => a.pacienteId === pacienteId);
+  if (!subs.length || !cfg.PUSH_URL || !cfg.PUSH_SECRETO) return 0;
+  try {
+    const r = UrlFetchApp.fetch(cfg.PUSH_URL, {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      payload: JSON.stringify({ secreto: cfg.PUSH_SECRETO, titulo, texto, url, subs: subs.map(s => ({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } })) }),
+    });
+    if (r.getResponseCode() !== 200) { registrar_('aviso', 'Servicio de notificaciones respondió ' + r.getResponseCode()); return 0; }
+    const res = JSON.parse(r.getContentText()).resultados || [];
+    res.filter(x => x.status === 404 || x.status === 410).forEach(x => borrar_('Avisos', a => a.endpoint === x.endpoint));
+    return res.filter(x => x.ok).length;
+  } catch (e) { registrar_('aviso', 'No enviada: ' + e); return 0; }
 }
 
 function enviar_(cfg, para, asunto, saludo, cuerpo) {

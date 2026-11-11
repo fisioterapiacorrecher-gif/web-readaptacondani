@@ -26,6 +26,9 @@
   .cfg-row { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--border); }
   .cfg-row:first-child { border-top: 0; padding-top: 0; }
   .cfg-row input { font-size: 15px; padding: 10px 12px; }
+  .clave { display: grid; gap: 4px; }
+  .clave code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; user-select: all; }
+  .clave .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .status-pill { font-family: var(--font-accent); font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-soft); }
 </style>
 </head>
@@ -147,6 +150,8 @@
       <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Recordatorios y contacto</p><h1 class="vtitle">Ajustes</h1></div></div>
       <div class="card" id="cfg"></div>
       <button class="btn btn-primary" type="button" id="cfg-save">Guardar ajustes</button>
+      <p class="sec-title">Notificaciones en el móvil</p>
+      <div class="card" id="push-card" style="display:grid;gap:12px"></div>
       <p class="sec-title">Mensajes de ánimo (sugerencias)</p>
       <p class="mute">Al preparar cada semana se te propone uno de estos según el momento del tratamiento. Lo puedes cambiar siempre antes de publicar.</p>
       <div id="msgs" style="display:grid;gap:10px"></div>

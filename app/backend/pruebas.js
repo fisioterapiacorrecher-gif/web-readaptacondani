@@ -2,7 +2,7 @@
    Ejecutar: node app/backend/pruebas.js */
 const assert = require('assert');
 const { crearMotor } = require('./simulador');
-const { ctx, libro, correos, triggers, nueva, api } = crearMotor();
+const { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush } = crearMotor();
 const ultimoCodigo = () => (correos[correos.length - 1].subject.match(/(\d{6})$/) || [])[1];
 const ok = (r, msg) => { assert.ok(r.ok, (msg || '') + ' → ' + JSON.stringify(r)); return r; };
 let pasos = 0; const paso = (t) => console.log(`  ✓ ${++pasos}. ${t}`);
@@ -105,6 +105,58 @@ ok(api({ action: 'guardarConfig', token: admin, cambios: { RESERVA_CALENDARIO: '
 r = ok(api({ action: 'config', token: admin }));
 assert.strictEqual(r.config.RESERVA_CALENDARIO, 'https://calendar.app.google/xyz'); assert.strictEqual(r.config.ADMIN_EMAIL, 'info@rcdclinic.com');
 paso('ajustes: se guarda el enlace del calendario y no se puede cambiar el email de Dani desde la app');
+
+
+/* ---------- Notificaciones en el móvil ---------- */
+{
+  // Paciente nuevo con su semana; Dani activa las notificaciones en Ajustes
+  let r2 = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Marta Avisos', email: 'marta@ejemplo.com', plantilla: 'rotuliana', semanas: 12 }));
+  const mid = r2.paciente.id;
+  ok(api({ action: 'pedirCodigo', email: 'marta@ejemplo.com' }));
+  const tM = ok(api({ action: 'verificarCodigo', email: 'marta@ejemplo.com', codigo: ultimoCodigo() })).token;
+  r2 = ok(api({ action: 'yo', token: tM }));
+  assert.strictEqual(r2.avisos.clave, ''); assert.ok(!('PUSH_SECRETO' in r2.avisos));
+  ok(api({ action: 'guardarConfig', token: admin, cambios: { PUSH_CLAVE_PUBLICA: 'BClavePublica', PUSH_SECRETO: 'secreto-largo' } }));
+  r2 = ok(api({ action: 'yo', token: tM }));
+  assert.strictEqual(r2.avisos.clave, 'BClavePublica');
+  assert.ok(!JSON.stringify(r2).includes('secreto-largo'));
+  paso('la app del paciente recibe la clave pública de notificaciones, nunca el secreto');
+
+  assert.ok(!api({ action: 'guardarAviso', token: tM, suscripcion: { endpoint: 'http://inseguro', keys: { p256dh: 'a', auth: 'b' } } }).ok);
+  ok(api({ action: 'guardarAviso', token: tM, suscripcion: { endpoint: 'https://push.ejemplo/movil-1', keys: { p256dh: 'p1', auth: 'a1' } } }));
+  r2 = ok(api({ action: 'guardarAviso', token: tM, suscripcion: { endpoint: 'https://push.ejemplo/movil-1', keys: { p256dh: 'p1', auth: 'a1' } } }));
+  assert.strictEqual(r2.activados, 1);
+  ok(api({ action: 'guardarAviso', token: tM, suscripcion: { endpoint: 'https://push.ejemplo/movil-2', keys: { p256dh: 'p2', auth: 'a2' } } }));
+  paso('activar notificaciones en dos móviles (repetir el mismo móvil no lo duplica; solo direcciones https)');
+
+  const correosAntes = correos.length;
+  r2 = ok(api({ action: 'publicarSemana', token: admin, pacienteId: mid, semana: 1, avisar: true, ejercicios: [{ dia: 1, ejercicio: 'Sentadilla isométrica 1', series: 4, valor: '45', unidad: 's' }] }));
+  assert.strictEqual(r2.aviso, 'notificacion');
+  const pet = peticiones[peticiones.length - 1];
+  assert.strictEqual(pet.cuerpo.secreto, 'secreto-largo'); assert.strictEqual(pet.cuerpo.subs.length, 2);
+  assert.ok(/semana 1/.test(pet.cuerpo.titulo));
+  assert.strictEqual(correos.length, correosAntes);
+  paso('al publicar la semana llega una notificación a sus dos móviles y no se envía email');
+
+  setRespuestaPush(b => ({ ok: true, resultados: b.subs.map((x, i) => i === 0 ? { endpoint: x.endpoint, ok: true } : { endpoint: x.endpoint, ok: false, status: 410 }) }));
+  ok(api({ action: 'publicarSemana', token: admin, pacienteId: mid, semana: 2, avisar: true, ejercicios: [] }));
+  assert.strictEqual(libro.getSheetByName('Avisos').rows.length - 1, 1);
+  paso('un móvil que ya no existe (respuesta 410) se borra solo');
+
+  setRespuestaPush(b => ({ ok: true, resultados: b.subs.map(x => ({ endpoint: x.endpoint, ok: false, status: 500 })) }));
+  r2 = ok(api({ action: 'publicarSemana', token: admin, pacienteId: mid, semana: 3, avisar: true, ejercicios: [] }));
+  assert.strictEqual(r2.aviso, 'email'); assert.strictEqual(correos.length, correosAntes + 1);
+  ok(api({ action: 'guardarConfig', token: admin, cambios: { EMAIL_SI_NO_HAY_NOTIFICACIONES: 'no' } }));
+  r2 = ok(api({ action: 'publicarSemana', token: admin, pacienteId: mid, semana: 4, avisar: true, ejercicios: [] }));
+  assert.strictEqual(r2.aviso, null); assert.strictEqual(correos.length, correosAntes + 1);
+  paso('si la notificación no llega, email de reserva (y se puede desactivar en Ajustes)');
+
+  // Actualizar el código sin reinstalar: falta la pestaña Avisos y claves nuevas de Config
+  libro.sheets.splice(libro.sheets.indexOf(libro.getSheetByName('Avisos')), 1);
+  ok(api({ action: 'yo', token: tM }));
+  assert.ok(libro.getSheetByName('Avisos'));
+  paso('al actualizar el código, la pestaña nueva se crea sola (no hace falta reinstalar)');
+}
 
 ok(api({ action: 'salir', token: pac }));
 assert.ok(!api({ action: 'yo', token: pac }).ok);

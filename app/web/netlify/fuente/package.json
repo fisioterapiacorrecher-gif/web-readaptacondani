@@ -1,0 +1,8 @@
+{
+  "name": "rcd-app",
+  "private": true,
+  "description": "RCD Clinic · app del paciente y panel. Solo hace falta para la función de notificaciones de Netlify.",
+  "dependencies": {
+    "web-push": "3.6.7"
+  }
+}
