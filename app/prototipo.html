@@ -153,6 +153,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   overflow-y: auto; overscroll-behavior: contain; background: #0d0d0d; border: 1px solid var(--border); border-bottom: 0; border-radius: 22px 22px 0 0;
   padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   transform: translateY(105%); transition: transform .32s var(--ease); display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; align-content: start; gap: 16px; }
+.sheet:not(.open) { visibility: hidden; transition: transform .32s var(--ease), visibility 0s linear .32s; }
 .sheet.open { transform: translateY(0); }
 .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--surface-3); margin: 0 auto 2px; }
 .sheet-head { display: flex; gap: 12px; align-items: start; justify-content: space-between; }
@@ -210,6 +211,33 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   transition: opacity .2s var(--ease), transform .2s var(--ease); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- Añadidos v2 ---------- */
+.q label { font-weight: 600; display: grid; gap: 8px; }
+.pain-word { font-family: var(--font-accent); font-size: 14px; color: var(--text-mute); min-height: 21px; }
+.pain-word[data-level="ok"] { color: var(--mint); }
+.pain-word[data-level="mid"] { color: var(--warn); }
+.pain-word[data-level="high"] { color: var(--coral); }
+.scale button[aria-pressed="true"].neutral { background: var(--hueso); color: var(--black); border-color: var(--hueso); }
+.ex .tag { display: block; font-family: var(--font-accent); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mute); line-height: 1.4; }
+.ex.cardio .tag { color: var(--coral); }
+.guess { font-family: var(--font-accent); font-size: 11px; font-weight: 500; letter-spacing: .04em; color: var(--warn); border: 1px solid currentColor; border-radius: 999px; padding: 1px 8px; margin-left: 4px; white-space: nowrap; }
+.mini-title { font-family: var(--font-accent); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-soft); margin-top: 4px; }
+.cardio-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cardio-grid[hidden] { display: none; }
+.cardio-grid label { display: grid; gap: 6px; font-family: var(--font-accent); font-size: 12px; color: var(--text-mute); letter-spacing: .04em; }
+.chart .val { fill: var(--hueso); font-size: 12px; }
+.survey-section { display: grid; gap: 6px; margin-top: 6px; }
+#survey { display: grid; gap: 14px; }
+.survey-progress { display: grid; gap: 10px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 62px); z-index: 5; background: #0b0b0b; }
+.weekpain { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.wp { display: grid; justify-items: center; gap: 4px; padding: 10px 0; border-radius: 12px; background: var(--surface); border: 1px solid transparent; }
+.wp.today { border-color: var(--coral); }
+.wp b { font-family: var(--font-accent); font-size: 11px; font-weight: 500; color: var(--text-mute); }
+.wp span { font-size: 18px; font-weight: 600; color: var(--text-mute); }
+.wp span[data-level="ok"] { color: var(--mint); }
+.wp span[data-level="mid"] { color: var(--warn); }
+.wp span[data-level="high"] { color: var(--coral); }
+
 @media (prefers-reduced-motion: reduce) {
   .sheet, .toast, .ex, .btn, .tab, .chip, .scale button, .set .tick { transition-property: opacity, background-color, color; }
   .sheet { transition: none; }
@@ -254,27 +282,30 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     </div>
 
     <div class="card session">
-      <div class="row"><p class="eyebrow">Sesión de hoy</p><p class="mute num">≈ 35 min</p></div>
-      <p class="title">Fuerza · Tendón de Aquiles</p>
+      <div class="row"><p class="eyebrow">Sesión de hoy · Día 2</p><p class="mute num">≈ 45 min</p></div>
+      <p class="title">Fuerza + cardio</p>
       <div class="bar" aria-hidden="true"><i id="progress-bar"></i></div>
       <div class="row"><p class="soft" id="progress-text">0 de 5 ejercicios</p><p class="mute">Objetivo: dolor ≤ 4</p></div>
+    </div>
+
+    <div class="card q" id="before-card">
+      <p class="label">Antes de empezar: puntúa tu molestia</p>
+      <div class="scale" data-scale="before"></div>
+      <p class="pain-word" id="before-word">Toca un número de 0 a 10</p>
     </div>
 
     <h2>Ejercicios</h2>
     <div class="list" id="ex-list"></div>
 
     <div class="card q" id="finish-card" hidden>
-      <p class="label">¿Cuánto te ha dolido durante la sesión?</p>
+      <p class="label">Puntúa tu molestia después de entrenar</p>
       <div class="scale" data-scale="session"></div>
-      <div class="scale-legend"><span>0 · nada</span><span>10 · máximo</span></div>
-      <p class="label">¿Cómo de dura ha sido? (esfuerzo)</p>
-      <div class="chips" data-chips="rpe">
-        <button class="chip" type="button" aria-pressed="false">Fácil</button>
-        <button class="chip" type="button" aria-pressed="false">Moderada</button>
-        <button class="chip" type="button" aria-pressed="false">Dura</button>
-        <button class="chip" type="button" aria-pressed="false">Muy dura</button>
-      </div>
+      <p class="pain-word" id="session-word">Toca un número de 0 a 10</p>
       <div class="notice warn" id="session-warn"><svg><use href="#i-alert"></use></svg><p>Has marcado más de 4. Dani lo verá en su panel y te escribirá antes de la próxima sesión.</p></div>
+      <label for="session-min">Tiempo de la sesión (minutos)</label>
+      <input id="session-min" type="number" inputmode="numeric" min="0" placeholder="45">
+      <label for="session-note">¿Algo que comentarme sobre la sesión de hoy?</label>
+      <textarea id="session-note" placeholder="Ej.: en la búlgara noté tirantez en el gemelo"></textarea>
       <button class="btn btn-primary btn-block" type="button" id="finish-btn" disabled>Terminar sesión</button>
     </div>
   </section>
@@ -282,100 +313,90 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   <!-- ================= DOLOR ================= -->
   <section class="view" id="view-dolor" hidden aria-labelledby="t-dolor">
     <div>
-      <p class="eyebrow">Registro diario · 30 segundos</p>
-      <h1 id="t-dolor">¿Cómo está tu tendón hoy?</h1>
+      <p class="eyebrow">Diario de dolor · 10 segundos</p>
+      <h1 id="t-dolor">¿Cuánto te duele hoy?</h1>
     </div>
     <div class="card q">
-      <p class="label">Dolor al levantarte</p>
-      <div class="scale" data-scale="morning"></div>
-      <div class="scale-legend"><span>0 · nada</span><span>10 · máximo</span></div>
-    </div>
-    <div class="card q">
-      <p class="label">Rigidez por la mañana</p>
-      <div class="chips" data-chips="stiff">
-        <button class="chip" type="button" aria-pressed="false">Nada</button>
-        <button class="chip" type="button" aria-pressed="false">Unos pasos</button>
-        <button class="chip" type="button" aria-pressed="false">Varios minutos</button>
-        <button class="chip" type="button" aria-pressed="false">Más de 30 min</button>
-      </div>
-    </div>
-    <div class="card q">
-      <p class="label">Dolor 24 h después de la última sesión</p>
-      <div class="scale" data-scale="next"></div>
-      <div class="scale-legend"><span>0 · nada</span><span>10 · máximo</span></div>
+      <p class="label">Dolor de hoy en el tendón</p>
+      <div class="scale" data-scale="daily"></div>
+      <p class="pain-word" id="daily-word">Toca un número de 0 a 10</p>
       <div class="notice good" id="pain-good"><svg><use href="#i-check"></use></svg><p>Dentro de lo esperado. Sigue con el plan.</p></div>
-      <div class="notice warn" id="pain-warn"><svg><use href="#i-alert"></use></svg><p>Por encima de 4. Hoy haz solo la parte isométrica y Dani revisará tu carga.</p></div>
+      <div class="notice warn" id="pain-warn"><svg><use href="#i-alert"></use></svg><p>Por encima de 4. Dani lo verá hoy en su panel y revisará tu carga.</p></div>
+      <label for="daily-note">Anotaciones (opcional)</label>
+      <textarea id="daily-note" placeholder="Ej.: me ha molestado al bajar escaleras"></textarea>
     </div>
-    <button class="btn btn-primary btn-block" type="button" id="pain-save" disabled>Guardar registro</button>
+    <button class="btn btn-primary btn-block" type="button" id="pain-save" disabled>Guardar</button>
+
+    <h2>Esta semana</h2>
+    <div class="weekpain" id="weekpain" aria-label="Dolor de cada día de esta semana"></div>
 
     <h2>Últimos 14 días</h2>
     <div class="card">
       <svg class="chart" id="chart-daily" viewBox="0 0 340 150" role="img" aria-label="Dolor diario de los últimos 14 días"></svg>
-      <div class="legend-row"><span><i></i>Dolor al levantarte</span><span><i class="dash"></i>Límite 4/10</span></div>
+      <div class="legend-row"><span><i></i>Dolor diario</span><span><i class="dash"></i>Límite 4/10</span></div>
     </div>
   </section>
 
   <!-- ================= SEMANA ================= -->
   <section class="view" id="view-semana" hidden aria-labelledby="t-semana">
     <div>
-      <p class="eyebrow">Encuesta semanal · Semana 3</p>
-      <h1 id="t-semana">Tu resumen de la semana</h1>
+      <p class="eyebrow">Diario de progreso semanal · Semana 3</p>
+      <h1 id="t-semana">¿Qué tal la semana?</h1>
       <p class="soft" style="margin-top:8px">Con esto Dani prepara tu semana 4. Te lleva 2 minutos.</p>
     </div>
-    <div class="card q">
-      <p class="label">Dolor medio esta semana</p>
-      <div class="scale" data-scale="week"></div>
-      <div class="scale-legend"><span>0 · nada</span><span>10 · máximo</span></div>
+    <div class="survey-progress card">
+      <div class="row"><p class="soft" id="survey-count">0 de 14 respondidas</p></div>
+      <div class="bar" aria-hidden="true"><i id="survey-bar"></i></div>
     </div>
-    <div class="card q">
-      <p class="label">Comparado con la semana pasada, estás…</p>
-      <div class="chips" data-chips="trend">
-        <button class="chip" type="button" aria-pressed="false">Mejor</button>
-        <button class="chip" type="button" aria-pressed="false">Igual</button>
-        <button class="chip" type="button" aria-pressed="false">Peor</button>
-      </div>
-    </div>
-    <div class="card q">
-      <label for="km">Kilómetros corridos esta semana</label>
-      <input id="km" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0">
-    </div>
-    <div class="card q">
-      <p class="label">Confianza en tu tendón para correr</p>
-      <div class="chips" data-chips="conf">
-        <button class="chip" type="button" aria-pressed="false">Poca</button>
-        <button class="chip" type="button" aria-pressed="false">Algo</button>
-        <button class="chip" type="button" aria-pressed="false">Bastante</button>
-        <button class="chip" type="button" aria-pressed="false">Total</button>
-      </div>
-    </div>
-    <div class="card q">
-      <label for="notes">¿Algo que Dani deba saber?</label>
-      <textarea id="notes" placeholder="Ej.: el jueves noté tirantez al subir cuestas"></textarea>
-    </div>
-    <p class="mute">Preguntas provisionales: las cambiaremos por las de tu formulario de seguimiento.</p>
-    <button class="btn btn-primary btn-block" type="button" id="week-send">Enviar a Dani</button>
+    <div id="survey"></div>
+    <button class="btn btn-primary btn-block" type="button" id="week-send" disabled>Enviar a Dani</button>
   </section>
 
   <!-- ================= PROGRESO ================= -->
   <section class="view" id="view-progreso" hidden aria-labelledby="t-prog">
     <div>
-      <p class="eyebrow">Desde el 21 de octubre</p>
+      <p class="eyebrow">Gráficas de mejora · desde el 21 de octubre</p>
       <h1 id="t-prog">Tu progreso</h1>
     </div>
     <div class="stats">
-      <div class="stat"><span>Dolor medio</span><b>3,4</b><em class="down-good">−1,8 vs S1</em></div>
+      <div class="stat"><span>Dolor medio</span><b>3,4</b><em class="up">−1,8 vs S1</em></div>
       <div class="stat"><span>Adherencia</span><b>92%</b><em class="up">11 de 12</em></div>
-      <div class="stat"><span>Km / semana</span><b>10</b><em class="up">+4 vs S2</em></div>
+      <div class="stat"><span>Pasos / día</span><b>8,9k</b><em class="up">+1,4k vs S1</em></div>
     </div>
-    <h2>Dolor medio por semana</h2>
+
+    <h2>Mejora del dolor</h2>
     <div class="card">
       <svg class="chart" id="chart-weekly" viewBox="0 0 340 150" role="img" aria-label="Dolor medio por semana: semana 1, 5,2; semana 2, 4,1; semana 3, 3,4"></svg>
-      <div class="legend-row"><span><i></i>Dolor medio</span><span><i class="dash"></i>Límite 4/10</span></div>
+      <div class="legend-row"><span><i></i>Dolor medio de la semana</span><span><i class="dash"></i>Límite 4/10</span></div>
     </div>
-    <h2>Carga en elevación de talones</h2>
+
+    <h2>Adherencia</h2>
     <div class="card">
-      <svg class="chart" id="chart-load" viewBox="0 0 340 150" role="img" aria-label="Carga en elevación de talones: semana 1, 0 kg; semana 2, 6 kg; semana 3, 10 kg"></svg>
-      <div class="legend-row"><span>Peso extra por serie (kg)</span></div>
+      <svg class="chart" id="chart-adh" viewBox="0 0 340 150" role="img" aria-label="Adherencia por semana: 75, 83 y 92 por ciento"></svg>
+      <div class="legend-row"><span>Sesiones hechas sobre las programadas</span></div>
+    </div>
+
+    <h2>Fuerza</h2>
+    <div class="card q">
+      <div class="chips" id="ex-pick" role="group" aria-label="Elige ejercicio"></div>
+      <p class="mini-title">Tonelaje (kg movidos en la sesión)</p>
+      <svg class="chart" id="chart-ton" viewBox="0 0 340 150" role="img" aria-label="Tonelaje por semana del ejercicio elegido"></svg>
+      <p class="mini-title">RM estimado (kg)</p>
+      <svg class="chart" id="chart-rm" viewBox="0 0 340 150" role="img" aria-label="RM estimado por semana del ejercicio elegido"></svg>
+    </div>
+
+    <h2>Cardio · correr-caminar</h2>
+    <div class="card q">
+      <p class="mini-title">Distancia total (km)</p>
+      <svg class="chart" id="chart-dist" viewBox="0 0 340 150" role="img" aria-label="Distancia por semana: 4, 6 y 7,5 kilómetros"></svg>
+      <p class="mini-title">Velocidad máxima (km/h)</p>
+      <svg class="chart" id="chart-vel" viewBox="0 0 340 150" role="img" aria-label="Velocidad máxima por semana: 9,5; 10,2 y 10,8 kilómetros por hora"></svg>
+    </div>
+
+    <h2>Actividad física</h2>
+    <div class="card">
+      <svg class="chart" id="chart-steps" viewBox="0 0 340 150" role="img" aria-label="Media diaria de pasos: 7.500, 8.200 y 8.900"></svg>
+      <div class="legend-row"><span>Media diaria de pasos (de tu encuesta semanal)</span></div>
     </div>
   </section>
 </div>
@@ -407,14 +428,19 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   </button>
   <div class="rx" id="sheet-rx"></div>
   <p class="cue" id="sheet-cue"></p>
-  <div>
+  <div id="strength-block">
     <div class="set-head"><span>Serie</span><span id="col-a">Reps</span><span>Kg extra</span><span>Hecha</span></div>
     <div class="sets" id="sheet-sets"></div>
+  </div>
+  <div id="cardio-block" class="cardio-grid" hidden>
+    <label>Distancia (km)<input id="c-dist" type="number" inputmode="decimal" step="0.1" placeholder="2,5"></label>
+    <label>Tiempo (min)<input id="c-time" type="number" inputmode="numeric" placeholder="24"></label>
+    <label>Vel. máx (km/h)<input id="c-vel" type="number" inputmode="decimal" step="0.1" placeholder="10,5"></label>
   </div>
   <div class="q">
     <p class="label">Dolor durante este ejercicio</p>
     <div class="scale" data-scale="exercise"></div>
-    <div class="scale-legend"><span>0 · nada</span><span>10 · máximo</span></div>
+    <p class="pain-word" id="exercise-word">Toca un número de 0 a 10</p>
   </div>
   <button class="btn btn-primary btn-block" type="button" id="sheet-done">Marcar como hecho</button>
 </div>
@@ -423,23 +449,43 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 <script>
 (() => {
+  /* ---------- Datos de ejemplo (paciente de prueba) ---------- */
   const exercises = [
-    { cat: 'Activación · isométrico', name: 'Elevación de talones isométrica', sets: 5, a: '45 s', kg: 0, rest: '60 s', tempo: '—', unit: 'Tiempo',
+    { type: 'fuerza', cat: 'Activación · isométrico', name: 'Elevación de talones isométrica', sets: 5, a: '45 s', kg: 0, rest: '60 s', tempo: '—', unit: 'Tiempo',
       cue: 'De puntillas a media altura sobre un escalón. Aguanta sin rebotar. Un dolor de hasta 4/10 es aceptable.' },
-    { cat: 'Fuerza · tendón', name: 'Elevación de talones en escalón', sets: 4, a: '10', kg: 10, rest: '90 s', tempo: '3-0-3', unit: 'Reps',
+    { type: 'fuerza', cat: 'Fuerza · tendón', name: 'Elevación de talones en escalón', sets: 4, a: '10', kg: 10, rest: '90 s', tempo: '3-0-3', unit: 'Reps',
       cue: 'Sube en 3 segundos y baja en 3, hasta por debajo del escalón. Rodilla estirada.' },
-    { cat: 'Fuerza · sóleo', name: 'Elevación de talones sentado', sets: 3, a: '12', kg: 20, rest: '90 s', tempo: '2-1-3', unit: 'Reps',
+    { type: 'fuerza', cat: 'Fuerza · sóleo', name: 'Elevación de talones sentado', sets: 3, a: '12', kg: 20, rest: '90 s', tempo: '2-1-3', unit: 'Reps',
       cue: 'Peso sobre las rodillas. Pausa de un segundo arriba.' },
-    { cat: 'Fuerza · cadera', name: 'Sentadilla búlgara', sets: 3, a: '8', kg: 8, rest: '2 min', tempo: '3-0-1', unit: 'Reps',
+    { type: 'fuerza', cat: 'Fuerza · cadera', name: 'Sentadilla búlgara', sets: 3, a: '8', kg: 8, rest: '2 min', tempo: '3-0-1', unit: 'Reps',
       cue: 'Pie de atrás en un banco. Baja controlando y empuja con el talón de delante.' },
-    { cat: 'Pliometría suave', name: 'Saltos a la comba', sets: 3, a: '30 s', kg: 0, rest: '60 s', tempo: '—', unit: 'Tiempo',
-      cue: 'Saltos bajos y rítmicos. Para si el dolor sube de 4/10.' },
+    { type: 'cardio', cat: 'Cardio · protocolo correr-caminar', name: 'Correr-caminar 4 × (5′ + 1′)', rx: [['4', 'Bloques'], ['5′', 'Correr'], ['1′', 'Caminar'], ['Z2', 'Ritmo']],
+      cue: 'Ritmo cómodo: tienes que poder hablar. Si el dolor pasa de 4/10, camina y anótalo.' },
   ];
-  const state = { done: new Set(), scales: {}, chips: {}, current: null };
+  const survey = [
+    { section: 'Aspectos relacionados con la lesión' },
+    { id: 'pautas', q: 'Seguimiento de las pautas generales del tratamiento', lo: 'No las he seguido nada', hi: 'No he fallado ningún día' },
+    { id: 'arranque', q: 'Dolor de arranque', hint: 'Dolor en los primeros pasos después de estar un rato sin moverte', lo: 'Nada de molestias', hi: 'Súper dolorido' },
+    { id: 'rigidez', q: 'Rigidez matutina', lo: 'Nada de rigidez', hi: 'Me levanto hecho un tronco' },
+    { id: 'malestar', q: 'Malestar asociado a la lesión', lo: 'Nada', hi: 'Muchísimo', guess: true },
+    { id: 'recfuerza', q: 'Recuperación entre sesiones de fuerza', lo: 'Me siento nada cansado', hi: 'Me siento muy cansado', guess: true },
+    { id: 'reccardio', q: 'Recuperación entre sesiones de cardio', lo: 'Me siento nada cansado', hi: 'Me siento muy cansado' },
+    { section: 'Aspectos relacionados con el contexto', intro: 'Cómo de ajetreada ha sido tu semana, qué tal has descansado y todo lo que pasa en paralelo a la lesión.' },
+    { id: 'miedo', q: '¿Cuánto miedo has tenido durante la semana?', lo: 'No he pensado nada en la lesión', hi: 'No me lo he quitado de la cabeza' },
+    { id: 'pasos', q: 'Actividad física (media diaria de pasos)', num: true, placeholder: '8000', step: 100 },
+    { id: 'motivacion', q: 'Grado de motivación para seguir el tratamiento', lo: 'Nada motivado', hi: 'A tope con el tratamiento' },
+    { id: 'sueno', q: 'Horas de sueño (media diaria)', num: true, placeholder: '7,5', step: 0.5 },
+    { id: 'descanso', q: 'Calidad del descanso', lo: 'No he descansado nada', hi: 'Nunca he dormido tan bien' },
+    { id: 'cansancio', q: 'Cansancio general', lo: 'Nada cansado', hi: 'Agotado', guess: true },
+    { id: 'estres', q: 'Nivel de estrés', lo: 'Nada de estrés', hi: 'Necesito unas vacaciones' },
+    { id: 'cambios', q: '¿Notas cambios en la lesión respecto a la semana pasada?', opts: ['Nada', 'Ligeramente mejor', 'Cambio notable', 'Muy buen cambio'] },
+  ];
+  const painWords = ['Sin dolor', 'Incómodo', 'Poco dolor', 'Poco dolor', 'Dolor moderado', 'Dolor moderado', 'Dolor fuerte', 'Dolor fuerte', 'Dolor muy fuerte', 'Dolor muy fuerte', 'Dolor extremo'];
+
+  const state = { done: new Set(), scales: {}, answers: {}, current: null };
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-  /* ---------- Toast ---------- */
   let tt;
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2200); }
 
@@ -450,47 +496,49 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     window.scrollTo({ top: 0 });
   }));
 
-  /* ---------- Escalas de dolor ---------- */
+  /* ---------- Escalas ---------- */
   const level = n => n <= 3 ? 'ok' : n <= 5 ? 'mid' : 'high';
-  function buildScale(el) {
-    for (let n = 0; n <= 10; n++) {
+  function buildScale(el, { min = 0, max = 10, neutral = false, onPick } = {}) {
+    el.innerHTML = '';
+    el.style.gridTemplateColumns = `repeat(${max - min + 1}, minmax(0, 1fr))`;
+    for (let n = min; n <= max; n++) {
       const b = document.createElement('button');
-      b.type = 'button'; b.textContent = n; b.className = level(n);
-      b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'Dolor ' + n + ' de 10');
-      b.addEventListener('click', () => {
-        $$('button', el).forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-        state.scales[el.dataset.scale] = n;
-        onScale(el.dataset.scale, n);
-      });
+      b.type = 'button'; b.textContent = n; b.className = neutral ? 'neutral' : level(n);
+      b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', n + ' de ' + max);
+      b.addEventListener('click', () => { $$('button', el).forEach(x => x.setAttribute('aria-pressed', String(x === b))); onPick(n); });
       el.appendChild(b);
     }
   }
-  $$('[data-scale]').forEach(buildScale);
-  function resetScale(name) { const el = $(`[data-scale="${name}"]`); $$('button', el).forEach(x => x.setAttribute('aria-pressed', 'false')); delete state.scales[name]; }
-
-  function onScale(name, n) {
-    if (name === 'session') { $('#session-warn').classList.toggle('show', n > 4); checkFinish(); }
-    if (name === 'next') { $('#pain-good').classList.toggle('show', n <= 4); $('#pain-warn').classList.toggle('show', n > 4); }
-    if (name === 'morning' || name === 'next') $('#pain-save').disabled = !(state.scales.morning !== undefined && state.scales.next !== undefined);
+  function painScale(name, after) {
+    buildScale($(`[data-scale="${name}"]`), { onPick: n => {
+      state.scales[name] = n;
+      const w = $('#' + name + '-word'); if (w) { w.textContent = `${n} · ${painWords[n]}`; w.dataset.level = level(n); }
+      after?.(n);
+    } });
   }
+  function resetPain(name) {
+    $$(`[data-scale="${name}"] button`).forEach(x => x.setAttribute('aria-pressed', 'false'));
+    delete state.scales[name];
+    const w = $('#' + name + '-word'); if (w) { w.textContent = 'Toca un número de 0 a 10'; delete w.dataset.level; }
+  }
+  painScale('before', n => { if (n > 4) toast('Más de 4 antes de empezar: haz solo la parte isométrica'); });
+  painScale('session', n => { $('#session-warn').classList.toggle('show', n > 4); $('#finish-btn').disabled = false; });
+  painScale('exercise');
+  painScale('daily', n => { $('#pain-good').classList.toggle('show', n <= 4); $('#pain-warn').classList.toggle('show', n > 4); $('#pain-save').disabled = false; });
 
-  /* ---------- Chips ---------- */
-  $$('[data-chips]').forEach(g => $$('.chip', g).forEach(c => c.addEventListener('click', () => {
-    $$('.chip', g).forEach(x => x.setAttribute('aria-pressed', String(x === c)));
-    state.chips[g.dataset.chips] = c.textContent; checkFinish();
-  })));
-
-  /* ---------- Lista de ejercicios ---------- */
+  /* ---------- Sesión de hoy ---------- */
+  const dose = e => e.type === 'cardio' ? e.rx.map(r => r[0] + ' ' + r[1].toLowerCase()).slice(0, 3).join(' · ')
+    : `${e.sets} × ${e.a}${e.kg ? ' · +' + e.kg + ' kg' : ''}${e.tempo !== '—' ? ' · ' + e.tempo : ''}`;
   function renderList() {
     const list = $('#ex-list'); list.innerHTML = '';
     exercises.forEach((e, i) => {
+      const done = state.done.has(i);
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'ex' + (state.done.has(i) ? ' done' : '');
-      const dose = `${e.sets} × ${e.a}${e.kg ? ' · +' + e.kg + ' kg' : ''}${e.tempo !== '—' ? ' · ' + e.tempo : ''}`;
-      b.innerHTML = `<span class="ix">${state.done.has(i) ? '<svg width="18" height="18"><use href="#i-check"></use></svg>' : i + 1}</span>
-        <span><span class="name">${e.name}</span><br><span class="dose">${dose}</span></span>
-        <span class="state" aria-hidden="true">${state.done.has(i) ? '<svg width="14" height="14"><use href="#i-check"></use></svg>' : ''}</span>`;
-      b.setAttribute('aria-label', `${e.name}, ${dose}${state.done.has(i) ? ', hecho' : ''}`);
+      b.type = 'button'; b.className = 'ex' + (done ? ' done' : '') + (e.type === 'cardio' ? ' cardio' : '');
+      b.innerHTML = `<span class="ix">${done ? '<svg width="18" height="18"><use href="#i-check"></use></svg>' : i + 1}</span>
+        <span><span class="tag">${e.type === 'cardio' ? 'Cardio' : 'Fuerza'}</span><span class="name">${e.name}</span><br><span class="dose">${dose(e)}</span></span>
+        <span class="state" aria-hidden="true">${done ? '<svg width="14" height="14"><use href="#i-check"></use></svg>' : ''}</span>`;
+      b.setAttribute('aria-label', `${e.name}, ${dose(e)}${done ? ', hecho' : ''}`);
       b.addEventListener('click', () => openSheet(i));
       list.appendChild(b);
     });
@@ -500,32 +548,35 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     $('#finish-card').hidden = n < exercises.length;
   }
 
-  /* ---------- Hoja de ejercicio ---------- */
   let lastFocus;
   function openSheet(i) {
     const e = exercises[i]; state.current = i; lastFocus = document.activeElement;
     $('#sheet-cat').textContent = `Ejercicio ${i + 1} de ${exercises.length} · ${e.cat}`;
     $('#sheet-title').textContent = e.name;
     $('#video-note').textContent = 'Vídeo de Dani (desde tu Drive)';
-    $('#sheet-rx').innerHTML = [[e.sets, 'Series'], [e.a, e.unit], [e.tempo, 'Tempo'], [e.rest, 'Descanso']]
-      .map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('');
+    const rx = e.type === 'cardio' ? e.rx : [[e.sets, 'Series'], [e.a, e.unit], [e.tempo, 'Tempo'], [e.rest, 'Descanso']];
+    $('#sheet-rx').innerHTML = rx.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('');
     $('#sheet-cue').textContent = e.cue;
-    $('#col-a').textContent = e.unit;
-    const sets = $('#sheet-sets'); sets.innerHTML = '';
-    for (let s = 1; s <= e.sets; s++) {
-      const row = document.createElement('div'); row.className = 'set';
-      row.innerHTML = `<span class="lbl">Serie ${s}</span>
-        <input id="s${i}-${s}-a" type="number" inputmode="numeric" value="${parseInt(e.a)}" aria-label="${e.unit} serie ${s}">
-        <input id="s${i}-${s}-kg" type="number" inputmode="decimal" value="${e.kg}" aria-label="Kilos extra serie ${s}">
-        <button class="tick" type="button" aria-pressed="${state.done.has(i)}" aria-label="Serie ${s} hecha"><svg width="18" height="18"><use href="#i-check"></use></svg></button>`;
-      const tick = $('.tick', row);
-      tick.addEventListener('click', () => tick.setAttribute('aria-pressed', String(tick.getAttribute('aria-pressed') !== 'true')));
-      sets.appendChild(row);
+    $('#strength-block').hidden = e.type === 'cardio';
+    $('#cardio-block').hidden = e.type !== 'cardio';
+    if (e.type !== 'cardio') {
+      $('#col-a').textContent = e.unit;
+      const sets = $('#sheet-sets'); sets.innerHTML = '';
+      for (let s = 1; s <= e.sets; s++) {
+        const row = document.createElement('div'); row.className = 'set';
+        row.innerHTML = `<span class="lbl">Serie ${s}</span>
+          <input id="s${i}-${s}-a" type="number" inputmode="numeric" value="${parseInt(e.a)}" aria-label="${e.unit} serie ${s}">
+          <input id="s${i}-${s}-kg" type="number" inputmode="decimal" value="${e.kg}" aria-label="Kilos extra serie ${s}">
+          <button class="tick" type="button" aria-pressed="${state.done.has(i)}" aria-label="Serie ${s} hecha"><svg width="18" height="18"><use href="#i-check"></use></svg></button>`;
+        const tick = $('.tick', row);
+        tick.addEventListener('click', () => tick.setAttribute('aria-pressed', String(tick.getAttribute('aria-pressed') !== 'true')));
+        sets.appendChild(row);
+      }
     }
-    resetScale('exercise');
+    resetPain('exercise');
     $('#sheet-done').textContent = state.done.has(i) ? 'Guardar cambios' : 'Marcar como hecho';
     $('#scrim').classList.add('open'); $('#sheet').classList.add('open'); $('#sheet').scrollTop = 0;
-    setTimeout(() => $('#sheet-title').focus?.(), 50);
+    setTimeout(() => $('#sheet-title').focus({ preventScroll: true }), 50);
   }
   function closeSheet() { $('#scrim').classList.remove('open'); $('#sheet').classList.remove('open'); lastFocus?.focus?.(); }
   $('#scrim').addEventListener('click', closeSheet);
@@ -538,44 +589,121 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
     state.done.add(i); renderList(); closeSheet();
     toast(p !== undefined && p > 4 ? 'Guardado · Dani verá que te dolió ' + p + '/10' : 'Ejercicio guardado');
   });
-
-  function checkFinish() { $('#finish-btn').disabled = !(state.scales.session !== undefined && state.chips.rpe); }
   $('#finish-btn').addEventListener('click', () => {
     toast('Sesión guardada · ¡buen trabajo!');
-    $('#finish-card').hidden = true;
+    $('#finish-card').hidden = true; $('#before-card').hidden = true;
     $('.day.today').classList.add('done');
     $('#progress-text').textContent = 'Sesión completada';
   });
 
-  $('#pain-save').addEventListener('click', () => { toast('Registro de hoy guardado'); $('#dot-dolor').hidden = true; $('#pain-save').disabled = true; });
-  $('#week-send').addEventListener('click', () => { toast('Encuesta enviada a Dani'); $('#dot-semana').hidden = true; });
+  /* ---------- Diario de dolor ---------- */
+  const week = [['L', 3], ['M', null], ['X', null], ['J', null], ['V', null], ['S', null], ['D', null]];
+  function renderWeekPain() {
+    $('#weekpain').innerHTML = week.map(([d, v], i) => `<div class="wp${i === 1 ? ' today' : ''}"><b>${d}</b><span class="num" ${v !== null ? `data-level="${level(v)}"` : ''}>${v ?? '–'}</span></div>`).join('');
+  }
+  renderWeekPain();
+  $('#pain-save').addEventListener('click', () => {
+    week[1][1] = state.scales.daily; renderWeekPain();
+    toast('Dolor de hoy guardado'); $('#dot-dolor').hidden = true; $('#pain-save').disabled = true;
+  });
 
-  /* ---------- Gráficas (SVG a escala) ---------- */
-  function lineChart(svg, values, { max, labels, limit, unit = '', yTicks }) {
-    const W = 340, H = 150, L = 28, R = 12, T = 12, B = 24;
-    const x = i => L + (values.length === 1 ? 0 : i * (W - L - R) / (values.length - 1));
+  /* ---------- Encuesta semanal (preguntas de tu formulario) ---------- */
+  const required = survey.filter(s => s.id);
+  function updateSurvey() {
+    const n = required.filter(s => state.answers[s.id] !== undefined && state.answers[s.id] !== '').length;
+    $('#survey-count').textContent = `${n} de ${required.length} respondidas`;
+    $('#survey-bar').style.transform = `scaleX(${n / required.length})`;
+    $('#week-send').disabled = n < required.length;
+  }
+  const box = $('#survey');
+  survey.forEach(s => {
+    if (s.section) {
+      const h = document.createElement('div'); h.className = 'survey-section';
+      h.innerHTML = `<h2>${s.section}</h2>${s.intro ? `<p class="mute">${s.intro}</p>` : ''}`;
+      box.appendChild(h); return;
+    }
+    const c = document.createElement('div'); c.className = 'card q';
+    if (s.num) {
+      c.innerHTML = `<label for="sv-${s.id}">${s.q}</label><input id="sv-${s.id}" type="number" inputmode="decimal" min="0" step="${s.step}" placeholder="${s.placeholder}">`;
+      $('input', c).addEventListener('input', ev => { state.answers[s.id] = ev.target.value; updateSurvey(); });
+    } else if (s.opts) {
+      c.innerHTML = `<p class="label">${s.q}</p><div class="chips">${s.opts.map(o => `<button class="chip" type="button" aria-pressed="false">${o}</button>`).join('')}</div>`;
+      $$('.chip', c).forEach(ch => ch.addEventListener('click', () => {
+        $$('.chip', c).forEach(x => x.setAttribute('aria-pressed', String(x === ch))); state.answers[s.id] = ch.textContent; updateSurvey();
+      }));
+    } else {
+      c.innerHTML = `<p class="label">${s.q}${s.guess ? ' <span class="guess">por confirmar</span>' : ''}</p>${s.hint ? `<p class="mute">${s.hint}</p>` : ''}
+        <div class="scale"></div><div class="scale-legend"><span>1 · ${s.lo}</span><span>10 · ${s.hi}</span></div>`;
+      buildScale($('.scale', c), { min: 1, max: 10, neutral: true, onPick: n => { state.answers[s.id] = n; updateSurvey(); } });
+    }
+    box.appendChild(c);
+  });
+  updateSurvey();
+  $('#week-send').addEventListener('click', () => { toast('Encuesta enviada a Dani'); $('#dot-semana').hidden = true; $('#week-send').disabled = true; });
+
+  /* ---------- Gráficas (SVG, todo a la misma escala) ---------- */
+  const W = 340, H = 150, L = 34, R = 12, T = 16, B = 24;
+  const fmt = v => String(v).replace('.', ',');
+  function frame(max, yTicks, yFmt = fmt) {
     const y = v => T + (1 - v / max) * (H - T - B);
-    let g = '';
-    yTicks.forEach(t => { g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 6}" y="${y(t) + 3}" text-anchor="end">${t}</text>`; });
+    return { y, g: yTicks.map(t => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${yFmt(t)}</text>`).join('') };
+  }
+  function xLabels(labels, x) {
+    return labels.map((l, i) => l ? `<text x="${x(i)}" y="${H - 6}" text-anchor="${labels.length > 1 && i === 0 ? 'start' : i === labels.length - 1 && labels.length > 1 ? 'end' : 'middle'}">${l}</text>` : '').join('');
+  }
+  function lineChart(svg, values, { max, labels, limit, unit = '', yTicks, yFmt }) {
+    const { y, g: grid } = frame(max, yTicks, yFmt);
+    const x = i => L + (values.length === 1 ? 0 : i * (W - L - R) / (values.length - 1));
+    let g = grid;
     if (limit !== undefined) g += `<line class="lim" x1="${L}" x2="${W - R}" y1="${y(limit)}" y2="${y(limit)}"/>`;
     const pts = values.map((v, i) => `${x(i)},${y(v)}`).join(' ');
-    const area = `${x(0)},${y(0)} ${pts} ${x(values.length - 1)},${y(0)}`;
-    g += `<polygon points="${area}" fill="rgba(255,52,52,.12)"/>`;
+    g += `<polygon points="${x(0)},${y(0)} ${pts} ${x(values.length - 1)},${y(0)}" fill="rgba(255,52,52,.12)"/>`;
     g += `<polyline points="${pts}" fill="none" stroke="#FF3434" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-    values.forEach((v, i) => {
-      const last = i === values.length - 1;
-      g += `<circle cx="${x(i)}" cy="${y(v)}" r="${last ? 4.5 : 2.5}" fill="${last ? '#FFFBE8' : '#FF3434'}" ${last ? 'stroke="#FF3434" stroke-width="2"' : ''}/>`;
-    });
-    labels.forEach((l, i) => { if (l) g += `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === labels.length - 1 ? 'end' : 'middle'}">${l}</text>`; });
+    values.forEach((v, i) => { const last = i === values.length - 1;
+      g += `<circle cx="${x(i)}" cy="${y(v)}" r="${last ? 4.5 : 2.5}" fill="${last ? '#FFFBE8' : '#FF3434'}" ${last ? 'stroke="#FF3434" stroke-width="2"' : ''}/>`; });
+    g += xLabels(labels, x);
     const lv = values[values.length - 1];
-    g += `<text x="${Math.min(x(values.length - 1), W - R - 4)}" y="${y(lv) - 10}" text-anchor="end" style="fill:#FFFBE8;font-size:11px">${String(lv).replace('.', ',')}${unit}</text>`;
+    g += `<text x="${W - R - 2}" y="${Math.max(y(lv) - 10, 11)}" text-anchor="end" class="val">${fmt(lv)}${unit}</text>`;
     svg.innerHTML = g;
   }
+  function barChart(svg, values, { max, labels, yTicks, yFmt, valFmt = fmt }) {
+    const { y, g: grid } = frame(max, yTicks, yFmt);
+    const slot = (W - L - R) / values.length, bw = Math.min(46, slot * 0.5);
+    const x = i => L + slot * i + slot / 2;
+    let g = grid;
+    values.forEach((v, i) => { const last = i === values.length - 1;
+      g += `<rect x="${x(i) - bw / 2}" y="${y(v)}" width="${bw}" height="${y(0) - y(v)}" rx="4" fill="${last ? '#FF3434' : 'rgba(255,52,52,.45)'}"/>`;
+      g += `<text x="${x(i)}" y="${y(v) - 6}" text-anchor="middle" class="${last ? 'val' : ''}">${valFmt(v)}</text>`; });
+    g += labels.map((l, i) => `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${l}</text>`).join('');
+    svg.innerHTML = g;
+  }
+  const S = ['Semana 1', 'Semana 2', 'Semana 3'];
   const daily = [5, 5, 4, 5, 4, 4, 3, 4, 3, 3, 4, 3, 2, 3];
-  lineChart($('#chart-daily'), daily, { max: 10, limit: 4, yTicks: [0, 5, 10],
-    labels: daily.map((_, i) => i === 0 ? '29 oct' : i === 7 ? '5 nov' : i === 13 ? 'Hoy' : '') });
-  lineChart($('#chart-weekly'), [5.2, 4.1, 3.4], { max: 10, limit: 4, yTicks: [0, 5, 10], labels: ['Semana 1', 'Semana 2', 'Semana 3'] });
-  lineChart($('#chart-load'), [0, 6, 10], { max: 15, yTicks: [0, 5, 10, 15], labels: ['Semana 1', 'Semana 2', 'Semana 3'], unit: ' kg' });
+  lineChart($('#chart-daily'), daily, { max: 10, limit: 4, yTicks: [0, 5, 10], labels: daily.map((_, i) => i === 0 ? '29 oct' : i === 7 ? '5 nov' : i === 13 ? 'Hoy' : '') });
+  lineChart($('#chart-weekly'), [5.2, 4.1, 3.4], { max: 10, limit: 4, yTicks: [0, 5, 10], labels: S });
+  lineChart($('#chart-adh'), [75, 83, 92], { max: 100, yTicks: [0, 50, 100], labels: S, unit: '%', yFmt: v => v + '%' });
+  barChart($('#chart-dist'), [4, 6, 7.5], { max: 10, yTicks: [0, 5, 10], labels: S });
+  lineChart($('#chart-vel'), [9.5, 10.2, 10.8], { max: 15, yTicks: [0, 5, 10, 15], labels: S, unit: ' km/h' });
+  barChart($('#chart-steps'), [7500, 8200, 8900], { max: 10000, yTicks: [0, 5000, 10000], labels: S, yFmt: v => v / 1000 + 'k', valFmt: v => (v / 1000).toFixed(1).replace('.', ',') + 'k' });
+
+  // Tonelaje = series × reps × kg; RM estimado (Epley) = kg × (1 + reps / 30)
+  const strength = {
+    'Talones en escalón': { ton: [0, 240, 400], rm: [0, 8, 13.3], maxT: 600, maxR: 20 },
+    'Talones sentado': { ton: [360, 540, 720], rm: [14, 21, 28], maxT: 1000, maxR: 40 },
+    'Sentadilla búlgara': { ton: [0, 96, 192], rm: [0, 5.3, 10.1], maxT: 300, maxR: 15 },
+  };
+  const pick = $('#ex-pick');
+  function showStrength(name) {
+    const d = strength[name];
+    $$('.chip', pick).forEach(c => c.setAttribute('aria-pressed', String(c.textContent === name)));
+    lineChart($('#chart-ton'), d.ton, { max: d.maxT, yTicks: [0, d.maxT / 2, d.maxT], labels: S, unit: ' kg' });
+    lineChart($('#chart-rm'), d.rm, { max: d.maxR, yTicks: [0, d.maxR / 2, d.maxR], labels: S, unit: ' kg' });
+  }
+  Object.keys(strength).forEach(n => {
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = n; c.setAttribute('aria-pressed', 'false');
+    c.addEventListener('click', () => showStrength(n)); pick.appendChild(c);
+  });
+  showStrength('Talones en escalón');
 
   renderList();
 })();

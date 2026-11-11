@@ -33,9 +33,23 @@ App propia de RCD Clinic que sustituirá al sistema de hojas de Google + formula
 
 - `prototipo.html` — prototipo visual con datos de ejemplo. Es el cuerpo de un Artifact, por eso no lleva `<!doctype>`.
 
+## Lo que registra el paciente (de las capturas de RICARDO, 11/11/2026)
+
+- **Diario de ejercicio** (por día): molestia antes de entrenar · bloque de fuerza · bloque cardiovascular
+  · molestia después · comentario · tiempo de la sesión.
+- **Diario de dolor**: escala NRS + caras de Wong-Baker (sin dolor → dolor extremo), un valor por día de L a D,
+  y anotaciones.
+- **Encuesta semanal** (escalas 1–10 salvo donde se indica):
+  - Lesión: seguimiento de pautas, dolor de arranque, rigidez matutina, malestar*, recuperación tras fuerza*,
+    recuperación tras cardio.
+  - Contexto: miedo, pasos/día (número), motivación, horas de sueño (número), calidad del descanso,
+    cansancio general*, estrés, cambios respecto a la semana pasada (4 opciones).
+  - *Deducidas de las filas del «Diario semanal» (una captura salió en blanco); hay que confirmarlas.
+    No sabemos qué hay en la sección 3 de 3 del formulario.
+- **Gráficas**: mejora del dolor, adherencia, actividad física (pasos), cardio (distancia y velocidad máxima
+  por protocolo), tonelaje y RM estimado por ejercicio.
+
 ## Pendiente de Dani
 
-- Capturas de las pestañas de RICARDO – Seguimiento (Semana 1, Diario de dolor, Diario semanal, Gráficas),
-  como imágenes sueltas en Drive o en el chat.
-- Preguntas del formulario de seguimiento semanal (capturas).
+- Confirmar las 3 preguntas deducidas y qué hay en la sección 3 del formulario semanal.
 - Plan de Google Workspace (Starter/Standard…).
