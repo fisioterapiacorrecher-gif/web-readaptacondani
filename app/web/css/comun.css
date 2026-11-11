@@ -22,3 +22,8 @@ a.video { text-decoration: none; color: inherit; }
 button.avatar { color: var(--text); cursor: pointer; }
 .avisos { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; border-color: rgba(255,52,52,.45); }
 .avisos.solo-texto { grid-template-columns: minmax(0, 1fr); }
+/* Desplegables y campos: siempre en oscuro y legibles (las listas nativas de Windows salían en blanco) */
+select { color-scheme: dark; }
+select option, select optgroup { background-color: #141414; color: #FFFBE8; }
+input[type="email"], input[type="tel"], input[type="number"], input[type="text"], select {
+  width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }

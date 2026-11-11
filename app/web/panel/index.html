@@ -26,6 +26,8 @@
   .cfg-row { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--border); }
   .cfg-row:first-child { border-top: 0; padding-top: 0; }
   .cfg-row input { font-size: 15px; padding: 10px 12px; }
+  .two > .cfg-row { border-top: 0; padding-top: 0; }
+  .two { align-items: end; }
   .clave { display: grid; gap: 4px; }
   .clave code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; user-select: all; }
   .clave .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -169,8 +171,8 @@
     <label>Teléfono (WhatsApp)<input type="text" id="np-phone" inputmode="tel" placeholder="34 600 000 000" autocomplete="off"></label>
     <label>Lesión · plantilla<select id="np-tpl"></select></label>
     <div class="two">
-      <label>Plan<select id="np-plan"><option>Readaptación Completa</option><option>Vuelta a Competir</option><option>¿Encajas en RCD?</option></select></label>
-      <label>Duración<select id="np-weeks"><option value="8">8 semanas</option><option value="12" selected>12 semanas</option><option value="16">16 semanas</option></select></label>
+      <label>Plan<select id="np-plan"><option>Readaptación Completa</option><option>Readaptación Mensual</option></select></label>
+      <label>Duración<select id="np-weeks"><option value="4">4 semanas</option><option value="8">8 semanas</option><option value="12" selected>12 semanas</option><option value="16">16 semanas</option></select></label>
     </div>
     <p class="login-error" id="np-err" role="alert"></p>
     <button class="btn btn-primary btn-block" type="button" id="np-create" disabled>Crear paciente</button>
