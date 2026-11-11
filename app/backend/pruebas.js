@@ -173,6 +173,19 @@ paso('ajustes: se guarda el enlace del calendario y no se puede cambiar el email
   paso('Gmail sin puntos, con mayúsculas o con «+» entra igual (el código va a su email real); los intentos quedan en el Registro');
 }
 
+/* ---------- Plan B: código manual por WhatsApp ---------- */
+{
+  const pM = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Pablo Manual', email: 'pablo.manual@ejemplo.com', plantilla: 'aquiles' })).paciente.id;
+  const n0 = correos.length;
+  const r4 = ok(api({ action: 'codigoManual', token: admin, pacienteId: pM }));
+  assert.strictEqual(correos.length, n0); assert.ok(/^\d{6}$/.test(r4.codigo));
+  ok(api({ action: 'pedirCodigo', email: 'otro@ejemplo.com' }));
+  const t4 = ok(api({ action: 'verificarCodigo', email: 'Pablo.Manual@ejemplo.com', codigo: r4.codigo }));
+  assert.strictEqual(t4.rol, 'paciente');
+  assert.ok(!api({ action: 'codigoManual', token: t4.token, pacienteId: pM }).ok);
+  paso('plan B: Dani genera un código (sin email), el paciente entra con él; un paciente no puede generarlos');
+}
+
 /* ---------- Formulario pre-sesión e historia clínica ---------- */
 {
   let r3 = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Nora Pre', email: 'nora@ejemplo.com', plantilla: 'aquiles', semanas: 12 }));

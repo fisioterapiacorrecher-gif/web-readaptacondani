@@ -92,9 +92,24 @@
     $('#p-sub').textContent = [t?.nombre || p.plantilla, p.estado === 'activo' ? `Semana ${F.semana} de ${p.semanas}` : estadoTxt(p.estado), p.plan].filter(Boolean).join(' · ');
     const tel = String(p.telefono || '').replace(/\D/g, '');
     $('#p-wa').hidden = !tel; $('#p-wa').href = `https://wa.me/${tel}`;
+    $('#p-code').hidden = false; $('#p-code-wa').hidden = true;
     pintarRevision(); pintarRegistros(); pintarAlta(); pintarDatos();
     window.RCDHistoria.pintar($('#hc'), F, api, () => recargarLateral());
   }
+
+  /* Plan B si al paciente no le llega el correo: código manual (24 h) para mandárselo por WhatsApp */
+  $('#p-code').addEventListener('click', async () => {
+    const b = $('#p-code'); b.disabled = true;
+    try {
+      const r = await api('codigoManual', { pacienteId: F.paciente.id });
+      const url = (CFG.config.APP_URL || 'https://app.rcdclinic.com').replace(/\/$/, '');
+      const msg = `Hola ${F.paciente.nombre.split(' ')[0]}, tu código para entrar en la app de RCD Clinic es ${r.codigo} (vale ${r.horas} h).\nEntra en ${url}, escribe tu email (${r.email}) y pulsa «Ya tengo un código de Dani».`;
+      const tel = String(F.paciente.telefono || '').replace(/\D/g, '');
+      const a = $('#p-code-wa'); a.href = `https://wa.me/${tel}?text=` + encodeURIComponent(msg); a.textContent = `Enviar código ${r.codigo} por WhatsApp`;
+      a.hidden = false; b.hidden = true;
+      try { await navigator.clipboard.writeText(msg); toast(`Código ${r.codigo} copiado · vale ${r.horas} h`); } catch { toast(`Código ${r.codigo} · vale ${r.horas} h`); }
+    } catch (x) { toast(x.message); } finally { b.disabled = false; }
+  });
 
   /* ---------- Revisión semanal ---------- */
   const deSemana = (lista, s) => lista.filter(x => x.semana === s);

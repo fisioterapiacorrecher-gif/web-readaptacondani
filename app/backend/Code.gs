@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.2.1';
+const VERSION = '1.3.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -116,7 +116,7 @@ function doPost(e) {
 
 const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1 };
 const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
-const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1 };
+const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1 };
 
 function enrutar_(req) {
   const a = req.action;
@@ -177,6 +177,20 @@ const ACC = {
     if (paciente && paciente.estado === 'pendiente') actualizar_('Pacientes', p => p.id === paciente.id, { estado: 'activo' });
     registrar_('acceso', email);
     return { token, rol: esAdmin ? 'admin' : 'paciente', nombre: paciente ? paciente.nombre : 'Dani' };
+  },
+
+  /** Plan B si el correo no llega: Dani genera el código y se lo manda al paciente por WhatsApp. Vale 24 h. */
+  codigoManual(req) {
+    const p = paciente_(req.pacienteId);
+    if (p.estado === 'archivado') throw publico_('Este paciente está archivado.');
+    const email = canonEmail_(p.email);
+    const codigo = String(Math.floor(100000 + Math.random() * 900000));
+    conBloqueo_(() => {
+      borrar_('Codigos', c => c.email === email);
+      anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + 24 * 3600000).toISOString(), intentos: 0, creado: new Date(Date.now() - 120000).toISOString() });
+    });
+    registrar_('codigo', 'Código manual generado por Dani para ' + normEmail_(p.email));
+    return { codigo, email: normEmail_(p.email), horas: 24 };
   },
 
   salir(req) {
