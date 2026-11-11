@@ -55,7 +55,8 @@ App propia de RCD Clinic que sustituirá al sistema de hojas de Google + formula
 
 ## Pendiente de Dani
 
-- Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. Falta confirmar «Malestar asociado a la lesión».
+- Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).
+- Panel: cada botón de decisión propone el cambio y Dani puede retocarlo a mano. Se guardan la propuesta automática y el ajuste final (sirve para aprender su criterio).
 - La sección 3 del formulario solo tiene campos técnicos ocultos (ID del cuaderno y semana): en la app no hacen falta.
 - Workspace: plan **Business Standard** en **info@rcdclinic.com**. Los datos actuales de PhysiOne están en la
   cuenta personal de Gmail. La app nueva irá en la cuenta de Workspace (contrato de tratamiento de datos para el RGPD).

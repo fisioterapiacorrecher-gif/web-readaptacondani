@@ -157,6 +157,12 @@ tr.flag td:first-child { box-shadow: inset 2px 0 0 var(--coral); padding-left: 1
 .rx-dose .new { color: var(--hueso); font-weight: 600; }
 .rx-stats { font-size: 12px; color: var(--text-mute); }
 .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.edit { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+.edit label { display: grid; gap: 4px; font-family: var(--font-accent); font-size: 12px; color: var(--text-mute); letter-spacing: .04em; min-width: 0; }
+.edit input { width: 100%; min-width: 0; font: inherit; font-family: var(--font-accent); font-size: 16px; font-variant-numeric: tabular-nums; color: var(--text); text-align: center;
+  background: var(--surface-3); border: 1px solid var(--border); border-radius: 12px; padding: 9px 6px; -moz-appearance: textfield; }
+.edit input::-webkit-outer-spin-button, .edit input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.handed { font-family: var(--font-accent); font-size: 11px; letter-spacing: .04em; color: var(--warn); border: 1px solid currentColor; border-radius: 999px; padding: 2px 9px; }
 .act { min-height: 36px; padding: 0 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 600;
   transition: transform .16s var(--ease), background-color .16s var(--ease), color .16s var(--ease); }
 .act:active { transform: scale(0.96); }
@@ -324,7 +330,7 @@ details[open] summary::after { content: "−"; }
   ];
   const survey = [
     ['Seguimiento de las pautas', 7, 9, 'up'], ['Dolor de arranque', 5, 3, 'down'], ['Rigidez matutina', 6, 4, 'down'],
-    ['Malestar asociado a la lesión', 4, 3, 'down'], ['Recuperación tras fuerza', 5, 4, 'down'], ['Recuperación tras cardio', 4, 5, 'down'],
+    ['Recuperación tras fuerza', 5, 4, 'down'], ['Recuperación tras cardio', 4, 5, 'down'],
     ['Miedo', 6, 4, 'down'], ['Pasos / día', '8.200', '8.900', 'up'], ['Motivación', 8, 9, 'up'], ['Horas de sueño', '6,5', '7', 'up'],
     ['Calidad del descanso', 6, 7, 'up'], ['Cansancio general', 5, 5, 'down'], ['Estrés', 5, 7, 'down'], ['Cambios en la lesión', '—', 'Ligeramente mejor', null],
   ];
@@ -420,35 +426,62 @@ details[open] summary::after { content: "−"; }
     $('#chart-daily').innerHTML = g;
   })();
 
-  // Prescripción: botones rápidos para tu criterio (dolor ≤ 4 → reps, tiempo bajo tensión o peso)
-  const decisions = {};
-  function doseText(e, a) {
+  // Prescripción: el botón propone el cambio (tu criterio: dolor ≤ 4 → reps, tiempo bajo tensión o peso)
+  // y después puedes retocar cada valor a mano. Se guarda la propuesta automática y lo que tú dejaste.
+  const plan = {};
+  const base = e => e.cardio ? { blocks: e.blocks, run: e.run, walk: e.walk } : { s: e.s, r: e.r, kg: e.kg, t: e.t };
+  function propose(e, a) {
+    const v = base(e);
     if (e.cardio) {
-      const b = { blocks: e.blocks, run: e.run, walk: e.walk };
-      if (a === 'reps') b.blocks++; if (a === 'tut') b.run++; if (a === 'kg') { b.run += 1; b.walk = Math.max(0, b.walk - 0.5); } if (a === 'down') b.blocks = Math.max(1, b.blocks - 1);
-      return `${b.blocks} × (${fmt(b.run)}′ correr + ${fmt(b.walk)}′ caminar)`;
+      if (a === 'reps') v.blocks++; if (a === 'tut') v.run++; if (a === 'kg') v.walk = Math.max(0, v.walk - 0.5); if (a === 'down') v.blocks = Math.max(1, v.blocks - 1);
+      return v;
     }
-    let { s, r, kg, t } = e;
-    if (a === 'reps') r += e.u === 's' ? 15 : 2;
-    if (a === 'tut') t = t === '—' ? '4-2-4' : t.split('-').map((n, i) => i === 1 ? +n + 1 : +n + 1).join('-');
-    if (a === 'kg') kg += e.u === 's' ? 5 : 2.5;
-    if (a === 'down') { kg = Math.max(0, kg - 2.5); r = Math.max(1, r - (e.u === 's' ? 15 : 2)); }
-    return `${s} × ${r} ${e.u}${kg ? ' · +' + fmt(kg) + ' kg' : ''}${t !== '—' ? ' · ' + t : ''}`;
+    if (a === 'reps') v.r += e.u === 's' ? 15 : 2;
+    if (a === 'tut') v.t = v.t === '—' ? '4-2-4' : v.t.split('-').map(n => +n + 1).join('-');
+    if (a === 'kg') v.kg += e.u === 's' ? 5 : 2.5;
+    if (a === 'down') { v.kg = Math.max(0, v.kg - 2.5); v.r = Math.max(1, v.r - (e.u === 's' ? 15 : 2)); }
+    return v;
   }
+  const doseText = (e, v) => e.cardio ? `${v.blocks} × (${fmt(v.run)}′ correr + ${fmt(v.walk)}′ caminar)`
+    : `${v.s} × ${v.r} ${e.u}${+v.kg ? ' · +' + fmt(v.kg) + ' kg' : ''}${v.t && v.t !== '—' ? ' · ' + v.t : ''}`;
+  const fields = e => e.cardio
+    ? [['blocks', 'Bloques', 'numeric', 1], ['run', 'Min correr', 'decimal', 0.5], ['walk', 'Min caminar', 'decimal', 0.5]]
+    : [['s', 'Series', 'numeric', 1], ['r', e.u === 's' ? 'Segundos' : 'Reps', 'numeric', 1], ['kg', 'Kg extra', 'decimal', 0.5], ['t', 'Tempo', 'text']];
+  const same = (x, y) => JSON.stringify(x) === JSON.stringify(y);
   const labels = { keep: 'Mantener', reps: '+ Reps', tut: '+ Tiempo bajo tensión', kg: '+ Peso', down: 'Bajar' };
   const cardioLabels = { keep: 'Mantener', reps: '+ Bloque', tut: '+ Min. corriendo', kg: 'Menos caminar', down: 'Bajar' };
+
+  function doseLine(i) {
+    const e = rx[i], p = plan[i], cur = doseText(e, base(e));
+    if (!p || same(p.vals, base(e))) return `<span>${cur}</span>${p ? '<span class="mute">sin cambios</span>' : ''}`;
+    return `<span class="old">${cur}</span><span>→</span><span class="new">${doseText(e, p.vals)}</span>${same(p.vals, p.auto) ? '' : '<span class="handed">ajustado a mano</span>'}`;
+  }
   function renderRx() {
     $('#rx-list').innerHTML = rx.map((e, i) => {
-      const a = decisions[i], L = e.cardio ? cardioLabels : labels, cur = doseText(e), nxt = a && a !== 'keep' ? doseText(e, a) : null;
+      const p = plan[i], L = e.cardio ? cardioLabels : labels, f = fields(e);
+      const edit = p ? `<div class="edit" style="grid-template-columns:repeat(${f.length}, minmax(0, 1fr))">${f.map(([k, l, mode, step]) =>
+        `<label>${l}<input id="f-${i}-${k}" data-i="${i}" data-k="${k}" type="${mode === 'text' ? 'text' : 'number'}" inputmode="${mode}" ${step ? `step="${step}" min="0"` : ''} value="${p.vals[k]}"></label>`).join('')}</div>` : '';
       return `<div class="rx">
         <div class="rx-top"><div><span class="tag">${e.day} · ${e.tag}</span><b>${e.name}</b></div><span class="rx-stats">${e.done} · dolor <span class="lvl-${lvl(e.p)} num">${e.p}</span></span></div>
-        <div class="rx-dose">${nxt ? `<span class="old">${cur}</span><span>→</span><span class="new">${nxt}</span>` : `<span>${cur}</span>`}</div>
-        <div class="acts" role="group" aria-label="Decisión para ${e.name}">${Object.entries(L).map(([k, l]) => `<button class="act" type="button" data-i="${i}" data-a="${k}" aria-pressed="${a === k}">${l}</button>`).join('')}</div>
+        <div class="rx-dose" id="dose-${i}">${doseLine(i)}</div>
+        <div class="acts" role="group" aria-label="Decisión para ${e.name}">${Object.entries(L).map(([k, l]) => `<button class="act" type="button" data-i="${i}" data-a="${k}" aria-pressed="${p?.a === k}">${l}</button>`).join('')}</div>
+        ${edit}
       </div>`;
     }).join('');
-    $$('#rx-list .act').forEach(b => b.addEventListener('click', () => { decisions[b.dataset.i] = b.dataset.a; renderRx(); }));
-    const n = Object.keys(decisions).length;
-    $('#decisions').textContent = `${n} de ${rx.length} decisiones tomadas · se guardan para aprender tu criterio`;
+    $$('#rx-list .act').forEach(b => b.addEventListener('click', () => {
+      const i = b.dataset.i, auto = propose(rx[i], b.dataset.a);
+      plan[i] = { a: b.dataset.a, auto, vals: { ...auto } }; renderRx();
+    }));
+    $$('#rx-list .edit input').forEach(inp => inp.addEventListener('input', () => {
+      const i = inp.dataset.i, k = inp.dataset.k;
+      plan[i].vals[k] = inp.type === 'number' ? (inp.value === '' ? 0 : +inp.value) : inp.value;
+      $('#dose-' + i).innerHTML = doseLine(i); updateCount();
+    }));
+    updateCount();
+  }
+  function updateCount() {
+    const n = Object.keys(plan).length, hand = Object.values(plan).filter(p => !same(p.vals, p.auto)).length;
+    $('#decisions').textContent = `${n} de ${rx.length} decididos${hand ? ` · ${hand} ajustado${hand > 1 ? 's' : ''} a mano` : ''} · se guarda la propuesta y tu ajuste para aprender tu criterio`;
     $('#publish').disabled = n < rx.length;
   }
   renderRx();
