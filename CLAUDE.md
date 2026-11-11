@@ -91,3 +91,9 @@ Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
 - Duraciones de UI ≤ 200ms (pulsación 160ms). Animar solo `transform` y `opacity` (+ colores).
 - Todo `:hover` va dentro de `@media (hover: hover) and (pointer: fine)`.
 - Botones: `:active { transform: scale(0.97) }`. `prefers-reduced-motion` quita desplazamientos pero mantiene color/opacidad.
+
+## App de pacientes (en construcción)
+
+Carpeta `app/`: app propia para sustituir las hojas de Google del curso (PhysiOne). Lee `app/README.md`
+antes de tocarla: tiene el análisis del sistema actual, las decisiones tomadas con Dani y lo pendiente.
+Datos de pacientes reales: nunca en el repo; para pruebas, solo el paciente «RICARDO».
