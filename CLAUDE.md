@@ -85,6 +85,12 @@ Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
   a `~/.impeccable/bin/`; no va en el repo. Pendiente: `/impeccable init` para crear `PRODUCT.md`.
   **El manual de marca de Canva manda sobre sus reglas** (negro `#000000`, estrella de 4 puntas, paleta cerrada).
 
+- **`antislop`** (`.claude/skills/antislop*/`, github.com/miqdadbadjuber/anti-slop v3.2.28, MIT): filtro
+  anti-"AI slop" con checklist de entrega. `antislop` es el núcleo; módulos: `antislop-ui`, `antislop-copywriting`,
+  `antislop-layoutmobile`, `antislop-human` (accesibilidad + `contrast-check.py`), `antislop-code`.
+  **Cómo aplicarla aquí:** igual que la Taste Skill: marca de Canva, tema oscuro (es de marca, no por defecto),
+  botones en píldora y textos de Dani no se cambian sin que Dani lo pida; en animación mandan las reglas de Emil.
+
 ### Convenciones de movimiento (tras la revisión con las skills de Emil)
 
 - Curvas en `:root`: `--ease` (ease-out fuerte `0.23,1,0.32,1`) y `--ease-in-out`. No usar `ease-in`.
