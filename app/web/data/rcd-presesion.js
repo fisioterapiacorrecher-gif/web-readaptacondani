@@ -6,12 +6,12 @@
   const HABITO = ['No, nunca', 'Sí, ocasionalmente', 'Sí, habitualmente'];
 
   const presesion = {
-    version: 'v2026-09',
+    version: 'v2026-11',
     legal: {
-      // Documentos de Dani en Drive (carpeta «Documentos legales RCD Clinic»), compartidos como «Cualquier persona con el enlace»
-      privacidad: 'https://docs.google.com/document/d/14gdjIOEdyfTrSlgUggkDG1QS1Cb_KfrnbgH-FUKTomo/view',
-      consentimiento: 'https://docs.google.com/document/d/1F6ql__MNsg_Vs9SqsPNK1P5emIQiFj3f3m7DUd2sd4M/view',
-      condiciones: 'https://docs.google.com/document/d/1p4vn3uK5NABs6FNntfso17SPowLoR0Ld2IdPGASHlIs/view',
+      // Versión 2 (nov 2026) de los documentos de Dani en Drive (carpeta «Documentos legales RCD Clinic»), compartidos como «Cualquier persona con el enlace»
+      privacidad: 'https://docs.google.com/document/d/1fT_QaHInPvW6-PaW26wbnw8eIZO43VrOw7uNdqORZMY/view',
+      consentimiento: 'https://docs.google.com/document/d/1f3x4q4iI6k5lJqL2v1mQqB-KLEnRlGo-xaGuoJLoeyE/view',
+      condiciones: 'https://docs.google.com/document/d/1JXtfEUoYAyxiiKJH4aWsagaxRoMuwYntZVn3_UPafIY/view',
     },
     obligatorios: [
       { id: 'privacidad', texto: 'He leído y acepto la Política de Privacidad y el tratamiento de mis datos de salud para mi atención.', doc: 'privacidad' },
