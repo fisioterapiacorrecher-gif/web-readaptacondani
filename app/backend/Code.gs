@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -132,20 +132,22 @@ function enrutar_(req) {
 const ACC = {
   /* ---------- Acceso ---------- */
   pedirCodigo(req) {
-    const email = normEmail_(req.email);
+    const email = canonEmail_(req.email);
     if (!email) throw publico_('Escribe un email válido.');
     const cfg = leerConfig_();
-    const esAdmin = email === normEmail_(cfg.ADMIN_EMAIL);
-    const paciente = buscar_('Pacientes', p => normEmail_(p.email) === email && p.estado !== 'archivado')[0];
-    // Misma respuesta exista o no el email, para no revelar quién es paciente.
-    if (!esAdmin && !paciente) return { enviado: true };
+    const esAdmin = email === canonEmail_(cfg.ADMIN_EMAIL);
+    const paciente = buscar_('Pacientes', p => canonEmail_(p.email) === email && p.estado !== 'archivado')[0];
+    // Misma respuesta exista o no el email, para no revelar quién es paciente (pero queda en el Registro para Dani).
+    if (!esAdmin && !paciente) { registrar_('codigo', 'Pedido con un email sin acceso: ' + normEmail_(req.email)); return { enviado: true }; }
     const previos = buscar_('Codigos', c => c.email === email);
     if (previos.some(c => Date.now() - new Date(c.creado).getTime() < 60 * 1000)) throw publico_('Espera un minuto antes de pedir otro código.');
     borrar_('Codigos', c => c.email === email);
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + CODIGO_MINUTOS * 60000).toISOString(), intentos: 0, creado: new Date().toISOString() });
+    const destino = esAdmin ? normEmail_(cfg.ADMIN_EMAIL) : normEmail_(paciente.email);
+    registrar_('codigo', 'Código enviado a ' + destino);
     MailApp.sendEmail({
-      to: email,
+      to: destino,
       subject: `Tu código de acceso a ${cfg.CLINICA}: ${codigo}`,
       htmlBody: plantillaEmail_(cfg, `Tu código de acceso es`, `<p style="font-size:34px;letter-spacing:6px;font-weight:700;margin:12px 0">${codigo}</p><p>Caduca en ${CODIGO_MINUTOS} minutos. Si no lo has pedido tú, ignora este mensaje.</p>`),
       name: cfg.CLINICA,
@@ -154,7 +156,7 @@ const ACC = {
   },
 
   verificarCodigo(req) {
-    const email = normEmail_(req.email);
+    const email = canonEmail_(req.email);
     const codigo = String(req.codigo || '').replace(/\D/g, '');
     const fila = buscar_('Codigos', c => c.email === email)[0];
     if (!fila) throw publico_('Pide un código nuevo.', 'codigo');
@@ -167,8 +169,8 @@ const ACC = {
     }
     borrar_('Codigos', c => c.email === email);
     const cfg = leerConfig_();
-    const esAdmin = email === normEmail_(cfg.ADMIN_EMAIL);
-    const paciente = esAdmin ? null : buscar_('Pacientes', p => normEmail_(p.email) === email && p.estado !== 'archivado')[0];
+    const esAdmin = email === canonEmail_(cfg.ADMIN_EMAIL);
+    const paciente = esAdmin ? null : buscar_('Pacientes', p => canonEmail_(p.email) === email && p.estado !== 'archivado')[0];
     if (!esAdmin && !paciente) throw publico_('Este email no tiene acceso.', 'permiso');
     const token = Utilities.getUuid() + Utilities.getUuid();
     anadir_('Accesos', { hash: hash_(token), email, rol: esAdmin ? 'admin' : 'paciente', pacienteId: paciente ? paciente.id : '', expira: new Date(Date.now() + DURACION_SESION_DIAS * 86400000).toISOString(), creado: new Date().toISOString() });
@@ -329,8 +331,9 @@ const ACC = {
   crearPaciente(req) {
     const email = normEmail_(req.email);
     if (!email) throw publico_('Falta un email válido.');
+    const canon = canonEmail_(email);
     if (!texto_(req.nombre, 120)) throw publico_('Falta el nombre.');
-    if (buscar_('Pacientes', p => normEmail_(p.email) === email && p.estado !== 'archivado').length) throw publico_('Ya hay un paciente con ese email.');
+    if (buscar_('Pacientes', p => canonEmail_(p.email) === canon && p.estado !== 'archivado').length) throw publico_('Ya hay un paciente con ese email.');
     const p = {
       id: id_(), nombre: texto_(req.nombre, 120), email, telefono: texto_(req.telefono, 30), plantilla: texto_(req.plantilla, 40),
       plan: texto_(req.plan, 60), semanas: Number(req.semanas) || 12, fechaInicio: req.fechaInicio || lunesDe_(new Date()),
@@ -727,6 +730,13 @@ function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).se
 function publico_(msg, codigo) { const e = new Error(msg); e.publico = true; e.codigo = codigo || 'error'; return e; }
 function hash_(s) { return Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(s), Utilities.Charset.UTF_8)); }
 function id_() { return Utilities.getUuid().slice(0, 13); }
+/** Forma para comparar emails: en Gmail los puntos y lo que va tras «+» no cuentan (llegan al mismo buzón). */
+function canonEmail_(e) {
+  const s = normEmail_(e); if (!s) return '';
+  let [local, dominio] = s.split('@');
+  if (dominio === 'gmail.com' || dominio === 'googlemail.com') { local = local.split('+')[0].replace(/\./g, ''); dominio = 'gmail.com'; }
+  return local + '@' + dominio;
+}
 function normEmail_(e) { const s = String(e || '').trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : ''; }
 function num_(v) { if (v === '' || v === null || v === undefined) return ''; const n = Number(String(v).replace(',', '.')); return isFinite(n) ? n : ''; }
 function dolor_(v, opcional) { if ((v === '' || v == null) && opcional) return ''; const n = Math.round(Number(v)); if (!(n >= 0 && n <= 10)) throw publico_('El dolor va de 0 a 10.'); return n; }

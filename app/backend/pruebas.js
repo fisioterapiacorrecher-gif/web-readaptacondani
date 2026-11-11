@@ -158,6 +158,21 @@ paso('ajustes: se guarda el enlace del calendario y no se puede cambiar el email
   paso('al actualizar el código, la pestaña nueva se crea sola (no hace falta reinstalar)');
 }
 
+/* ---------- Emails de Gmail escritos de otra forma (caso Sonia) ---------- */
+{
+  ok(api({ action: 'crearPaciente', token: admin, nombre: 'Sonia Gmail', email: 'sonia.valencia.sonia@gmail.com', plantilla: 'rotuliana' }));
+  assert.ok(!api({ action: 'crearPaciente', token: admin, nombre: 'Duplicada', email: 'SoniaValencia.Sonia@gmail.com' }).ok);
+  const n0 = correos.length;
+  ok(api({ action: 'pedirCodigo', email: '  SoniaValencia.Sonia+app@Gmail.com ' }));
+  assert.strictEqual(correos.length, n0 + 1); assert.strictEqual(correos[correos.length - 1].to, 'sonia.valencia.sonia@gmail.com');
+  ok(api({ action: 'verificarCodigo', email: 'soniavalenciasonia@gmail.com', codigo: ultimoCodigo() }));
+  const reg = libro.getSheetByName('Registro').rows.map(r => r.join(' ')).join('\n');
+  assert.ok(reg.includes('Código enviado a sonia.valencia.sonia@gmail.com'));
+  ok(api({ action: 'pedirCodigo', email: 'sonia.valencia@gmail.com' }));
+  assert.ok(libro.getSheetByName('Registro').rows.map(r => r.join(' ')).join('\n').includes('Pedido con un email sin acceso: sonia.valencia@gmail.com'));
+  paso('Gmail sin puntos, con mayúsculas o con «+» entra igual (el código va a su email real); los intentos quedan en el Registro');
+}
+
 /* ---------- Formulario pre-sesión e historia clínica ---------- */
 {
   let r3 = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Nora Pre', email: 'nora@ejemplo.com', plantilla: 'aquiles', semanas: 12 }));
