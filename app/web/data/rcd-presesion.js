@@ -8,10 +8,10 @@
   const presesion = {
     version: 'v2026-11',
     legal: {
-      // Versión 2 (nov 2026) de los documentos de Dani en Drive (carpeta «Documentos legales RCD Clinic»), compartidos como «Cualquier persona con el enlace»
-      privacidad: 'https://docs.google.com/document/d/1fT_QaHInPvW6-PaW26wbnw8eIZO43VrOw7uNdqORZMY/view',
-      consentimiento: 'https://docs.google.com/document/d/1f3x4q4iI6k5lJqL2v1mQqB-KLEnRlGo-xaGuoJLoeyE/view',
-      condiciones: 'https://docs.google.com/document/d/1JXtfEUoYAyxiiKJH4aWsagaxRoMuwYntZVn3_UPafIY/view',
+      // Versión 2 (nov 2026), en PDF, en el Drive de info@rcdclinic.com; compartidos como «Cualquier persona con el enlace»
+      privacidad: 'https://drive.google.com/file/d/1oeCA977fPqLAp4iwIDqlxUzhGBp2TfmM/view',
+      consentimiento: 'https://drive.google.com/file/d/1f6RnK_Aizp5HdV-9mTLnmHcwj_lZ-WiI/view',
+      condiciones: 'https://drive.google.com/file/d/1D6aeT96IM6_PmsvMPajqBZIJ9JeOc0z4/view',
     },
     obligatorios: [
       { id: 'privacidad', texto: 'He leído y acepto la Política de Privacidad y el tratamiento de mis datos de salud para mi atención.', doc: 'privacidad' },
