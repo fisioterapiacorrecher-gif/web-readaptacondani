@@ -246,7 +246,9 @@ en `graphics` con `"module"`. Ideas que encajan: sol-luna (paso de días), reloj
   `ejemplo-bucle/edit.json` (imagen bajo el título, 3 clips de terapias pasivas seguidos, animación del bucle,
   carga progresiva y CTA de compartir). Cambios que pidió en la v2: el bucle aparece en «dolor» (no en «bucle»); más sonido en el tramo de recaída
   (bien en «sin dolor», subida → error en «vuelve», disco rayado en «vuelves», trombón en «resultado»); carga progresiva
-  corta (~1 s) seguida de la diana; sonido de desánimo en «no sabes hacia dónde tirar». Errata de Dani en ese reel: dice «máquina del dolor» → se escribe «de calor».
+  y diana seguidas pero **cada una con tiempo para completarse** (carga 1,6 s hasta que la flecha llega arriba; la diana
+  entra después, en «desde el principio», 1,4 s); sonido de desánimo en «no sabes hacia dónde tirar» y el texto
+  HACIA DÓNDE / TIRAR **sin interrogantes** (no quiere textos destacados en forma de pregunta salvo el título). Errata de Dani en ese reel: dice «máquina del dolor» → se escribe «de calor».
 
 ---
 
