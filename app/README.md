@@ -70,6 +70,15 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
   «Listado de ejercicios» de Drive con los vídeos.
 - **Alta de paciente nuevo**: datos → enlace (formulario pre-sesión + consentimiento RGPD) → seguimiento.
 
+## Motor (backend) · `backend/`
+
+- `Code.gs`: Google Apps Script en la cuenta de Workspace (info@rcdclinic.com). API JSON (POST {action, token}),
+  datos en la hoja «RCD App · Datos» (una pestaña por tabla), acceso con código de 6 cifras por email
+  (sesiones de 90 días; en la hoja solo se guarda la huella SHA-256), recordatorios por email cada hora.
+- `pruebas.js`: simula Google y prueba el flujo completo → `node app/backend/pruebas.js` (19 pruebas).
+- `INSTALAR.md`: guía paso a paso para Dani.
+- Dominio: `rcdclinic.com` = landing; `app.rcdclinic.com` = app del paciente; `app.rcdclinic.com/panel` = panel.
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).
