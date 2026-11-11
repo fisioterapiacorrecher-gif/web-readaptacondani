@@ -59,6 +59,31 @@ entienda el método y contacte (WhatsApp/Instagram/formulario).
 Título, meta description, Open Graph/Twitter, datos estructurados Schema.org (`MedicalBusiness`),
 `robots.txt` y `sitemap.xml`. Keyword objetivo: **"fisio online para runners"**.
 
+## Proponer skills SIEMPRE (petición de Dani)
+
+Dani no es técnico y no sabe cuándo conviene cada skill. **Cada vez que una skill pueda mejorar lo que
+estamos haciendo, propónla tú antes de cerrar la tarea**, en una línea y en lenguaje llano, por ejemplo:
+"Oye, ¿activamos `/antislop-copywriting` para que el texto nuevo no suene a IA?". Reglas:
+
+- Propón, no la lances sin permiso (salvo que Dani diga que sí o lo pida). Una o dos propuestas como mucho,
+  las más útiles; di en una frase qué ganaría la web.
+- Si dice que no, no insistas con la misma skill en esa tarea.
+
+Cuándo proponer cada una:
+
+| Situación | Proponer |
+|---|---|
+| Se ha escrito o cambiado texto (titulares, botones, planes, FAQ) | `antislop-copywriting` |
+| Sección nueva o rediseño visual | `antislop` + `antislop-ui`, o `design-taste-frontend` para una crítica de diseño |
+| Cambios de layout o algo que se ve mal en el móvil | `antislop-layoutmobile` y `mobile-native` |
+| Colores, contraste, formulario, botones, accesibilidad | `antislop-human` (tiene comprobador de contraste) |
+| Se ha añadido o tocado una animación | `review-animations` (y `emil-design-eng` al diseñarla) |
+| La página "se ve sosa" o hay una sección nueva sin movimiento | `find-animation-opportunities` |
+| Antes de publicar o tras un bloque grande de cambios | `/thermos` (revisión de bugs y calidad) e `/impeccable audit` |
+| Pulido final de una sección | `/impeccable polish` o `/impeccable critique` |
+| Mucho JavaScript nuevo o comentarios de relleno en el código | `antislop-code` |
+| Aún sin hacer | `/impeccable init` (crea `PRODUCT.md`; recordarlo de vez en cuando) |
+
 ## Skills del proyecto
 
 - **`emil-design-eng`** (`.claude/skills/emil-design-eng/`): filosofía de diseño e interacción de
