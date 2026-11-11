@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-11-11T11:14:16.124Z",
         "reason": "Brand manual (CLAUDE.md, Canva p.04): titles bold uppercase and tracked uppercase subtitles; flagged elements are short headings/eyebrows/tags, not paragraphs"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "app/panel.html"
+        ],
+        "createdAt": "2026-11-11T11:27:56.851Z",
+        "reason": "Brand manual (CLAUDE.md, Canva p.04): bold uppercase titles and tracked uppercase labels; flagged elements are short headings/eyebrows/table headers"
       }
     ]
   }
