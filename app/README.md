@@ -63,7 +63,7 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
 - **Pruebas de alta** por plantilla (todas *propuesta*, Dani las tiene que diseñar o confirmar).
   El paciente las ve desde el día 1 en «Progreso › Camino al alta». Dani las marca en la pestaña «Alta».
 - **Revisión mensual**: cuestionario validado (VISA-P / VISA-A / VISA-H / LEFS; el texto en castellano
-  lo aporta Dani) y desplegable para pedir videollamada (va a la bandeja de Dani) + enlace a WhatsApp.
+  lo aporta Dani) y botón para pedir videollamada por WhatsApp (sin opciones que elegir). Cuando Dani active las citas de Google Calendar, se pone el enlace en `config.reservaCalendario` y aparece un segundo botón.
 - **Recordatorios**: dolor diario 21:00 si falta · encuesta domingo 18:00 y lunes 12:00 si falta · revisión mensual.
 - **Mensajes de ánimo**: semanal (inicio / mitad / tramo final), mensual y última semana, con variables {nombre}…
 - **Biblioteca**: por nombre (como trabaja Dani), sacada de las plantillas. Falta importar su

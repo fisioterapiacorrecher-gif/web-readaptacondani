@@ -248,6 +248,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 .month .row2 { display: flex; gap: 8px; flex-wrap: wrap; }
 .month select { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--r-in); padding: 12px 14px; }
 a.btn { text-decoration: none; color: var(--text); }
+.btn[hidden] { display: none; }
 .phases { display: flex; gap: 4px; }
 .ph { display: grid; gap: 4px; min-width: 0; }
 .ph i { height: 6px; border-radius: 999px; background: var(--surface-3); }
@@ -377,17 +378,11 @@ a.btn { text-decoration: none; color: var(--text); }
       <p class="eyebrow">Revisión del mes 1 · toca esta semana</p>
       <p><b>Cuestionario VISA-A</b> · 5 minutos. Sirve para medir tu mejora de forma objetiva.</p>
       <button class="btn btn-primary btn-block" type="button" id="visa-start">Hacer el cuestionario</button>
-      <label for="call">¿Quieres una videollamada de seguimiento con Dani?</label>
-      <select id="call">
-        <option value="">Elige una opción</option>
-        <option>Sí, esta semana por la mañana</option>
-        <option>Sí, esta semana por la tarde</option>
-        <option>Sí, la semana que viene</option>
-        <option>No hace falta, voy bien</option>
-      </select>
+      <p class="label">¿Quieres una videollamada de seguimiento?</p>
+      <p class="mute">Escríbele a Dani y la cuadráis.</p>
       <div class="row2">
-        <button class="btn btn-ghost" type="button" id="call-send" disabled>Enviar a Dani</button>
-        <a class="btn btn-ghost" id="call-wa" href="https://wa.me/34684780066" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+        <a class="btn btn-ghost" id="call-wa" href="https://wa.me/34684780066" target="_blank" rel="noopener">Escribir a Dani por WhatsApp</a>
+        <a class="btn btn-ghost" id="call-cal" href="#" target="_blank" rel="noopener" hidden>Reservar en su calendario</a>
       </div>
     </div>
 
@@ -768,8 +763,10 @@ a.btn { text-decoration: none; color: var(--text); }
     $('#alta-list').innerHTML = tA.alta.map(a => `<li><b>${a.prueba}</b><span>${a.criterio}</span><em>Pendiente</em></li>`).join('');
   }
   $('#visa-start').addEventListener('click', () => toast('Aquí irá el cuestionario VISA-A'));
-  $('#call').addEventListener('change', e => { $('#call-send').disabled = !e.target.value; });
-  $('#call-send').addEventListener('click', () => { toast('Dani lo verá en su panel y te propondrá hora'); $('#call-send').disabled = true; });
+  // WhatsApp con el mensaje ya escrito; el botón del calendario solo aparece cuando Dani lo active (config.reservaCalendario)
+  $('#call-wa').href = 'https://wa.me/34684780066?text=' + encodeURIComponent('Hola Dani, soy Ricardo. Me gustaría hacer la videollamada de seguimiento del mes 1.');
+  const cal = window.RCD?.config?.reservaCalendario;
+  if (cal) { $('#call-cal').href = cal; $('#call-cal').hidden = false; }
 
   renderList();
 })();

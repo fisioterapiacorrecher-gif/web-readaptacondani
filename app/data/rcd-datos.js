@@ -219,7 +219,7 @@ window.RCD = (() => {
     { id: 'semanal-inicio', cuando: 'Cada domingo · semanas 1 a 4', texto: '¡Semana {semana} hecha, {nombre}! Ahora lo importante es la constancia, no la carga. Rellena tu encuesta y te preparo la semana {semana_siguiente}.' },
     { id: 'semanal-medio', cuando: 'Cada domingo · desde la semana 5 hasta 4 semanas antes del final', texto: 'Semana {semana} completada. Tu dolor medio ha sido {dolor_medio}/10. Seguimos sumando: rellena la encuesta y te preparo la siguiente.' },
     { id: 'semanal-final', cuando: 'Cada domingo · últimas 3 semanas', texto: 'Quedan {semanas_restantes} semanas, {nombre}. Ya puedes ver tus pruebas de alta en Progreso: vamos a por ellas.' },
-    { id: 'mensual', cuando: 'Cada 4 semanas', texto: 'Hoy cumples {meses} en RCD. Toca tu revisión mensual: el cuestionario {cuestionario} (5 minutos) y, si quieres, pedir una videollamada de seguimiento.' },
+    { id: 'mensual', cuando: 'Cada 4 semanas', texto: 'Hoy cumples {meses} en RCD. Toca tu revisión mensual: el cuestionario {cuestionario} (5 minutos). Si quieres una videollamada de seguimiento, escríbeme por WhatsApp.' },
     { id: 'ultima', cuando: 'Al empezar la última semana', texto: 'Última semana, {nombre}. Esta semana hacemos juntos las pruebas de alta. Si salen bien, ¡a correr sin dolor!' },
   ];
 
@@ -239,5 +239,9 @@ window.RCD = (() => {
     return [...map.entries()].map(([nombre, s]) => ({ nombre, en: [...s] })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   })();
 
-  return { plantillas, mensajes, recordatorios, biblioteca };
+  /* Ajustes. reservaCalendario: pon aquí el enlace de citas de Google Calendar cuando lo actives;
+     mientras esté vacío, el paciente solo ve el botón de WhatsApp. */
+  const config = { whatsapp: '34684780066', reservaCalendario: '' };
+
+  return { plantillas, mensajes, recordatorios, biblioteca, config };
 })();
