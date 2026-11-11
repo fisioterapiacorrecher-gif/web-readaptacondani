@@ -91,6 +91,11 @@ Todas vienen de github.com/emilkowalski/skills (MIT) y llevan su `LICENSE`.
   **Cómo aplicarla aquí:** igual que la Taste Skill: marca de Canva, tema oscuro (es de marca, no por defecto),
   botones en píldora y textos de Dani no se cambian sin que Dani lo pida; en animación mandan las reglas de Emil.
 
+- **`thermos`** (`.claude/skills/thermos/` + `thermo-nuclear-review` + `thermo-nuclear-code-quality-review`,
+  subagentes en `.claude/agents/thermo-nuclear-*.md`; github.com/cursor/plugins, MIT): revisión doble y muy estricta
+  de los cambios de una rama (bugs/seguridad + calidad de código), lanzada en paralelo y fusionada. Solo se ejecuta
+  a mano (`/thermos`). La rama por defecto del repo **no es `main`**: indica la rama base al pedir la revisión.
+
 ### Convenciones de movimiento (tras la revisión con las skills de Emil)
 
 - Curvas en `:root`: `--ease` (ease-out fuerte `0.23,1,0.32,1`) y `--ease-in-out`. No usar `ease-in`.
