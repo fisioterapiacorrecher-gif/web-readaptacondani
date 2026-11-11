@@ -109,3 +109,5 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
   Disabil Rehabil 2014), se sustituye el texto; la puntuación no cambia.
 - Plantillas de tratamiento y de alta: se quedan así de momento. Cuando Dani deje en Drive su documento
   nuevo, se actualizan desde ahí.
+- Ideas de mejora (cuando Dani quiera): el repositorio de GitHub es **público**; valorar hacerlo privado
+  (GitHub → Settings → Change visibility). Netlify sigue funcionando igual. No hay datos de pacientes en el repo.
