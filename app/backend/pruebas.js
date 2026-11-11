@@ -158,6 +158,40 @@ paso('ajustes: se guarda el enlace del calendario y no se puede cambiar el email
   paso('al actualizar el código, la pestaña nueva se crea sola (no hace falta reinstalar)');
 }
 
+/* ---------- Formulario pre-sesión e historia clínica ---------- */
+{
+  let r3 = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Nora Pre', email: 'nora@ejemplo.com', plantilla: 'aquiles', semanas: 12 }));
+  const nid = r3.paciente.id;
+  ok(api({ action: 'pedirCodigo', email: 'nora@ejemplo.com' }));
+  const tN = ok(api({ action: 'verificarCodigo', email: 'nora@ejemplo.com', codigo: ultimoCodigo() })).token;
+  assert.strictEqual(ok(api({ action: 'yo', token: tN })).presesion.hecha, false);
+  paso('un paciente nuevo aún no tiene el formulario pre-sesión');
+
+  r3 = api({ action: 'guardarPresesion', token: tN, version: 'v2026-09', respuestas: { nombre: 'Nora' }, consentimientos: { privacidad: true, informado: true } });
+  assert.ok(!r3.ok && /aceptar/.test(r3.error));
+  ok(api({ action: 'guardarPresesion', token: tN, version: 'v2026-09', respuestas: { nombre: 'Nora Pre', telefono: '+34 600 11 22 33', motivo: 'Dolor en el Aquiles', 'mal clave': 'x' },
+    consentimientos: { privacidad: true, informado: true, condiciones: true, rrss: true } }));
+  assert.strictEqual(ok(api({ action: 'yo', token: tN })).presesion.hecha, true);
+  paso('sin los tres consentimientos obligatorios no se guarda; con ellos sí');
+
+  r3 = ok(api({ action: 'bandeja', token: admin }));
+  assert.ok(r3.tareas.some(t => t.tipo === 'valoracion' && t.pacienteId === nid));
+  r3 = ok(api({ action: 'ficha', token: admin, pacienteId: nid }));
+  assert.strictEqual(r3.presesion.respuestas.motivo, 'Dolor en el Aquiles'); assert.ok(!('mal clave' in r3.presesion.respuestas));
+  assert.strictEqual(r3.paciente.telefono, '+34600112233');
+  assert.strictEqual(r3.consentimientos.find(c => c.documento === 'rrss').aceptado, true);
+  assert.strictEqual(r3.consentimientos.find(c => c.documento === 'comerciales').aceptado, false);
+  paso('Dani ve las respuestas, los consentimientos (con fecha y versión) y la tarea «Nueva valoración»');
+
+  ok(api({ action: 'guardarHistoria', token: admin, pacienteId: nid, cambios: { 'obj.0': 'Lunge 9 cm dcha / 12 cm izda', 'rojas.0': 'no', 'dif.principal': 'Tendinopatía porción media' } }));
+  r3 = ok(api({ action: 'guardarHistoria', token: admin, pacienteId: nid, cambios: { 'obj.0': 'Lunge 10 cm dcha', 'dif.principal': '', valorada: 'si' } }));
+  assert.strictEqual(r3.historia['obj.0'], 'Lunge 10 cm dcha'); assert.ok(!('dif.principal' in r3.historia));
+  assert.ok(!api({ action: 'guardarHistoria', token: tN, pacienteId: nid, cambios: { x: 'y' } }).ok);
+  r3 = ok(api({ action: 'bandeja', token: admin }));
+  assert.ok(!r3.tareas.some(t => t.tipo === 'valoracion' && t.pacienteId === nid));
+  paso('historia clínica: Dani guarda y corrige sus notas (un paciente no puede); «valorada» quita la tarea');
+}
+
 ok(api({ action: 'salir', token: pac }));
 assert.ok(!api({ action: 'yo', token: pac }).ok);
 paso('cerrar sesión invalida el acceso');

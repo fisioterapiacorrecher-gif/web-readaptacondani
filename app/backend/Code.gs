@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -39,6 +39,9 @@ const TABLAS = {
   Biblioteca: ['nombre', 'video', 'notas'],
   Registro: ['fecha', 'tipo', 'detalle'],
   Avisos: ['pacienteId', 'endpoint', 'p256dh', 'auth', 'creado'],   // móviles con notificaciones activadas
+  Presesion: ['pacienteId', 'fecha', 'version', 'respuestas'],        // formulario pre-sesión del paciente
+  Consentimientos: ['pacienteId', 'documento', 'version', 'aceptado', 'fecha'],
+  Historia: ['pacienteId', 'clave', 'valor', 'fecha'],                // lo que escribe Dani en la historia clínica
 };
 
 const CONFIG_INICIAL = {
@@ -112,8 +115,8 @@ function doPost(e) {
 }
 
 const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1 };
-const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1 };
-const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1 };
+const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
+const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1 };
 
 function enrutar_(req) {
   const a = req.action;
@@ -208,6 +211,7 @@ const ACC = {
       alta: alta.map(a => ({ prueba: a.prueba, criterio: a.criterio, superada: esSi_(a.superada) })),
       contacto: { whatsapp: cfg.WHATSAPP, reservaCalendario: cfg.RESERVA_CALENDARIO },
       avisos: { clave: cfg.PUSH_CLAVE_PUBLICA || '', activados: buscar_('Avisos', a => a.pacienteId === p.id).length },
+      presesion: { hecha: buscar_('Presesion', x => x.pacienteId === p.id).length > 0 },
     };
   },
 
@@ -291,6 +295,13 @@ const ACC = {
       if (cu) tareas.push({ tipo: 'mensual', pacienteId: p.id, titulo: `${p.nombre} completó su cuestionario ${cu.tipo}`, detalle: `${cu.puntuacion} puntos` });
     });
     buscar_('Pacientes', p => p.estado === 'pendiente').forEach(p => tareas.push({ tipo: 'nuevo', pacienteId: p.id, titulo: `${p.nombre}: pendiente de su primer acceso`, detalle: 'Tiene que entrar con su email' }));
+    // Formularios pre-sesión recibidos y aún sin valorar
+    buscar_('Presesion', () => true).forEach(x => {
+      const p = buscar_('Pacientes', y => y.id === x.pacienteId && y.estado !== 'archivado')[0];
+      if (!p) return;
+      const valorada = buscar_('Historia', h => h.pacienteId === p.id && h.clave === 'valorada' && h.valor === 'si').length > 0;
+      if (!valorada) tareas.push({ tipo: 'valoracion', pacienteId: p.id, titulo: `Nueva valoración: ${p.nombre}`, detalle: 'Rellenó el formulario pre-sesión el ' + fechaLarga_(x.fecha) });
+    });
     return { tareas };
   },
 
@@ -309,6 +320,9 @@ const ACC = {
       alta: buscar_('Alta', a => a.pacienteId === p.id).map(a => ({ id: a.id, prueba: a.prueba, criterio: a.criterio, resultado: a.resultado, superada: esSi_(a.superada) })),
       mensajes: buscar_('Mensajes', m => m.pacienteId === p.id).map(m => ({ semana: Number(m.semana), texto: m.texto })),
       progreso: resumenProgreso_(p),
+      presesion: (x => x ? { fecha: fecha_(x.fecha), version: x.version, respuestas: parse_(x.respuestas, {}) } : null)(buscar_('Presesion', x => x.pacienteId === p.id)[0]),
+      consentimientos: buscar_('Consentimientos', c => c.pacienteId === p.id).map(c => ({ documento: c.documento, version: c.version, aceptado: esSi_(c.aceptado), fecha: fecha_(c.fecha) })),
+      historia: buscar_('Historia', h => h.pacienteId === p.id).reduce((o, h) => (o[h.clave] = String(h.valor), o), {}),
     };
   },
 
@@ -383,6 +397,30 @@ const ACC = {
     return { activados: buscar_('Avisos', a => a.pacienteId === q.pacienteId).length };
   },
 
+  /** Formulario pre-sesión + consentimientos. Los tres consentimientos principales son obligatorios. */
+  guardarPresesion(req, q) {
+    const p = paciente_(q.pacienteId);
+    const c = req.consentimientos || {};
+    if (!c.privacidad || !c.informado || !c.condiciones) throw publico_('Para continuar tienes que aceptar la política de privacidad, el consentimiento informado y las condiciones.');
+    const r = req.respuestas || {};
+    const limpio = {};
+    Object.keys(r).slice(0, 120).forEach(k => { if (/^[a-zA-Z0-9_]{1,40}$/.test(k)) limpio[k] = texto_(r[k], 3000); });
+    if (!limpio.nombre) throw publico_('Falta tu nombre.');
+    const version = texto_(req.version, 20) || 'v1';
+    const ahora = new Date().toISOString();
+    conBloqueo_(() => {
+      borrar_('Presesion', x => x.pacienteId === p.id);
+      anadir_('Presesion', { pacienteId: p.id, fecha: ahora, version, respuestas: JSON.stringify(limpio) });
+      ['privacidad', 'informado', 'condiciones', 'grabacion', 'docencia', 'rrss', 'comerciales'].forEach(d =>
+        anadir_('Consentimientos', { pacienteId: p.id, documento: d, version, aceptado: c[d] ? 'si' : 'no', fecha: ahora }));
+      const cambios = {};
+      if (!p.telefono && limpio.telefono) cambios.telefono = limpio.telefono.replace(/[^\d+]/g, '');
+      if (Object.keys(cambios).length) actualizar_('Pacientes', x => x.id === p.id, cambios);
+    });
+    registrar_('presesion', p.id);
+    return {};
+  },
+
   quitarAviso(req, q) {
     borrar_('Avisos', a => a.pacienteId === q.pacienteId && a.endpoint === String(req.endpoint || ''));
     return {};
@@ -408,6 +446,20 @@ const ACC = {
     if (buscar_('Biblioteca', b => b.nombre === nombre).length) actualizar_('Biblioteca', b => b.nombre === nombre, { video: texto_(req.video, 300), notas: texto_(req.notas, 500) });
     else anadir_('Biblioteca', { nombre, video: texto_(req.video, 300), notas: texto_(req.notas, 500) });
     return { biblioteca: buscar_('Biblioteca', () => true) };
+  },
+
+  /** Notas de Dani en la historia clínica: pares clave → texto (exploración, banderas rojas, diferencial…). */
+  guardarHistoria(req) {
+    const p = paciente_(req.pacienteId);
+    const cambios = req.cambios || {};
+    const ahora = new Date().toISOString();
+    conBloqueo_(() => Object.keys(cambios).slice(0, 200).forEach(k => {
+      if (!/^[a-zA-Z0-9_.-]{1,60}$/.test(k)) return;
+      const v = texto_(cambios[k], 5000);
+      borrar_('Historia', h => h.pacienteId === p.id && h.clave === k);
+      if (v !== '') anadir_('Historia', { pacienteId: p.id, clave: k, valor: v, fecha: ahora });
+    }));
+    return { historia: buscar_('Historia', h => h.pacienteId === p.id).reduce((o, h) => (o[h.clave] = String(h.valor), o), {}) };
   },
 
   config() {

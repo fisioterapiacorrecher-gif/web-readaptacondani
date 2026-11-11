@@ -14,7 +14,7 @@
   /* ---------- Arranque y acceso ---------- */
   api.onSesion = () => mostrarAcceso();
   function mostrarAcceso() {
-    $('#app').hidden = true; $('#cargando').hidden = true; $('#acceso').hidden = false;
+    $('#app').hidden = true; $('#presesion').hidden = true; $('#cargando').hidden = true; $('#acceso').hidden = false;
     pantallaAcceso($('#acceso'), api, {
       titulo: 'Entra en tu plan', subtitulo: 'Escribe el email que le diste a Dani y te enviaremos un código para entrar.', rolEsperado: 'paciente',
       alEntrar: () => { $('#acceso').hidden = true; cargar(); },
@@ -24,7 +24,13 @@
     $('#cargando').hidden = false;
     try {
       Y = await api('yo');
-      $('#cargando').hidden = true; $('#app').hidden = false;
+      $('#cargando').hidden = true;
+      if (Y.presesion && !Y.presesion.hecha && window.RCDPresesion) {   // primera vez: formulario pre-sesión
+        $('#app').hidden = true; $('#presesion').hidden = false;
+        window.RCDPresesion.mostrar($('#presesion'), Y, api, () => { $('#presesion').hidden = true; $('#presesion').innerHTML = ''; window.scrollTo(0, 0); cargar(); });
+        return;
+      }
+      $('#app').hidden = false;
       pintarTodo();
     } catch (e) {
       if (e.codigo === 'sesion' || e.codigo === 'permiso') return mostrarAcceso();

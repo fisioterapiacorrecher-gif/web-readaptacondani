@@ -27,3 +27,13 @@ select { color-scheme: dark; }
 select option, select optgroup { background-color: #141414; color: #FFFBE8; }
 input[type="email"], input[type="tel"], input[type="number"], input[type="text"], select {
   width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+/* Formulario pre-sesión */
+.pre { padding-block-end: 40px; }
+.pre .view { gap: 16px; }
+.pre-nav { display: flex; justify-content: space-between; gap: 10px; }
+.pre-nav .btn { flex: 1; }
+.check { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; padding: 6px 0; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--coral); }
+.check a { color: var(--coral); }
+.card.q.falta { border-color: var(--coral); }
+.pre textarea { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; resize: vertical; }

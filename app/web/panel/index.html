@@ -6,6 +6,10 @@
 <title>RCD Clinic · Panel de Dani</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Panel RCD">
 <link rel="icon" href="../img/icono.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../img/icono-180.png">
 <link rel="stylesheet" href="../css/panel.css">
@@ -31,6 +35,16 @@
   .clave { display: grid; gap: 4px; }
   .clave code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; user-select: all; }
   .clave .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .hc-lab { display: grid; gap: 6px; font-size: 13px; color: var(--text-soft); font-weight: 600; }
+  .hc-lab .hc-in, .hc-in { font: inherit; font-size: 15px; font-weight: 400; color: var(--text); background: var(--surface-3); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; width: 100%; resize: vertical; }
+  .hc-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .hc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .hc-rojas { display: grid; gap: 8px; }
+  .hc-roja { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0; border-top: 1px solid var(--border); }
+  .hc-roja:first-child { border-top: 0; }
+  .hc-roja .chip { min-height: 34px; padding: 0 12px; font-size: 13px; }
+  .hc-alertas { display: grid; gap: 4px; font-size: 14px; }
+  .hc-pie { position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; background: var(--bg); border-top: 1px solid var(--border); }
   .status-pill { font-family: var(--font-accent); font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-soft); }
 </style>
 </head>
@@ -79,6 +93,7 @@
           </div>
           <div class="tabs" role="tablist" aria-label="Secciones del paciente">
             <button class="tab" role="tab" aria-selected="true" data-pane="review" type="button">Revisión semanal</button>
+            <button class="tab" role="tab" aria-selected="false" data-pane="hc" type="button">Historia clínica</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="log" type="button">Registros</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="alta" type="button">Alta</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="datos" type="button">Datos</button>
@@ -113,6 +128,8 @@
             </div>
           </div>
         </section>
+
+        <section class="pane" id="pane-hc" hidden aria-label="Historia clínica"><div id="hc" style="display:grid;gap:18px"></div></section>
 
         <section class="pane" id="pane-log" hidden aria-label="Registros">
           <p class="sec-title">Sesiones, dolor y comentarios</p>
@@ -190,7 +207,9 @@
 <script src="../js/config.js"></script>
 <script src="../data/rcd-datos.js"></script>
 <script src="../data/rcd-cuestionarios.js"></script>
+<script src="../data/rcd-presesion.js"></script>
 <script src="../js/comun.js"></script>
+<script src="../js/historia.js"></script>
 <script src="../js/panel.js"></script>
 </body>
 </html>

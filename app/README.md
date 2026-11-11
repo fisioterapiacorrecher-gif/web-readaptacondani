@@ -95,6 +95,18 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
   Claves VAPID generadas en el navegador de Dani (Ajustes del panel) y guardadas como variables de entorno en Netlify.
   Móviles suscritos en la pestaña «Avisos». Si no hay notificación posible → email (configurable).
 
+## Formulario pre-sesión e historia clínica (motor 1.2.0)
+
+- `web/data/rcd-presesion.js`: las preguntas del formulario de PhysiOne por bloques (datos, dolor, entrenamiento,
+  antecedentes, creencias), consentimientos (3 obligatorios + 4 opcionales de la política de privacidad) y la
+  estructura de la historia clínica (exploración objetiva de los guiones de valoración de Dani, banderas rojas).
+- El paciente lo rellena la primera vez que entra (`js/presesion.js`, con borrador en el móvil). Los documentos
+  legales se enlazan a los Google Docs de Dani (no se copian al repositorio: llevan NIF y domicilio).
+- Panel › pestaña «Historia clínica» (`js/historia.js`): respuestas, consentimientos con fecha/versión, avisos
+  automáticos, notas de Dani (pestaña «Historia» de la hoja) y «Marcar valoración hecha».
+- Pendiente: subir body chart / informes de imagen desde la app (de momento, por WhatsApp).
+- El panel también se instala como app (`panel/manifest.webmanifest`).
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).

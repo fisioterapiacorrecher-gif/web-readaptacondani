@@ -32,7 +32,7 @@
   $('#salir').addEventListener('click', async () => { try { await api('salir'); } catch { } api.setToken(null); mostrarAcceso(); });
 
   /* ================= Lateral: bandeja y pacientes ================= */
-  const KIND = { revision: 'review', dolor: 'pain', silencio: 'silent', mensual: 'call', nuevo: 'new' };
+  const KIND = { revision: 'review', dolor: 'pain', silencio: 'silent', mensual: 'call', nuevo: 'new', valoracion: 'new' };
   async function recargarLateral() {
     const [b, p] = await Promise.all([api('bandeja'), api('pacientes')]);
     tareas = b.tareas; pacientes = p.pacientes;
@@ -93,6 +93,7 @@
     const tel = String(p.telefono || '').replace(/\D/g, '');
     $('#p-wa').hidden = !tel; $('#p-wa').href = `https://wa.me/${tel}`;
     pintarRevision(); pintarRegistros(); pintarAlta(); pintarDatos();
+    window.RCDHistoria.pintar($('#hc'), F, api, () => recargarLateral());
   }
 
   /* ---------- Revisión semanal ---------- */
@@ -475,6 +476,9 @@
     catch { const r = document.createRange(); r.selectNodeContents($('#np-link')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selecciona y copia el enlace'); }
   });
   $('#np-done').addEventListener('click', () => { cerrarNP(); if (creado) abrir(creado.id); });
+
+  // Instalable como programa (ordenador y móvil): usa el mismo service worker que la app
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('../sw.js').catch(() => {});
 
   api.conToken() ? arrancar() : mostrarAcceso();
 })();
