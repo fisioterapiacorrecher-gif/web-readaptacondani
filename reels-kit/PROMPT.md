@@ -216,6 +216,7 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `anim_alarma.py` | campana que suena → se tacha y calla → aviso "!" que sigue latiendo | "es como silenciar la alarma" |
 | `anim_corredor.py` | corredor articulado que corre y se para por dolor en el Aquiles | "no vas a poder correr como antes" |
 | `anim_calendario.py` | hojas de calendario tachándose cada vez más rápido (un año en 6 s) | "vas a esperar mucho tiempo" (sobre el b-roll) |
+| `anim_bucle.py` | bucle en círculo DOLOR → CAMILLA → LEVE MEJORA → A CORRER → DOLOR; cada estación entra al decirla, al cerrarse una bola de luz da vueltas cada vez más rápido y sube el contador «VUELTA N» | «llevas meses en el bucle: dolor, camilla, leve mejora…» (reel «Bucle»). Texto EL BUCLE arriba, `entrada` al empezar y `golpe` al volver el dolor |
 | `anim_compartir.py` | botón de enviar + aviones de papel repetidos hasta el amigo | CTA "envíaselo a ese amigo" |
 | `anim_sin.py` | jeringa y electrodo que se tachan con señal de prohibido | "sin agujas y sin corrientes molestas" |
 | `anim_carga.py` | barras que crecen + flecha menta que sube | "aumenta la capacidad de carga del tendón" |
@@ -233,10 +234,15 @@ en `graphics` con `"module"`. Ideas que encajan: sol-luna (paso de días), reloj
 - `graphics[]`: `module, st, en, scene, pulses, blur, hide_subs, sfx_in, sfx_out, sfx[[nombre,t_abs,ganancia]]`.
 - `broll`: `st, en, offset, path, hdr, dark, zoom` (un objeto o una **lista** de varios clips) · `looks[]`: `st, en, fade_in, fade_out, contrast, vignette`.
 - `zoom[]`: `[t, desde, hasta, "L"|"S"|"P"]` · `salida_gain` · `graphic_cy` · sin `outro` = sin @.
+- `cards[]`: `png` (de `tarjeta.py`), `st, en, cy, sc, sfx_in, sfx_out` — imagen de apoyo grande (p. ej. la rodilla
+  bajo el título en «Bucle»: título arriba `y0` ≈ 250, tarjeta `cy` ≈ 1290, `"sfx_in": "golpe"`, `"sfx_out": null`).
+  Si la imagen es pequeña (< 600 px), amplíala ×2-3 con Lanczos + un poco de nitidez antes de `tarjeta.py`.
 - `sfx[]` (raíz): `[nombre, t_abs, ganancia]` efectos sueltos sobre una frase sin texto (trombón en "no ves la luz").
 - `sombra_suave: true` (sombra de título/textos más discreta, la pidió Dani) · `keydark` (oscurecido tras los textos, 0.10).
 - Ejemplos completos y aprobados: `ejemplo-infiltracion/edit.json`, `ejemplo-tratamiento-definitivo/edit.json` y
-  `ejemplo-cintilla/edit.json` (3 clips de apoyo + animaciones del eje y la cintilla + sonidos con significado).
+  `ejemplo-cintilla/edit.json` (3 clips de apoyo + animaciones del eje y la cintilla + sonidos con significado) y
+  `ejemplo-bucle/edit.json` (imagen bajo el título, 3 clips de terapias pasivas seguidos, animación del bucle,
+  carga progresiva y CTA de compartir). Errata de Dani en ese reel: dice «máquina del dolor» → se escribe «de calor».
 
 ---
 

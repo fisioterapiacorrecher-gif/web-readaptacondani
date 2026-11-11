@@ -1,0 +1,496 @@
+{
+ "END": 51.4,
+ "video": "ENTRADA/bucle.mov",
+ "video_end": 51.4,
+ "graphic_cy": 920,
+ "salida_gain": 0.5,
+ "sombra_suave": true,
+ "keydark": 0.1,
+ "hook": {
+  "y0": 250,
+  "lh": 128,
+  "size": 140,
+  "end": 2.43,
+  "sfx_in": null,
+  "sfx_out": null,
+  "lines": [
+   [
+    "SI TIENES",
+    0.0,
+    false
+   ],
+   [
+    "TENDINOPATÍA",
+    0.42,
+    true
+   ],
+   [
+    "ROTULIANA",
+    1.05,
+    true
+   ],
+   [
+    "Y CORRES",
+    1.77,
+    false
+   ]
+  ]
+ },
+ "keys": [
+  {
+   "st": 3.41,
+   "en": 4.24,
+   "lines": [
+    [
+     "MISMO",
+     3.41,
+     false,
+     140
+    ],
+    [
+     "ERROR",
+     3.63,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "error",
+   "sfx_out": null
+  },
+  {
+   "st": 6.71,
+   "en": 8.45,
+   "lines": [
+    [
+     "DESCARGA",
+     6.71,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 8.45,
+   "en": 9.89,
+   "lines": [
+    [
+     "MÁQUINA",
+     8.45,
+     false,
+     140
+    ],
+    [
+     "DE CALOR",
+     8.97,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 11.22,
+   "en": 12.38,
+   "lines": [
+    [
+     "PUNCIÓN",
+     11.22,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 17.26,
+   "en": 18.22,
+   "lines": [
+    [
+     "EL DOLOR",
+     17.26,
+     false,
+     140
+    ],
+    [
+     "VUELVE",
+     17.76,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "golpe",
+   "sfx_out": null
+  },
+  {
+   "st": 22.08,
+   "en": 23.3,
+   "lines": [
+    [
+     "MISMO",
+     22.08,
+     false,
+     140
+    ],
+    [
+     "RESULTADO",
+     22.73,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "trombon",
+     0.6500000000000021,
+     1.0
+    ]
+   ]
+  },
+  {
+   "st": 24.64,
+   "en": 31.28,
+   "lines": [
+    [
+     "EL BUCLE",
+     24.64,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": "entrada",
+   "sfx_out": null
+  },
+  {
+   "st": 36.47,
+   "en": 37.13,
+   "lines": [
+    [
+     "NO CAMBIA",
+     36.47,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": "error",
+   "sfx_out": null
+  },
+  {
+   "st": 39.84,
+   "en": 42.470000000000006,
+   "lines": [
+    [
+     "CARGA",
+     39.84,
+     false,
+     140
+    ],
+    [
+     "PROGRESIVA",
+     40.15,
+     false,
+     140
+    ]
+   ],
+   "y": 420,
+   "glow": "red",
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "bien",
+     0.30999999999999517,
+     1.3
+    ]
+   ]
+  },
+  {
+   "st": 46.3,
+   "en": 47.11,
+   "lines": [
+    [
+     "DE FORMA",
+     46.3,
+     false,
+     140
+    ],
+    [
+     "INTELIGENTE",
+     46.6,
+     true,
+     140
+    ]
+   ],
+   "sfx_in": null,
+   "sfx_out": "salida",
+   "sfx": [
+    [
+     "arpegio",
+     0.30000000000000426,
+     1.2
+    ]
+   ]
+  }
+ ],
+ "cards": [
+  {
+   "png": "TRABAJO/rodilla_card.png",
+   "st": 0.42,
+   "en": 2.43,
+   "cy": 1290,
+   "sc": 1.0,
+   "sfx_in": "golpe",
+   "sfx_out": null
+  }
+ ],
+ "graphics": [
+  {
+   "module": "anim_bucle",
+   "st": 24.64,
+   "en": 31.28,
+   "pulses": [
+    25.26,
+    25.93,
+    26.67,
+    27.65,
+    29.19
+   ],
+   "hide_subs": true,
+   "sfx_in": null,
+   "sfx_out": null,
+   "sfx": [
+    [
+     "golpe",
+     29.19,
+     1.0
+    ]
+   ]
+  },
+  {
+   "module": "anim_carga",
+   "st": 39.84,
+   "en": 42.470000000000006,
+   "pulses": [
+    40.14
+   ],
+   "hide_subs": true,
+   "sfx_in": null,
+   "sfx_out": null
+  },
+  {
+   "module": "anim_compartir",
+   "st": 47.85,
+   "en": 52.4,
+   "pulses": [
+    48.300000000000004,
+    48.050000000000004
+   ],
+   "blur": false,
+   "sfx_out": null
+  }
+ ],
+ "broll": [
+  {
+   "st": 6.71,
+   "en": 8.45,
+   "offset": 3.0,
+   "path": "ENTRADA/apoyo_13010424.mp4",
+   "dark": 0.9,
+   "zoom": 0.06
+  },
+  {
+   "st": 8.45,
+   "en": 9.89,
+   "offset": 0.6,
+   "path": "ENTRADA/apoyo_IMG_6932.mov",
+   "dark": 0.9,
+   "zoom": 0.06
+  },
+  {
+   "st": 11.22,
+   "en": 12.38,
+   "offset": 1.2,
+   "path": "ENTRADA/apoyo_8313071.mp4",
+   "dark": 0.9,
+   "zoom": 0.06
+  }
+ ],
+ "sfx": [],
+ "zoom": [
+  [
+   0,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   2.43,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   4.24,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   6.37,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   9.89,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   12.38,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   14.0,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   16.12,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   17.26,
+   1.0,
+   1.06,
+   "S"
+  ],
+  [
+   18.22,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   20.17,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   20.94,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   22.73,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   23.92,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   24.64,
+   1.0,
+   1.0,
+   "L"
+  ],
+  [
+   31.28,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   33.3,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   35.0,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   36.47,
+   1.0,
+   1.06,
+   "S"
+  ],
+  [
+   36.92,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   37.3,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   38.83,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   39.84,
+   1.0,
+   1.0,
+   "L"
+  ],
+  [
+   42.470000000000006,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   42.99,
+   1.0,
+   1.02,
+   "L"
+  ],
+  [
+   44.18,
+   1.05,
+   1.07,
+   "L"
+  ],
+  [
+   47.85,
+   1.0,
+   1.02,
+   "L"
+  ]
+ ]
+}
