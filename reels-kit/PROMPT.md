@@ -162,6 +162,7 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `disco_rayado.wav` | scratch de vinilo + frenazo | entrada del vídeo de apoyo / cambio de escena |
 | `reloj.wav` | tic-tac que se acelera (6 s) | paso del tiempo (bajo el calendario) |
 | `alarma.wav` | timbre de despertador 0,6 s | la alarma de la animación, se corta al silenciarla |
+| `perdido.wav` | acorde menor suave que cae y se apaga con eco (1,9 s) | desánimo / estar perdido sin ser agresivo («¿HACIA DÓNDE TIRAR?»). Ganancia 1.6. Lo pidió Dani en «Bucle» |
 | `trombon.wav` | wah-wah-waaah | momento triste ("vas a esperar mucho tiempo") |
 | `bien.wav` | campanita + "¡bieeen!" | alivio/positivo (EJERCICIO BIEN PLANEADO, INTACTAS) |
 | `destello.wav` | brillo | revelación; **no** en "todo depende" (Dani lo quitó): úsalo poco |
@@ -217,6 +218,7 @@ palabras destacadas, demasiados sonidos y demasiados zooms a la vez. Lo que apro
 | `anim_corredor.py` | corredor articulado que corre y se para por dolor en el Aquiles | "no vas a poder correr como antes" |
 | `anim_calendario.py` | hojas de calendario tachándose cada vez más rápido (un año en 6 s) | "vas a esperar mucho tiempo" (sobre el b-roll) |
 | `anim_bucle.py` | bucle en círculo DOLOR → CAMILLA → LEVE MEJORA → A CORRER → DOLOR; cada estación entra al decirla, al cerrarse una bola de luz da vueltas cada vez más rápido y sube el contador «VUELTA N» | «llevas meses en el bucle: dolor, camilla, leve mejora…» (reel «Bucle»). Texto EL BUCLE arriba, `entrada` al empezar y `golpe` al volver el dolor |
+| `anim_diana.py` | diana que entra con rebote + flecha que vuela y se clava en el centro (onda coral, la flecha vibra) | «con un plan definido desde el principio» (reel «Bucle»): texto PLAN / DEFINIDO arriba, `golpe` suave (0.9) al clavarse |
 | `anim_compartir.py` | botón de enviar + aviones de papel repetidos hasta el amigo | CTA "envíaselo a ese amigo" |
 | `anim_sin.py` | jeringa y electrodo que se tachan con señal de prohibido | "sin agujas y sin corrientes molestas" |
 | `anim_carga.py` | barras que crecen + flecha menta que sube | "aumenta la capacidad de carga del tendón" |
@@ -242,7 +244,9 @@ en `graphics` con `"module"`. Ideas que encajan: sol-luna (paso de días), reloj
 - Ejemplos completos y aprobados: `ejemplo-infiltracion/edit.json`, `ejemplo-tratamiento-definitivo/edit.json` y
   `ejemplo-cintilla/edit.json` (3 clips de apoyo + animaciones del eje y la cintilla + sonidos con significado) y
   `ejemplo-bucle/edit.json` (imagen bajo el título, 3 clips de terapias pasivas seguidos, animación del bucle,
-  carga progresiva y CTA de compartir). Errata de Dani en ese reel: dice «máquina del dolor» → se escribe «de calor».
+  carga progresiva y CTA de compartir). Cambios que pidió en la v2: el bucle aparece en «dolor» (no en «bucle»); más sonido en el tramo de recaída
+  (bien en «sin dolor», subida → error en «vuelve», disco rayado en «vuelves», trombón en «resultado»); carga progresiva
+  corta (~1 s) seguida de la diana; sonido de desánimo en «no sabes hacia dónde tirar». Errata de Dani en ese reel: dice «máquina del dolor» → se escribe «de calor».
 
 ---
 
