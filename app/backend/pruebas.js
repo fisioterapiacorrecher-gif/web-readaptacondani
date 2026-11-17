@@ -100,6 +100,10 @@ assert.ok(!api({ action: 'darAlta', token: admin, pacienteId: pid }).ok);
 r.alta.forEach(a => ok(api({ action: 'guardarAlta', token: admin, id: a.id, resultado: 'ok', superada: true })));
 ok(api({ action: 'darAlta', token: admin, pacienteId: pid }));
 paso('no se puede dar el alta hasta superar todas las pruebas');
+r = api({ action: 'yo', token: pac });
+assert.ok(!r.ok && r.codigo === 'sesion');
+let n9 = correos.length; ok(api({ action: 'pedirCodigo', email: 'ricardo@ejemplo.com' })); assert.strictEqual(correos.length, n9);
+paso('al dar el alta se cierra su acceso en todos sus móviles y ya no recibe códigos');
 
 ok(api({ action: 'guardarConfig', token: admin, cambios: { RESERVA_CALENDARIO: 'https://calendar.app.google/xyz', ADMIN_EMAIL: 'hacker@x.com' } }));
 r = ok(api({ action: 'config', token: admin }));
@@ -220,8 +224,51 @@ paso('ajustes: se guarda el enlace del calendario y no se puede cambiar el email
   paso('historia clínica: Dani guarda y corrige sus notas (un paciente no puede); «valorada» quita la tarea');
 }
 
-ok(api({ action: 'salir', token: pac }));
-assert.ok(!api({ action: 'yo', token: pac }).ok);
+/* ---------- Enlace personal y duración del acceso según el plan ---------- */
+{
+  const hoy = new Date().toISOString().slice(0, 10);
+  let r5 = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Elena Enlace', email: 'elena.enlace@gmail.com', plantilla: 'aquiles', semanas: 4, fechaInicio: hoy }));
+  const eid = r5.paciente.id; let tok = r5.token;
+  assert.ok(/^[0-9a-f]{64}$/.test(tok));
+  r5 = ok(api({ action: 'invitacion', invitacion: tok }));
+  assert.strictEqual(r5.nombre, 'Elena Enlace'); assert.strictEqual(r5.email, 'el•••@gmail.com');
+  assert.ok(!api({ action: 'invitacion', invitacion: 'f'.repeat(64) }).ok);
+  paso('al crear el paciente se genera su enlace personal; muestra su nombre y el email oculto');
+
+  const n1 = correos.length;
+  ok(api({ action: 'pedirCodigo', invitacion: tok }));
+  assert.strictEqual(correos.length, n1 + 1); assert.strictEqual(correos[correos.length - 1].to, 'elena.enlace@gmail.com');
+  const tE = ok(api({ action: 'verificarCodigo', invitacion: tok, codigo: ultimoCodigo() })).token;
+  ok(api({ action: 'yo', token: tE }));
+  paso('«Sí, soy yo»: el código va a su email sin que tenga que escribirlo, y entra');
+
+  const viejo = tok; tok = ok(api({ action: 'enlaceAcceso', token: admin, pacienteId: eid })).token;
+  assert.ok(!api({ action: 'invitacion', invitacion: viejo }).ok); ok(api({ action: 'invitacion', invitacion: tok }));
+  assert.ok(!api({ action: 'enlaceAcceso', token: tE, pacienteId: eid }).ok);
+  paso('Dani genera un enlace nuevo y el anterior deja de valer (un paciente no puede generarlos)');
+
+  // Plan de 4 semanas que empezó hace 30 días: el acceso se cierra aunque no hayan pasado 90
+  const hace30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  ok(api({ action: 'editarPaciente', token: admin, pacienteId: eid, cambios: {} }));
+  libro.getSheetByName('Pacientes').rows.forEach(row => { if (row[0] === eid) row[7] = hace30; });
+  r5 = api({ action: 'yo', token: tE });
+  assert.ok(!r5.ok && /plan ha terminado/.test(r5.error));
+  assert.ok(!api({ action: 'invitacion', invitacion: tok }).ok);
+  paso('si el plan es más corto que 90 días, el acceso termina con el plan («Tu plan ha terminado»)');
+
+  ok(api({ action: 'editarPaciente', token: admin, pacienteId: eid, cambios: { semanas: 8 } }));
+  ok(api({ action: 'yo', token: tE }));
+  paso('al ampliar el plan en su ficha, su acceso vuelve a funcionar sin pedir nada');
+
+  ok(api({ action: 'editarPaciente', token: admin, pacienteId: eid, cambios: { estado: 'archivado' } }));
+  assert.ok(!api({ action: 'yo', token: tE }).ok); assert.ok(!api({ action: 'invitacion', invitacion: tok }).ok);
+  paso('archivar al paciente cierra su sesión y anula su enlace');
+}
+
+const tS = (() => { ok(api({ action: 'crearPaciente', token: admin, nombre: 'Saúl Salir', email: 'saul@ejemplo.com', plantilla: 'aquiles' }));
+  ok(api({ action: 'pedirCodigo', email: 'saul@ejemplo.com' })); return ok(api({ action: 'verificarCodigo', email: 'saul@ejemplo.com', codigo: ultimoCodigo() })).token; })();
+ok(api({ action: 'salir', token: tS }));
+assert.ok(!api({ action: 'yo', token: tS }).ok);
 paso('cerrar sesión invalida el acceso');
 
 const antes = correos.length; nueva(); ctx.recordatorios();

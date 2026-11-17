@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -42,6 +42,7 @@ const TABLAS = {
   Presesion: ['pacienteId', 'fecha', 'version', 'respuestas'],        // formulario pre-sesión del paciente
   Consentimientos: ['pacienteId', 'documento', 'version', 'aceptado', 'fecha'],
   Historia: ['pacienteId', 'clave', 'valor', 'fecha'],                // lo que escribe Dani en la historia clínica
+  Invitaciones: ['pacienteId', 'hash', 'creada'],                    // enlace personal de acceso (solo la huella)
 };
 
 const CONFIG_INICIAL = {
@@ -114,9 +115,9 @@ function doPost(e) {
   }
 }
 
-const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1 };
+const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1, invitacion: 1 };
 const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
-const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1 };
+const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1, enlaceAcceso: 1 };
 
 function enrutar_(req) {
   const a = req.action;
@@ -132,11 +133,12 @@ function enrutar_(req) {
 const ACC = {
   /* ---------- Acceso ---------- */
   pedirCodigo(req) {
-    const email = canonEmail_(req.email);
+    const inv = req.invitacion ? invitacion_(req.invitacion) : null;   // con enlace personal, el email lo pone el motor
+    const email = inv ? canonEmail_(inv.email) : canonEmail_(req.email);
     if (!email) throw publico_('Escribe un email válido.');
     const cfg = leerConfig_();
     const esAdmin = email === canonEmail_(cfg.ADMIN_EMAIL);
-    const paciente = buscar_('Pacientes', p => canonEmail_(p.email) === email && p.estado !== 'archivado')[0];
+    const paciente = buscar_('Pacientes', p => canonEmail_(p.email) === email && !accesoCerrado_(p))[0];
     // Misma respuesta exista o no el email, para no revelar quién es paciente (pero queda en el Registro para Dani).
     if (!esAdmin && !paciente) { registrar_('codigo', 'Pedido con un email sin acceso: ' + normEmail_(req.email)); return { enviado: true }; }
     const previos = buscar_('Codigos', c => c.email === email);
@@ -156,7 +158,8 @@ const ACC = {
   },
 
   verificarCodigo(req) {
-    const email = canonEmail_(req.email);
+    const inv = req.invitacion ? invitacion_(req.invitacion) : null;
+    const email = inv ? canonEmail_(inv.email) : canonEmail_(req.email);
     const codigo = String(req.codigo || '').replace(/\D/g, '');
     const fila = buscar_('Codigos', c => c.email === email)[0];
     if (!fila) throw publico_('Pide un código nuevo.', 'codigo');
@@ -170,13 +173,27 @@ const ACC = {
     borrar_('Codigos', c => c.email === email);
     const cfg = leerConfig_();
     const esAdmin = email === canonEmail_(cfg.ADMIN_EMAIL);
-    const paciente = esAdmin ? null : buscar_('Pacientes', p => canonEmail_(p.email) === email && p.estado !== 'archivado')[0];
+    const paciente = esAdmin ? null : buscar_('Pacientes', p => canonEmail_(p.email) === email && !accesoCerrado_(p))[0];
     if (!esAdmin && !paciente) throw publico_('Este email no tiene acceso.', 'permiso');
     const token = Utilities.getUuid() + Utilities.getUuid();
     anadir_('Accesos', { hash: hash_(token), email, rol: esAdmin ? 'admin' : 'paciente', pacienteId: paciente ? paciente.id : '', expira: new Date(Date.now() + DURACION_SESION_DIAS * 86400000).toISOString(), creado: new Date().toISOString() });
     if (paciente && paciente.estado === 'pendiente') actualizar_('Pacientes', p => p.id === paciente.id, { estado: 'activo' });
     registrar_('acceso', email);
     return { token, rol: esAdmin ? 'admin' : 'paciente', nombre: paciente ? paciente.nombre : 'Dani' };
+  },
+
+  /** Enlace personal: muestra a quién pertenece (para el «¿Eres tú?») sin revelar el email completo. */
+  invitacion(req) {
+    const p = invitacion_(req.invitacion);
+    return { nombre: p.nombre, email: ocultarEmail_(p.email) };
+  },
+
+  /** Dani genera el enlace personal del paciente (anula el anterior). */
+  enlaceAcceso(req) {
+    const p = paciente_(req.pacienteId);
+    const cerrado = accesoCerrado_(p);
+    if (cerrado) throw publico_(cerrado === 'plan' ? 'Su plan ha terminado: amplía la duración en la pestaña Datos.' : 'Este paciente está de alta o archivado.');
+    return { token: nuevaInvitacion_(p.id) };
   },
 
   /** Plan B si el correo no llega: Dani genera el código y se lo manda al paciente por WhatsApp. Vale 24 h. */
@@ -356,7 +373,7 @@ const ACC = {
     anadir_('Pacientes', p);
     (req.alta || []).forEach(a => anadir_('Alta', { id: id_(), pacienteId: p.id, prueba: texto_(a.prueba, 200), criterio: texto_(a.criterio, 200), resultado: '', superada: 'no', fecha: '' }));
     registrar_('paciente', 'Creado ' + p.id);
-    return { paciente: publicoPaciente_(p) };
+    return { paciente: publicoPaciente_(p), token: nuevaInvitacion_(p.id) };
   },
 
   editarPaciente(req) {
@@ -365,6 +382,7 @@ const ACC = {
     if ('semanaActual' in req.cambios) campos.semanaActual = Number(req.cambios.semanaActual) || 1;
     if ('semanas' in req.cambios) campos.semanas = Number(req.cambios.semanas) || 12;
     actualizar_('Pacientes', p => p.id === req.pacienteId, campos);
+    if (campos.estado === 'alta' || campos.estado === 'archivado') cerrarAccesos_(req.pacienteId);
     return { paciente: publicoPaciente_(paciente_(req.pacienteId)) };
   },
 
@@ -453,6 +471,7 @@ const ACC = {
     const pendientes = buscar_('Alta', a => a.pacienteId === p.id && !esSi_(a.superada));
     if (pendientes.length) throw publico_('Faltan pruebas de alta por superar.');
     actualizar_('Pacientes', x => x.id === p.id, { estado: 'alta' });
+    cerrarAccesos_(p.id);
     registrar_('alta', p.id);
     return {};
   },
@@ -503,7 +522,7 @@ function recordatorios() {
   const hora = Number(Utilities.formatDate(ahora, ZONA, 'H'));
   const diaSemana = Number(Utilities.formatDate(ahora, ZONA, 'u')) % 7; // 0 = domingo
   const hoy = fecha_(ahora);
-  buscar_('Pacientes', p => p.estado === 'activo').forEach(p => {
+  buscar_('Pacientes', p => p.estado === 'activo' && !accesoCerrado_(p)).forEach(p => {   // sin recordatorios si su plan ya terminó
     const nombre = nombrePila_(p.nombre);
     const semana = semanaDe_(p);
     if (hora === Number(cfg.RECORDATORIO_DOLOR_HORA) && !buscar_('Dolor', d => d.pacienteId === p.id && fecha_(d.fecha) === hoy).length)
@@ -684,7 +703,8 @@ function autenticar_(token) {
   if (!a || new Date(a.expira).getTime() < Date.now()) throw publico_('Tu sesión ha caducado. Entra de nuevo con tu email.', 'sesion');
   if (a.rol === 'paciente') {
     const p = buscar_('Pacientes', x => x.id === a.pacienteId)[0];
-    if (!p || p.estado === 'archivado') throw publico_('Tu acceso está desactivado. Escribe a Dani.', 'permiso');
+    const cerrado = p ? accesoCerrado_(p) : 'cerrado';
+    if (cerrado) throw publico_(MENSAJE_CERRADO[cerrado], 'permiso');
   }
   return { rol: a.rol, email: a.email, pacienteId: a.pacienteId };
 }
@@ -744,6 +764,48 @@ function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).se
 function publico_(msg, codigo) { const e = new Error(msg); e.publico = true; e.codigo = codigo || 'error'; return e; }
 function hash_(s) { return Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(s), Utilities.Charset.UTF_8)); }
 function id_() { return Utilities.getUuid().slice(0, 13); }
+/* ---------- Acceso: enlace personal, fin del plan y cierre ---------- */
+const MENSAJE_CERRADO = {
+  cerrado: 'Tu acceso está cerrado. Si crees que es un error, escribe a Dani.',
+  plan: 'Tu plan ha terminado. Escribe a Dani para renovarlo.',
+};
+/** Último día del plan: fecha de inicio + semanas contratadas (incluido ese día). */
+function finPlan_(p) {
+  const ini = new Date(p.fechaInicio);
+  if (isNaN(ini)) return null;
+  return new Date(ini.getTime() + (Number(p.semanas) || 12) * 7 * 86400000 + 86400000);
+}
+/** '' si puede entrar; 'cerrado' (alta o archivado) o 'plan' (plan terminado). */
+function accesoCerrado_(p) {
+  if (p.estado === 'alta' || p.estado === 'archivado') return 'cerrado';
+  const fin = finPlan_(p);
+  return fin && Date.now() > fin.getTime() ? 'plan' : '';
+}
+function nuevaInvitacion_(pacienteId) {
+  const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+  conBloqueo_(() => {
+    borrar_('Invitaciones', i => i.pacienteId === pacienteId);
+    anadir_('Invitaciones', { pacienteId, hash: hash_(token), creada: new Date().toISOString() });
+  });
+  return token;
+}
+function invitacion_(token) {
+  const inv = buscar_('Invitaciones', i => i.hash === hash_(String(token || '')))[0];
+  const p = inv && buscar_('Pacientes', x => x.id === inv.pacienteId)[0];
+  if (!p) throw publico_('Este enlace no es válido o Dani ha generado uno nuevo. Pídele el enlace actualizado.', 'enlace');
+  const cerrado = accesoCerrado_(p);
+  if (cerrado) throw publico_(MENSAJE_CERRADO[cerrado], 'permiso');
+  return p;
+}
+function cerrarAccesos_(pacienteId) {
+  borrar_('Accesos', a => a.pacienteId === pacienteId);
+  borrar_('Invitaciones', i => i.pacienteId === pacienteId);
+}
+function ocultarEmail_(e) {
+  const [l, d] = String(e || '').split('@');
+  return l ? l.slice(0, 2) + '•••@' + d : '';
+}
+
 /** Forma para comparar emails: en Gmail los puntos y lo que va tras «+» no cuentan (llegan al mismo buzón). */
 function canonEmail_(e) {
   const s = normEmail_(e); if (!s) return '';

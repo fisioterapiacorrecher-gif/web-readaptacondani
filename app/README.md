@@ -107,6 +107,16 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
 - Pendiente: subir body chart / informes de imagen desde la app (de momento, por WhatsApp).
 - El panel también se instala como app (`panel/manifest.webmanifest`).
 
+## Acceso con enlace personal (motor 1.4.0)
+
+- Al crear un paciente (o con «Enlace de acceso» en su ficha) se genera su enlace `app.rcdclinic.com/#i=…`
+  (pestaña «Invitaciones»: solo la huella). Uno nuevo anula el anterior.
+- El paciente ve «¿Eres tú?» con su nombre y el email oculto → «Sí, soy yo» → código a su email (o el manual
+  de Dani por WhatsApp) solo la primera vez en cada móvil.
+- La sesión dura 90 días o hasta el fin del plan (inicio + semanas), lo que llegue antes; se comprueba en cada
+  uso, así que ampliar la duración en «Datos» amplía el acceso. Alta o archivado cierran sesiones y enlace.
+- Sin recordatorios para planes terminados. Tras entrar, la app guía a instalarla (iPhone/Android).
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).

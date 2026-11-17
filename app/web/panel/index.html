@@ -88,6 +88,8 @@
               <div><h1 id="p-name"></h1><p id="p-sub"></p></div>
             </div>
             <div class="head-actions">
+              <button class="btn btn-primary" type="button" id="p-link">Enlace de acceso</button>
+              <a class="btn btn-primary" id="p-link-wa" href="#" target="_blank" rel="noopener" hidden>Enviar enlace por WhatsApp</a>
               <button class="btn btn-ghost" type="button" id="p-code">Código de acceso</button>
               <a class="btn btn-primary" id="p-code-wa" href="#" target="_blank" rel="noopener" hidden>Enviar código</a>
               <a class="btn btn-ghost" id="p-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
@@ -197,7 +199,7 @@
     <button class="btn btn-primary btn-block" type="button" id="np-create" disabled>Crear paciente</button>
   </div>
   <div class="np-step" data-step="2" hidden>
-    <p class="soft">Paciente creado. Mándale el enlace de la app: entrará con su email y un código que le llegará al momento.</p>
+    <p class="soft">Paciente creado. Mándale su <b>enlace personal</b>: al abrirlo confirmará que es él/ella y le llegará un código a su email. Ese móvil queda dentro 90 días o hasta que termine su plan.</p>
     <div class="linkbox"><span id="np-link"></span><button class="btn btn-ghost" type="button" id="np-copy">Copiar</button></div>
     <a class="btn btn-primary btn-block" id="np-wa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
     <button class="btn btn-ghost btn-block" type="button" id="np-done">Ir a su ficha para preparar la semana 1</button>

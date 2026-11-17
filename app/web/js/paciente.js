@@ -96,6 +96,7 @@
     $('#dot-dolor').hidden = Y.dolor.some(d => d.fecha === Y.hoy);
     $('#dot-semana').hidden = Y.encuestaHecha && !(Y.revisionMensual && !Y.revisionMensual.hecha);
     pintarAvisos().catch(() => {});
+    pintarInstalar();
   }
 
   function pintarDias(dias, hechos) {
@@ -423,5 +424,35 @@
     finally { btn.disabled = false; }
   });
 
-  api.conToken() ? cargar() : mostrarAcceso();
+  /* ---------- Tarjeta «Instala la app» (después de entrar, si aún la usa desde el navegador) ---------- */
+  let promptInstalar = null;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; pintarInstalar(); });
+  function pintarInstalar() {
+    const card = $('#instalar-card'); if (!card) return;
+    let oculta = false; try { oculta = localStorage.getItem('rcd_instalar_oculta') === '1'; } catch { }
+    if (instalada || oculta || !Y) { card.hidden = true; return; }
+    card.hidden = false;
+    $('#instalar-text').innerHTML = esIOS
+      ? 'Pulsa <b>Compartir</b> (el cuadrado con la flecha) → <b>«Añadir a pantalla de inicio»</b>. A partir de ahí, ábrela siempre desde el icono.'
+      : promptInstalar ? 'Tenla en tu pantalla de inicio como una app más, sin tener que buscar el enlace.'
+      : 'En el menú <b>⋮</b> del navegador → <b>«Instalar aplicación»</b> o «Añadir a pantalla de inicio». Después, ábrela siempre desde el icono.';
+    $('#instalar-btn').hidden = !promptInstalar;
+  }
+  $('#instalar-btn').addEventListener('click', async () => {
+    if (!promptInstalar) return; promptInstalar.prompt();
+    const r = await promptInstalar.userChoice.catch(() => null); promptInstalar = null;
+    if (r && r.outcome === 'accepted') { $('#instalar-card').hidden = true; toast('¡Instalada! Ábrela desde el icono'); } else pintarInstalar();
+  });
+  $('#instalar-x').addEventListener('click', () => { try { localStorage.setItem('rcd_instalar_oculta', '1'); } catch { } $('#instalar-card').hidden = true; });
+
+  /* ---------- Arranque: enlace personal («¿Eres tú?»), sesión guardada o entrada con email ---------- */
+  const invitacion = window.RCDInvitacion?.leerDeLaDireccion();
+  if (api.conToken()) cargar();
+  else if (invitacion) {
+    $('#cargando').hidden = true; $('#acceso').hidden = false;
+    window.RCDInvitacion.pantalla($('#acceso'), api, invitacion, {
+      alEntrar: () => { $('#acceso').hidden = true; cargar(); },
+      usarEmail: () => mostrarAcceso(),
+    });
+  } else mostrarAcceso();
 })();

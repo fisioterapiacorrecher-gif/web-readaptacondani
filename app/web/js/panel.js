@@ -92,10 +92,23 @@
     $('#p-sub').textContent = [t?.nombre || p.plantilla, p.estado === 'activo' ? `Semana ${F.semana} de ${p.semanas}` : estadoTxt(p.estado), p.plan].filter(Boolean).join(' · ');
     const tel = String(p.telefono || '').replace(/\D/g, '');
     $('#p-wa').hidden = !tel; $('#p-wa').href = `https://wa.me/${tel}`;
-    $('#p-code').hidden = false; $('#p-code-wa').hidden = true;
+    $('#p-code').hidden = false; $('#p-code-wa').hidden = true; $('#p-link').hidden = false; $('#p-link-wa').hidden = true;
     pintarRevision(); pintarRegistros(); pintarAlta(); pintarDatos();
     window.RCDHistoria.pintar($('#hc'), F, api, () => recargarLateral());
   }
+
+  /* Enlace personal del paciente (anula el anterior) para mandárselo por WhatsApp */
+  const urlApp = () => (CFG.config.APP_URL || 'https://app.rcdclinic.com').replace(/\/$/, '');
+  const mensajeEnlace = (nombre, enlace) => `Hola ${nombre.split(' ')[0]}, soy Dani de RCD Clinic. Este es tu acceso personal a la app: ${enlace}\n\nÁbrelo, confirma que eres tú y te llegará un código a tu email. Es personal, no lo compartas. Después añade la app a tu pantalla de inicio y ábrela siempre desde ahí.`;
+  $('#p-link').addEventListener('click', async () => {
+    const b = $('#p-link'); b.disabled = true;
+    try {
+      const r = await api('enlaceAcceso', { pacienteId: F.paciente.id });
+      const enlace = `${urlApp()}/#i=${r.token}`, tel = String(F.paciente.telefono || '').replace(/\D/g, '');
+      const a = $('#p-link-wa'); a.href = `https://wa.me/${tel}?text=` + encodeURIComponent(mensajeEnlace(F.paciente.nombre, enlace)); a.hidden = false; b.hidden = true;
+      try { await navigator.clipboard.writeText(enlace); toast('Enlace nuevo copiado · el anterior ya no vale'); } catch { toast('Enlace nuevo listo · el anterior ya no vale'); }
+    } catch (x) { toast(x.message); } finally { b.disabled = false; }
+  });
 
   /* Plan B si al paciente no le llega el correo: código manual (24 h) para mandárselo por WhatsApp */
   $('#p-code').addEventListener('click', async () => {
@@ -345,12 +358,15 @@
     });
   }
 
+  const finPlan = p => { const d = new Date(p.fechaInicio + 'T12:00:00'); if (isNaN(d)) return '—'; d.setDate(d.getDate() + (Number(p.semanas) || 12) * 7); return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }); };
+
   /* ---------- Datos del paciente ---------- */
   function pintarDatos() {
     const p = F.paciente;
     $('#datos').innerHTML = `
       <div class="two"><label class="cfg-row">Nombre<input id="d-nombre" type="text" value="${esc(p.nombre)}"></label><label class="cfg-row">Teléfono<input id="d-tel" type="text" inputmode="tel" value="${esc(p.telefono || '')}"></label></div>
-      <p class="mute">Email de acceso: <b>${esc(p.email)}</b> · Empezó el ${esc(p.fechaInicio)} · Plantilla: ${esc(plantillaDe(p)?.nombre || p.plantilla || '—')}</p>
+      <p class="mute">Email de acceso: <b>${esc(p.email)}</b> · Empezó el ${esc(p.fechaInicio)} · <b>Su plan y su acceso terminan el ${esc(finPlan(p))}</b> · Plantilla: ${esc(plantillaDe(p)?.nombre || p.plantilla || '—')}</p>
+      <p class="mute">Para renovar o ampliar su plan, sube la duración: su acceso se amplía solo.</p>
       <div class="two"><label class="cfg-row">Plan<input id="d-plan" type="text" value="${esc(p.plan || '')}"></label><label class="cfg-row">Duración (semanas)<input id="d-sem" type="number" min="1" value="${p.semanas}"></label></div>
       <div class="two"><label class="cfg-row">Estado<select id="d-estado">${['pendiente', 'activo', 'pausado', 'alta', 'archivado'].map(e => `<option value="${e}" ${p.estado === e ? 'selected' : ''}>${estadoTxt(e)}</option>`).join('')}</select></label>
         <label class="cfg-row">Semana actual<input id="d-actual" type="number" min="1" value="${p.semanaActual}"></label></div>
@@ -479,15 +495,14 @@
       const r = await api('crearPaciente', { nombre: $('#np-name').value.trim(), email: $('#np-email').value.trim(), telefono: $('#np-phone').value.replace(/[^\d]/g, ''),
         plantilla: t.id, plan: $('#np-plan').value, semanas: +$('#np-weeks').value, cuestionario: t.cuestionario, alta: t.alta.map(a => ({ prueba: a.prueba, criterio: a.criterio })) });
       creado = r.paciente;
-      const url = (CFG.config.APP_URL || 'https://app.rcdclinic.com').replace(/\/$/, '');
-      $('#np-link').textContent = url.replace(/^https?:\/\//, '');
-      const msg = `Hola ${creado.nombre.split(' ')[0]}, soy Dani de RCD Clinic. Ya tienes tu app: ${url}\nEntra con tu email (${creado.email}) y te llegará un código. Añádela a la pantalla de inicio para tenerla como una app.`;
-      $('#np-wa').href = `https://wa.me/${creado.telefono || ''}?text=` + encodeURIComponent(msg);
+      const enlace = `${urlApp()}/#i=${r.token}`;
+      $('#np-link').textContent = enlace.replace(/^https?:\/\//, '');
+      $('#np-wa').href = `https://wa.me/${creado.telefono || ''}?text=` + encodeURIComponent(mensajeEnlace(creado.nombre, enlace));
       paso(2); recargarLateral();
     } catch (e) { $('#np-err').textContent = e.message; btn.disabled = false; }
   });
   $('#np-copy').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText('https://' + $('#np-link').textContent); toast('Enlace copiado'); }
+    try { await navigator.clipboard.writeText('https://' + $('#np-link').textContent); toast('Enlace personal copiado'); }
     catch { const r = document.createRange(); r.selectNodeContents($('#np-link')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Selecciona y copia el enlace'); }
   });
   $('#np-done').addEventListener('click', () => { cerrarNP(); if (creado) abrir(creado.id); });
