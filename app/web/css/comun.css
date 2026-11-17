@@ -114,7 +114,7 @@ input[type="email"], input[type="tel"], input[type="number"], input[type="text"]
 .pago-aviso[hidden] { display: none !important; }
 .pago-aviso div { display: grid; gap: 8px; }
 .pago-aviso .btn { justify-self: start; min-height: 38px; }
-.tabs nav .tab { font-size: 10.5px; }
+.tabs nav .tab { font-size: 11px; letter-spacing: -.01em; }
 /* Panel: pagos del paciente y CRM */
 .fp-plan, .fp-gen { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); align-items: end; }
 .fp-gen .sec-title, .fp-gen .mute { grid-column: 1 / -1; }
