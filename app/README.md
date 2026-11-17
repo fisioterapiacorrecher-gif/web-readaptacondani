@@ -131,6 +131,25 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
   editable) y vista «Finanzas» (CRM: ingresos, gastos por categoría con recurrencias, beneficio, pendiente de cobro
   y progresión de 12 meses) en `js/finanzas.js`.
 
+## Gestión: ventas, tareas, objetivos y bajas (motor 1.6.0)
+
+Decidido con Dani: de Notion («Universo RCD Clinic») solo se traen Setter, Closer, Tareas diarias y Objetivos
+mensuales, **sin importar sus datos tal cual** (había información de más). Fuera: Registro de cargas (ya lo guarda
+la app), Mejoras del servicio, Página web y Experiencia de los pacientes. Redes sociales sigue en Notion.
+
+- Pacientes: columnas nuevas `canal`, `deporte`, `fechaSalida`, `motivoBaja` (las cabeceras que falten se escriben
+  solas en la hoja). Ficha › «Alta» › «¿Deja el tratamiento sin el alta?» → baja con motivo (estado `baja`, cierra el
+  acceso como el alta). Canal y deporte en «Datos» y al crear paciente.
+- Ventas (`Setter`: un día por fila; `Llamadas`): embudo del mes (bienvenidas y % contestadas, inbounds IG/WA,
+  follow ups, llamadas, ventas y % de cierre). Closer: nombre, teléfono, fecha, canal, origen (bienvenida/inbound),
+  lesión, ¿encaja con el cliente ideal?, resultado (en espera/compró/no), objeciones, notas. «Compró» → «Crear
+  paciente» con los datos prellenados; la llamada queda enlazada al paciente.
+- Tareas (`Tareas`): las pendientes salen arriba en «Para hoy» del lateral (vencidas en coral). Vista «Tareas y
+  objetivos» con todas, y las hechas plegadas.
+- Objetivos (`Objetivos`, por mes): con contador automático (llamadas, clientes nuevos, ingresos —cobros de
+  pacientes + otros ingresos de Finanzas—, bienvenidas, inbounds) o a mano. «Copiar los del mes anterior».
+- Código en `web/js/gestion.js`.
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).

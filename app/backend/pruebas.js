@@ -330,4 +330,53 @@ const tokensGuardados = libro.getSheetByName('Accesos').rows.flat().join(' ');
 assert.ok(!tokensGuardados.includes(admin));
 paso('en la hoja solo se guarda la huella de las sesiones, nunca el acceso en sí');
 
+/* ---------- Gestión: baja, ventas, tareas y objetivos ---------- */
+const mesHoy = new Date().toISOString().slice(0, 7), hoyISO = new Date().toISOString().slice(0, 10);
+const tB = (() => { ok(api({ action: 'crearPaciente', token: admin, nombre: 'Bea Baja', email: 'bea@ejemplo.com', plantilla: 'rotuliana', canal: 'Instagram', deporte: 'Trail' }));
+  ok(api({ action: 'pedirCodigo', email: 'bea@ejemplo.com' })); return ok(api({ action: 'verificarCodigo', email: 'bea@ejemplo.com', codigo: ultimoCodigo() })).token; })();
+const bea = ok(api({ action: 'pacientes', token: admin })).pacientes.find(x => x.nombre === 'Bea Baja');
+assert.strictEqual(bea.canal, 'instagram'); assert.strictEqual(bea.deporte, 'Trail');
+assert.ok(!api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: '' }).ok);
+r = ok(api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: 'Se lesionó de otra cosa y lo deja' }));
+assert.strictEqual(r.paciente.estado, 'baja'); assert.strictEqual(r.paciente.fechaSalida, hoyISO);
+assert.ok(!api({ action: 'yo', token: tB }).ok);
+assert.ok(!api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: 'otra vez' }).ok);
+paso('la baja (sin alta) pide motivo, guarda la fecha y cierra el acceso');
+
+r = ok(api({ action: 'guardarSetter', token: admin, dia: { fecha: hoyISO, bienvenidas: 12, contestadas: 5, inboundsInstagram: 3, inboundsWhatsapp: 1, followUps: 4 } }));
+ok(api({ action: 'guardarSetter', token: admin, dia: { fecha: hoyISO, bienvenidas: 14, contestadas: 6, inboundsInstagram: 3, inboundsWhatsapp: 1, followUps: 4 } }));
+assert.ok(!api({ action: 'guardarSetter', token: admin, dia: { fecha: hoyISO, bienvenidas: 2, contestadas: 5 } }).ok);
+r = ok(api({ action: 'ventas', token: admin }));
+assert.strictEqual(r.setter.length, 1); assert.strictEqual(r.setter[0].bienvenidas, 14);
+paso('el Setter guarda un día por fila (volver a guardar el día lo corrige)');
+
+r = ok(api({ action: 'guardarLlamada', token: admin, llamada: { nombre: 'Lola Lead', telefono: '34 600 11 22 33', fecha: hoyISO, canal: 'instagram', origen: 'inbound', lesion: 'Tendinopatía rotuliana', encaja: 'si', objeciones: 'Duda de que online funcione' } }));
+const llamadaId = r.id; assert.strictEqual(r.llamadas[0].resultado, 'espera'); assert.strictEqual(r.llamadas[0].telefono, '34600112233');
+ok(api({ action: 'guardarLlamada', token: admin, llamada: { nombre: 'Nico No', fecha: hoyISO, resultado: 'no' } }));
+r = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Lola Lead', email: 'lola@ejemplo.com', plantilla: 'rotuliana', canal: 'instagram', llamadaId }));
+const lola = ok(api({ action: 'ventas', token: admin })).llamadas.find(l => l.id === llamadaId);
+assert.strictEqual(lola.resultado, 'compro'); assert.strictEqual(lola.pacienteId, r.paciente.id);
+paso('una llamada «compró» crea el paciente y queda enlazada a él');
+
+r = ok(api({ action: 'guardarTarea', token: admin, tarea: { texto: 'Pasarela de pago', fecha: '2020-01-01' } }));
+ok(api({ action: 'guardarTarea', token: admin, tarea: { texto: 'Grabar reel' } }));
+const tarea = r.tareas[0];
+r = ok(api({ action: 'bandeja', token: admin }));
+assert.deepStrictEqual(r.misTareas.map(t => t.texto), ['Pasarela de pago', 'Grabar reel']);
+ok(api({ action: 'guardarTarea', token: admin, tarea: Object.assign({}, tarea, { hecha: true }) }));
+assert.deepStrictEqual(ok(api({ action: 'bandeja', token: admin })).misTareas.map(t => t.texto), ['Grabar reel']);
+assert.ok(!api({ action: 'guardarTarea', token: admin, tarea: { texto: '  ' } }).ok);
+paso('las tareas pendientes salen en «Para hoy» y desaparecen al marcarlas');
+
+ok(api({ action: 'guardarObjetivo', token: admin, objetivo: { mes: mesHoy, tipo: 'llamadas', meta: 3 } }));
+ok(api({ action: 'guardarObjetivo', token: admin, objetivo: { mes: mesHoy, tipo: 'bienvenidas', meta: 10 } }));
+ok(api({ action: 'guardarObjetivo', token: admin, objetivo: { mes: mesHoy, tipo: 'manual', texto: 'Pasarela de pago' } }));
+assert.ok(!api({ action: 'guardarObjetivo', token: admin, objetivo: { mes: mesHoy, tipo: 'clientes' } }).ok);
+r = ok(api({ action: 'gestion', token: admin, mes: mesHoy }));
+const obj = k => r.objetivos.find(o => o.tipo === k);
+assert.strictEqual(obj('llamadas').valor, 2); assert.strictEqual(obj('llamadas').hecho, false);
+assert.strictEqual(obj('bienvenidas').valor, 14); assert.strictEqual(obj('bienvenidas').hecho, true);
+assert.strictEqual(obj('manual').valor, null); assert.strictEqual(obj('manual').hecho, false);
+paso('los objetivos con contador se calculan solos con Ventas; los demás se marcan a mano');
+
 console.log(`\nTodo correcto: ${pasos} pruebas.`);

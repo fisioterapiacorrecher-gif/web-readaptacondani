@@ -65,12 +65,16 @@
     <button class="btn btn-primary btn-block" type="button" id="new-patient">+ Nuevo paciente</button>
     <nav class="sidenav" aria-label="Menú">
       <button type="button" data-v="v-patient" aria-current="true">Pacientes</button>
+      <button type="button" data-v="v-ventas" aria-current="false">Ventas</button>
+      <button type="button" data-v="v-gestion" aria-current="false">Tareas y objetivos</button>
+      <button type="button" data-v="v-finanzas" aria-current="false">Finanzas</button>
       <button type="button" data-v="v-plantillas" aria-current="false">Plantillas</button>
       <button type="button" data-v="v-biblioteca" aria-current="false">Biblioteca</button>
-      <button type="button" data-v="v-finanzas" aria-current="false">Finanzas</button>
       <button type="button" data-v="v-ajustes" aria-current="false">Ajustes</button>
     </nav>
     <h2>Para hoy <span class="count" id="task-count">0</span></h2>
+    <div class="mis-tareas" id="mis-tareas"></div>
+    <p class="sub-h">Por revisar</p>
     <div class="inbox" id="inbox"></div>
     <h2>Pacientes <span class="mute" style="letter-spacing:0">dolor medio</span></h2>
     <div class="patients" id="patients"></div>
@@ -175,6 +179,18 @@
       <div class="card lib" id="lib"></div>
     </div>
 
+    <!-- ============ Ventas ============ -->
+    <div class="view" id="v-ventas" hidden>
+      <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Setter y closer · de los mensajes a la venta</p><h1 class="vtitle">Ventas</h1></div></div>
+      <div id="ventas" style="display:grid;gap:18px"></div>
+    </div>
+
+    <!-- ============ Tareas y objetivos ============ -->
+    <div class="view" id="v-gestion" hidden>
+      <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Gestión de RCD Clinic</p><h1 class="vtitle">Tareas y objetivos</h1></div></div>
+      <div id="gestion" style="display:grid;gap:18px"></div>
+    </div>
+
     <!-- ============ Finanzas (CRM) ============ -->
     <div class="view" id="v-finanzas" hidden>
       <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Ingresos, gastos y cobros de RCD Clinic</p><h1 class="vtitle">Finanzas</h1></div></div>
@@ -205,6 +221,11 @@
     <label>Teléfono (WhatsApp)<input type="text" id="np-phone" inputmode="tel" placeholder="34 600 000 000" autocomplete="off"></label>
     <label>Lesión · plantilla<select id="np-tpl"></select></label>
     <div class="two">
+      <label>Canal de captación<select id="np-canal"><option value="">—</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="referido">Referido</option><option value="otro">Otro</option></select></label>
+      <label>Deporte<input type="text" id="np-deporte" list="deportes" maxlength="40" placeholder="Running" autocomplete="off"></label>
+    </div>
+    <datalist id="deportes"><option value="Running"><option value="Trail running"><option value="Triatlón"><option value="Ciclismo"><option value="Fútbol"><option value="Pádel"><option value="Otro"></datalist>
+    <div class="two">
       <label>Plan<select id="np-plan"><option>Readaptación Completa</option><option>Readaptación Mensual</option></select></label>
       <label>Duración<select id="np-weeks"><option value="4">4 semanas</option><option value="8">8 semanas</option><option value="12" selected>12 semanas</option><option value="16">16 semanas</option></select></label>
     </div>
@@ -229,6 +250,7 @@
 <script src="../js/comun.js"></script>
 <script src="../js/historia.js"></script>
 <script src="../js/finanzas.js"></script>
+<script src="../js/gestion.js"></script>
 <script src="../js/panel.js"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
 /* RCD · panel de Dani conectado al motor (acciones: bandeja, pacientes, ficha, crearPaciente, editarPaciente,
-   publicarSemana, guardarAlta, darAlta, guardarBiblioteca, config, guardarConfig). */
+   publicarSemana, guardarAlta, darAlta, darBaja, guardarBiblioteca, config, guardarConfig). Ventas, tareas y objetivos en gestion.js. */
 (() => {
   const { $, $$, esc, fmt, crearApi, pantallaAcceso, toast, lineas, vacio, nivel, media } = window.RCDUI;
   const D = window.RCD;
   const api = crearApi('rcd_panel');
   const shell = $('#shell');
   const escritorio = () => window.matchMedia('(min-width: 960px)').matches;
-  let pacientes = [], tareas = [], CFG = { config: {}, biblioteca: [] }, F = null, actualId = null;
+  let pacientes = [], tareas = [], misTareas = [], CFG = { config: {}, biblioteca: [] }, F = null, actualId = null;
 
   /* ================= Acceso ================= */
   api.onSesion = () => mostrarAcceso();
@@ -36,7 +36,7 @@
   const KIND = { revision: 'review', dolor: 'pain', silencio: 'silent', mensual: 'call', nuevo: 'new', valoracion: 'new' };
   async function recargarLateral() {
     const [b, p] = await Promise.all([api('bandeja'), api('pacientes')]);
-    tareas = b.tareas; pacientes = p.pacientes;
+    tareas = b.tareas; misTareas = b.misTareas || []; pacientes = p.pacientes;
     pintarLateral();
   }
   function sparkline(v) {
@@ -45,9 +45,10 @@
   }
   const hace = iso => { if (!iso) return 'sin registros'; const d = Math.floor((Date.now() - new Date(iso)) / 86400000); return d <= 0 ? 'hoy' : d === 1 ? 'ayer' : `hace ${d} días`; };
   function pintarLateral() {
-    $('#task-count').textContent = tareas.length;
+    $('#task-count').textContent = tareas.length + misTareas.length;
+    window.RCDGestion.pintarMisTareas($('#mis-tareas'), misTareas, api, nuevas => { misTareas = nuevas; pintarLateral(); });
     $('#inbox').innerHTML = tareas.length ? tareas.map((t, i) => `<button class="task" type="button" data-kind="${KIND[t.tipo] || 'review'}" data-i="${i}"><i></i><span><b>${esc(t.titulo)}</b><span>${esc(t.detalle)}</span></span></button>`).join('')
-      : '<p class="mute">Nada pendiente. 👌</p>';
+      : '<p class="mute">Ningún paciente por revisar. 👌</p>';
     $$('#inbox .task').forEach(b => b.addEventListener('click', () => abrir(tareas[b.dataset.i].pacienteId)));
     $('#patients').innerHTML = pacientes.length ? pacientes.map(p => {
       const d = p.dolor || [], u = d[d.length - 1];
@@ -58,10 +59,12 @@
     }).join('') : '<p class="mute">Aún no hay pacientes. Pulsa «+ Nuevo paciente».</p>';
     $$('#patients .pt').forEach(b => b.addEventListener('click', () => abrir(b.dataset.id)));
   }
-  const estadoTxt = e => ({ pendiente: 'Pendiente de su primer acceso', activo: 'Activo', pausado: 'En pausa', alta: 'De alta', archivado: 'Archivado' }[e] || e);
+  const estadoTxt = e => ({ pendiente: 'Pendiente de su primer acceso', activo: 'Activo', pausado: 'En pausa', alta: 'De alta', baja: 'De baja', archivado: 'Archivado' }[e] || e);
 
   /* ================= Menú y vistas ================= */
-  const vistas = ['v-patient', 'v-plantillas', 'v-biblioteca', 'v-finanzas', 'v-ajustes'];
+  const vistas = ['v-patient', 'v-ventas', 'v-gestion', 'v-plantillas', 'v-biblioteca', 'v-finanzas', 'v-ajustes'];
+  const ctxVentas = { crearPaciente: l => abrirNP(l), abrirPaciente: id => abrir(id) };
+  const ctxGestion = { alCambiarTareas: nuevas => { misTareas = nuevas; pintarLateral(); } };
   function verVista(id) {
     vistas.forEach(v => $('#' + v).hidden = v !== id);
     $$('.sidenav button').forEach(b => b.setAttribute('aria-current', String(b.dataset.v === id)));
@@ -70,6 +73,8 @@
   $$('.sidenav button').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.v === 'v-patient') { verVista('v-patient'); if (!escritorio()) shell.dataset.screen = 'list'; return; }
     if (b.dataset.v === 'v-finanzas') window.RCDFinanzas.pintarCRM($('#crm'), api);
+    if (b.dataset.v === 'v-ventas') window.RCDGestion.pintarVentas($('#ventas'), api, ctxVentas);
+    if (b.dataset.v === 'v-gestion') window.RCDGestion.pintarGestion($('#gestion'), api, ctxGestion);
     verVista(b.dataset.v);
   }));
   $$('[data-back]').forEach(b => b.addEventListener('click', () => { shell.dataset.screen = 'list'; }));
@@ -351,17 +356,29 @@
           <label class="sr" for="ar-${a.id}">Resultado</label><input type="text" id="ar-${a.id}" placeholder="Resultado" value="${esc(a.resultado || '')}">
           <button class="act" type="button" data-id="${a.id}" aria-pressed="${a.superada}">${a.superada ? 'Superada' : 'Marcar superada'}</button></div>`).join('') : '<p class="mute">Este paciente no tiene pruebas de alta.</p>'}</div></div>
       <button class="btn btn-primary" type="button" id="give-alta" ${todas && F.paciente.estado !== 'alta' ? '' : 'disabled'}>${F.paciente.estado === 'alta' ? 'Ya está de alta' : 'Dar el alta'}</button>
-      <p class="mute">${A.filter(a => a.superada).length} de ${A.length} pruebas superadas.</p>`;
+      <p class="mute">${A.filter(a => a.superada).length} de ${A.length} pruebas superadas.</p>
+      ${F.paciente.estado === 'baja' ? `<div class="card baja"><p class="sec-title">De baja desde el ${esc(fechaLarga(F.paciente.fechaSalida))}</p><p>${esc(F.paciente.motivoBaja || 'Sin motivo apuntado')}</p></div>`
+        : F.paciente.estado !== 'alta' ? `<details class="card baja"><summary>¿Deja el tratamiento sin el alta? Dar de baja</summary>
+        <div class="baja-body"><label class="hc-lab" for="baja-motivo">Motivo de la baja<textarea class="hc-in" id="baja-motivo" rows="2" maxlength="500" placeholder="Por qué lo deja…"></textarea></label>
+        <p class="mute">Se le cierra el acceso a la app, como con el alta. Sus datos y pagos se quedan guardados.</p>
+        <button class="btn btn-ghost peligro" type="button" id="give-baja">Dar de baja</button></div></details>` : ''}`;
     $$('#alta [data-id]').forEach(b => b.addEventListener('click', async () => {
       const a = A.find(x => x.id === b.dataset.id); const nuevo = !a.superada; b.disabled = true;
       try { await api('guardarAlta', { id: a.id, resultado: $('#ar-' + a.id).value, superada: nuevo }); a.superada = nuevo; a.resultado = $('#ar-' + a.id).value; pintarAlta(); }
       catch (e) { toast(e.message); b.disabled = false; }
     }));
+    $('#give-baja')?.addEventListener('click', async () => {
+      const motivo = $('#baja-motivo').value.trim();
+      if (!motivo) { $('#baja-motivo').focus(); toast('Escribe el motivo de la baja'); return; }
+      if (!confirm(`¿Dar de baja a ${F.paciente.nombre}? Se le cerrará el acceso a la app.`)) return;
+      try { await api('darBaja', { pacienteId: F.paciente.id, motivo }); toast('Baja registrada'); await Promise.all([recargarLateral(), abrir(F.paciente.id)]); } catch (e) { toast(e.message); }
+    });
     $('#give-alta').addEventListener('click', async () => {
       try { await api('darAlta', { pacienteId: F.paciente.id }); toast('Alta registrada'); await Promise.all([recargarLateral(), abrir(F.paciente.id)]); } catch (e) { toast(e.message); }
     });
   }
 
+  const fechaLarga = f => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
   const finPlan = p => { const d = new Date(p.fechaInicio + 'T12:00:00'); if (isNaN(d)) return '—'; d.setDate(d.getDate() + (Number(p.semanas) || 12) * 7); return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }); };
 
   /* ---------- Datos del paciente ---------- */
@@ -372,13 +389,16 @@
       <p class="mute">Email de acceso: <b>${esc(p.email)}</b> · Empezó el ${esc(p.fechaInicio)} · <b>Su plan y su acceso terminan el ${esc(finPlan(p))}</b> · Plantilla: ${esc(plantillaDe(p)?.nombre || p.plantilla || '—')}</p>
       <p class="mute">Para renovar o ampliar su plan, sube la duración: su acceso se amplía solo.</p>
       <div class="two"><label class="cfg-row">Plan<input id="d-plan" type="text" value="${esc(p.plan || '')}"></label><label class="cfg-row">Duración (semanas)<input id="d-sem" type="number" min="1" value="${p.semanas}"></label></div>
-      <div class="two"><label class="cfg-row">Estado<select id="d-estado">${['pendiente', 'activo', 'pausado', 'alta', 'archivado'].map(e => `<option value="${e}" ${p.estado === e ? 'selected' : ''}>${estadoTxt(e)}</option>`).join('')}</select></label>
+      <div class="two"><label class="cfg-row">Canal de captación<select id="d-canal"><option value="">—</option>${Object.entries(window.RCDGestion.CANALES).map(([k, v]) => `<option value="${k}" ${p.canal === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+        <label class="cfg-row">Deporte<input id="d-deporte" type="text" list="deportes" maxlength="40" value="${esc(p.deporte || '')}"></label></div>
+      ${p.estado === 'baja' ? `<p class="mute">De baja desde el ${esc(fechaLarga(p.fechaSalida))} · Motivo: <b>${esc(p.motivoBaja || '—')}</b></p>` : p.estado === 'alta' && p.fechaSalida ? `<p class="mute">De alta desde el ${esc(fechaLarga(p.fechaSalida))}</p>` : ''}
+      <div class="two"><label class="cfg-row">Estado<select id="d-estado">${['pendiente', 'activo', 'pausado', 'alta', 'baja', 'archivado'].filter(e => e !== 'baja' || p.estado === 'baja').map(e => `<option value="${e}" ${p.estado === e ? 'selected' : ''}>${estadoTxt(e)}</option>`).join('')}</select></label>
         <label class="cfg-row">Semana actual<input id="d-actual" type="number" min="1" value="${p.semanaActual}"></label></div>
-      <p class="mute">«Archivado» quita el acceso al paciente y lo oculta de la lista. Sus datos se quedan en tu hoja.</p>
+      <p class="mute">«Archivado» quita el acceso al paciente y lo oculta de la lista. Sus datos se quedan en tu hoja. Para una baja con motivo, usa la pestaña «Alta».</p>
       <button class="btn btn-primary" type="button" id="d-save">Guardar cambios</button>`;
     $('#d-save').addEventListener('click', async () => {
       try {
-        await api('editarPaciente', { pacienteId: p.id, cambios: { nombre: $('#d-nombre').value, telefono: $('#d-tel').value, plan: $('#d-plan').value, semanas: $('#d-sem').value, estado: $('#d-estado').value, semanaActual: $('#d-actual').value } });
+        await api('editarPaciente', { pacienteId: p.id, cambios: { nombre: $('#d-nombre').value, telefono: $('#d-tel').value, canal: $('#d-canal').value, deporte: $('#d-deporte').value.trim(), plan: $('#d-plan').value, semanas: $('#d-sem').value, estado: $('#d-estado').value, semanaActual: $('#d-actual').value } });
         toast('Datos guardados'); await recargarLateral(); if ($('#d-estado').value === 'archivado') { $('#ficha').hidden = true; $('#sin-paciente').hidden = false; } else abrir(p.id);
       } catch (e) { toast(e.message); }
     });
@@ -504,14 +524,22 @@
 
   /* ================= Nuevo paciente ================= */
   $('#np-tpl').innerHTML = D.plantillas.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
-  let creado = null;
+  let creado = null, desdeLlamada = null;
+  /* Adivina la plantilla por la lesión escrita en la llamada */
+  const plantillaPorLesion = t => { const s = String(t || '').toLowerCase(); return s.includes('rotul') ? 'rotuliana' : s.includes('aquil') ? 'aquiles' : s.includes('isquio') ? 'isquio' : s.includes('cintilla') ? 'cintilla' : ''; };
   const paso = n => $$('#np .np-step').forEach(s => s.hidden = s.dataset.step !== String(n));
-  function abrirNP() {
-    ['#np-name', '#np-email', '#np-phone'].forEach(s => $(s).value = ''); $('#np-err').textContent = ''; $('#np-create').disabled = true;
-    paso(1); $('#np').hidden = false; $('#np-scrim').classList.add('open'); requestAnimationFrame(() => $('#np').classList.add('open')); $('#np-name').focus();
+  function abrirNP(llamada) {
+    desdeLlamada = llamada && llamada.id ? llamada : null;
+    ['#np-name', '#np-email', '#np-phone', '#np-deporte'].forEach(s => $(s).value = ''); $('#np-canal').value = ''; $('#np-err').textContent = ''; $('#np-create').disabled = true;
+    $('#np-title').textContent = desdeLlamada ? 'Nuevo paciente · desde la llamada' : 'Nuevo paciente';
+    if (desdeLlamada) {
+      $('#np-name').value = desdeLlamada.nombre || ''; $('#np-phone').value = desdeLlamada.telefono || ''; $('#np-canal').value = desdeLlamada.canal || '';
+      const t = plantillaPorLesion(desdeLlamada.lesion); if (t) $('#np-tpl').value = t;
+    }
+    paso(1); $('#np').hidden = false; $('#np-scrim').classList.add('open'); requestAnimationFrame(() => $('#np').classList.add('open')); $(desdeLlamada ? '#np-email' : '#np-name').focus();
   }
   function cerrarNP() { $('#np').classList.remove('open'); $('#np-scrim').classList.remove('open'); setTimeout(() => { $('#np').hidden = true; }, 200); }
-  $('#new-patient').addEventListener('click', abrirNP);
+  $('#new-patient').addEventListener('click', () => abrirNP());
   $('#np-close').addEventListener('click', cerrarNP); $('#np-scrim').addEventListener('click', cerrarNP);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#np').hidden) cerrarNP(); });
   ['#np-name', '#np-email'].forEach(s => $(s).addEventListener('input', () => { $('#np-create').disabled = $('#np-name').value.trim().length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('#np-email').value.trim()); }));
@@ -519,7 +547,9 @@
     const t = D.plantillas.find(p => p.id === $('#np-tpl').value), btn = $('#np-create'); btn.disabled = true; $('#np-err').textContent = '';
     try {
       const r = await api('crearPaciente', { nombre: $('#np-name').value.trim(), email: $('#np-email').value.trim(), telefono: $('#np-phone').value.replace(/[^\d]/g, ''),
-        plantilla: t.id, plan: $('#np-plan').value, semanas: +$('#np-weeks').value, cuestionario: t.cuestionario, alta: t.alta.map(a => ({ prueba: a.prueba, criterio: a.criterio })) });
+        plantilla: t.id, plan: $('#np-plan').value, semanas: +$('#np-weeks').value, cuestionario: t.cuestionario, alta: t.alta.map(a => ({ prueba: a.prueba, criterio: a.criterio })),
+        canal: $('#np-canal').value, deporte: $('#np-deporte').value.trim(), llamadaId: desdeLlamada ? desdeLlamada.id : '' });
+      if (desdeLlamada) { desdeLlamada = null; ctxVentas.refrescar?.(); }
       creado = r.paciente;
       const enlace = `${urlApp()}/#i=${r.token}`;
       $('#np-link').textContent = enlace.replace(/^https?:\/\//, '');
