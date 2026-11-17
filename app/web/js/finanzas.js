@@ -160,6 +160,14 @@
           </div>
         </div>
 
+        <p class="sec-title">Por qué se van · bajas sin alta</p>
+        <div class="card fin-lista">${(D.bajas || []).length ? (() => {
+          const por = {}; D.bajas.forEach(x => por[x.motivo] = (por[x.motivo] || 0) + 1);
+          const n = D.bajas.length;
+          return `<p class="mute">${n} baja${n === 1 ? '' : 's'} y ${D.altas || 0} alta${D.altas === 1 ? '' : 's'} en total.</p>` + Object.entries(por).sort((a, b) => b[1] - a[1]).map(([m, k]) =>
+            `<div class="fin-cat"><div class="fin-cat-top"><b>${esc(m)}</b><span>${k} · ${Math.round(k / n * 100)} %</span></div><div class="bar"><i style="transform:scaleX(${k / n})"></i></div></div>`).join('');
+        })() : `<p class="mute">Nadie se ha dado de baja sin el alta${D.altas ? ` · ${D.altas} alta${D.altas === 1 ? '' : 's'}` : ''}.</p>`}</div>
+
         <p class="sec-title" id="fin-form-t">${editando ? 'Editar movimiento' : 'Añadir gasto o ingreso'}</p>
         <form class="card fin-form" id="fin-form" novalidate>
           <label>Tipo<select id="mv-tipo"><option value="gasto">Gasto</option><option value="ingreso">Ingreso (que no sea de pacientes)</option></select></label>

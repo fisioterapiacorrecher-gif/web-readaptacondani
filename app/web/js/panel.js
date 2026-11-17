@@ -6,7 +6,7 @@
   const api = crearApi('rcd_panel');
   const shell = $('#shell');
   const escritorio = () => window.matchMedia('(min-width: 960px)').matches;
-  let pacientes = [], tareas = [], misTareas = [], CFG = { config: {}, biblioteca: [] }, F = null, actualId = null;
+  let pacientes = [], tareas = [], misTareas = [], avisoSetter = null, objetivosMes = [], CFG = { config: {}, biblioteca: [] }, F = null, actualId = null;
 
   /* ================= Acceso ================= */
   api.onSesion = () => mostrarAcceso();
@@ -36,7 +36,7 @@
   const KIND = { revision: 'review', dolor: 'pain', silencio: 'silent', mensual: 'call', nuevo: 'new', valoracion: 'new' };
   async function recargarLateral() {
     const [b, p] = await Promise.all([api('bandeja'), api('pacientes')]);
-    tareas = b.tareas; misTareas = b.misTareas || []; pacientes = p.pacientes;
+    tareas = b.tareas; misTareas = b.misTareas || []; avisoSetter = b.setter || null; objetivosMes = b.objetivos || []; pacientes = p.pacientes;
     pintarLateral();
   }
   function sparkline(v) {
@@ -45,8 +45,12 @@
   }
   const hace = iso => { if (!iso) return 'sin registros'; const d = Math.floor((Date.now() - new Date(iso)) / 86400000); return d <= 0 ? 'hoy' : d === 1 ? 'ayer' : `hace ${d} días`; };
   function pintarLateral() {
-    $('#task-count').textContent = tareas.length + misTareas.length;
-    window.RCDGestion.pintarMisTareas($('#mis-tareas'), misTareas, api, nuevas => { misTareas = nuevas; pintarLateral(); });
+    $('#task-count').textContent = tareas.length + misTareas.length + (avisoSetter ? 1 : 0);
+    window.RCDGestion.pintarMisTareas($('#mis-tareas'), misTareas, api, nuevas => { misTareas = nuevas; pintarLateral(); }, {
+      setter: avisoSetter, objetivos: objetivosMes,
+      irSetter: fecha => { Object.assign(ctxVentas, { parte: 'setter', mes: fecha.slice(0, 7), fechaSetter: fecha }); irA('v-ventas'); },
+      irGestion: () => irA('v-gestion'),
+    });
     $('#inbox').innerHTML = tareas.length ? tareas.map((t, i) => `<button class="task" type="button" data-kind="${KIND[t.tipo] || 'review'}" data-i="${i}"><i></i><span><b>${esc(t.titulo)}</b><span>${esc(t.detalle)}</span></span></button>`).join('')
       : '<p class="mute">Ningún paciente por revisar. 👌</p>';
     $$('#inbox .task').forEach(b => b.addEventListener('click', () => abrir(tareas[b.dataset.i].pacienteId)));
@@ -63,8 +67,9 @@
 
   /* ================= Menú y vistas ================= */
   const vistas = ['v-patient', 'v-ventas', 'v-gestion', 'v-plantillas', 'v-biblioteca', 'v-finanzas', 'v-ajustes'];
-  const ctxVentas = { crearPaciente: l => abrirNP(l), abrirPaciente: id => abrir(id) };
-  const ctxGestion = { alCambiarTareas: nuevas => { misTareas = nuevas; pintarLateral(); } };
+  const ctxVentas = { crearPaciente: l => abrirNP(l), abrirPaciente: id => abrir(id), alCambiar: () => recargarLateral().catch(() => {}) };
+  const ctxGestion = { alCambiarTareas: nuevas => { misTareas = nuevas; pintarLateral(); }, alCambiar: () => recargarLateral().catch(() => {}) };
+  const irA = v => $(`.sidenav button[data-v="${v}"]`).click();
   function verVista(id) {
     vistas.forEach(v => $('#' + v).hidden = v !== id);
     $$('.sidenav button').forEach(b => b.setAttribute('aria-current', String(b.dataset.v === id)));
@@ -357,9 +362,10 @@
           <button class="act" type="button" data-id="${a.id}" aria-pressed="${a.superada}">${a.superada ? 'Superada' : 'Marcar superada'}</button></div>`).join('') : '<p class="mute">Este paciente no tiene pruebas de alta.</p>'}</div></div>
       <button class="btn btn-primary" type="button" id="give-alta" ${todas && F.paciente.estado !== 'alta' ? '' : 'disabled'}>${F.paciente.estado === 'alta' ? 'Ya está de alta' : 'Dar el alta'}</button>
       <p class="mute">${A.filter(a => a.superada).length} de ${A.length} pruebas superadas.</p>
-      ${F.paciente.estado === 'baja' ? `<div class="card baja"><p class="sec-title">De baja desde el ${esc(fechaLarga(F.paciente.fechaSalida))}</p><p>${esc(F.paciente.motivoBaja || 'Sin motivo apuntado')}</p></div>`
+      ${F.paciente.estado === 'baja' ? `<div class="card baja"><p class="sec-title">De baja desde el ${esc(fechaLarga(F.paciente.fechaSalida))}</p><p><b>${esc(F.paciente.motivoBaja || 'Sin motivo apuntado')}</b>${F.paciente.notaBaja ? ' · ' + esc(F.paciente.notaBaja) : ''}</p></div>`
         : F.paciente.estado !== 'alta' ? `<details class="card baja"><summary>¿Deja el tratamiento sin el alta? Dar de baja</summary>
-        <div class="baja-body"><label class="hc-lab" for="baja-motivo">Motivo de la baja<textarea class="hc-in" id="baja-motivo" rows="2" maxlength="500" placeholder="Por qué lo deja…"></textarea></label>
+        <div class="baja-body"><div class="hc-lab">Motivo de la baja<div class="chipline" role="group" aria-label="Motivo de la baja">${MOTIVOS_BAJA.map(m => `<button class="chip" type="button" data-motivo="${esc(m)}" aria-pressed="false">${esc(m)}</button>`).join('')}</div></div>
+        <label class="hc-lab" for="baja-nota">Nota (opcional)<textarea class="hc-in" id="baja-nota" rows="2" maxlength="500" placeholder="Algo más que quieras recordar…"></textarea></label>
         <p class="mute">Se le cierra el acceso a la app, como con el alta. Sus datos y pagos se quedan guardados.</p>
         <button class="btn btn-ghost peligro" type="button" id="give-baja">Dar de baja</button></div></details>` : ''}`;
     $$('#alta [data-id]').forEach(b => b.addEventListener('click', async () => {
@@ -367,17 +373,19 @@
       try { await api('guardarAlta', { id: a.id, resultado: $('#ar-' + a.id).value, superada: nuevo }); a.superada = nuevo; a.resultado = $('#ar-' + a.id).value; pintarAlta(); }
       catch (e) { toast(e.message); b.disabled = false; }
     }));
+    let motivoBaja = '';
+    $$('#alta [data-motivo]').forEach(b => b.addEventListener('click', () => { motivoBaja = b.dataset.motivo; $$('#alta [data-motivo]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
     $('#give-baja')?.addEventListener('click', async () => {
-      const motivo = $('#baja-motivo').value.trim();
-      if (!motivo) { $('#baja-motivo').focus(); toast('Escribe el motivo de la baja'); return; }
+      if (!motivoBaja) { toast('Elige el motivo de la baja'); return; }
       if (!confirm(`¿Dar de baja a ${F.paciente.nombre}? Se le cerrará el acceso a la app.`)) return;
-      try { await api('darBaja', { pacienteId: F.paciente.id, motivo }); toast('Baja registrada'); await Promise.all([recargarLateral(), abrir(F.paciente.id)]); } catch (e) { toast(e.message); }
+      try { await api('darBaja', { pacienteId: F.paciente.id, motivo: motivoBaja, nota: $('#baja-nota').value.trim() }); toast('Baja registrada'); await Promise.all([recargarLateral(), abrir(F.paciente.id)]); } catch (e) { toast(e.message); }
     });
     $('#give-alta').addEventListener('click', async () => {
       try { await api('darAlta', { pacienteId: F.paciente.id }); toast('Alta registrada'); await Promise.all([recargarLateral(), abrir(F.paciente.id)]); } catch (e) { toast(e.message); }
     });
   }
 
+  const MOTIVOS_BAJA = ['Precio', 'Falta de tiempo', 'Mejoró y lo deja', 'Otra lesión', 'No responde', 'Otro'];
   const fechaLarga = f => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
   const finPlan = p => { const d = new Date(p.fechaInicio + 'T12:00:00'); if (isNaN(d)) return '—'; d.setDate(d.getDate() + (Number(p.semanas) || 12) * 7); return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }); };
 
@@ -391,7 +399,7 @@
       <div class="two"><label class="cfg-row">Plan<input id="d-plan" type="text" value="${esc(p.plan || '')}"></label><label class="cfg-row">Duración (semanas)<input id="d-sem" type="number" min="1" value="${p.semanas}"></label></div>
       <div class="two"><label class="cfg-row">Canal de captación<select id="d-canal"><option value="">—</option>${Object.entries(window.RCDGestion.CANALES).map(([k, v]) => `<option value="${k}" ${p.canal === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
         <label class="cfg-row">Deporte<input id="d-deporte" type="text" list="deportes" maxlength="40" value="${esc(p.deporte || '')}"></label></div>
-      ${p.estado === 'baja' ? `<p class="mute">De baja desde el ${esc(fechaLarga(p.fechaSalida))} · Motivo: <b>${esc(p.motivoBaja || '—')}</b></p>` : p.estado === 'alta' && p.fechaSalida ? `<p class="mute">De alta desde el ${esc(fechaLarga(p.fechaSalida))}</p>` : ''}
+      ${p.estado === 'baja' ? `<p class="mute">De baja desde el ${esc(fechaLarga(p.fechaSalida))} · Motivo: <b>${esc(p.motivoBaja || '—')}</b>${p.notaBaja ? ' · ' + esc(p.notaBaja) : ''}</p>` : p.estado === 'alta' && p.fechaSalida ? `<p class="mute">De alta desde el ${esc(fechaLarga(p.fechaSalida))}</p>` : ''}
       <div class="two"><label class="cfg-row">Estado<select id="d-estado">${['pendiente', 'activo', 'pausado', 'alta', 'baja', 'archivado'].filter(e => e !== 'baja' || p.estado === 'baja').map(e => `<option value="${e}" ${p.estado === e ? 'selected' : ''}>${estadoTxt(e)}</option>`).join('')}</select></label>
         <label class="cfg-row">Semana actual<input id="d-actual" type="number" min="1" value="${p.semanaActual}"></label></div>
       <p class="mute">«Archivado» quita el acceso al paciente y lo oculta de la lista. Sus datos se quedan en tu hoja. Para una baja con motivo, usa la pestaña «Alta».</p>

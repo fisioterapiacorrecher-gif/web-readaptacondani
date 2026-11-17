@@ -1,7 +1,9 @@
 /* RCD · gestión del panel: tareas (también en «Para hoy»), objetivos del mes con contador, y Ventas (Setter + Closer). */
 (() => {
   const { $, $$, esc, toast } = window.RCDUI;
+  const ayerISO = () => { const d = new Date(Date.now() - 86400000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
   const hoyISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  const masDias = n => { const d = new Date(Date.now() + n * 86400000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
   const mesDe = f => String(f || '').slice(0, 7);
   const sumarMes = (ym, n) => { const d = new Date(ym + '-15T12:00:00'); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 7); };
   const nombreMes = ym => { const t = new Date(ym + '-15T12:00:00').toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); return t.charAt(0).toUpperCase() + t.slice(1); };
@@ -64,9 +66,17 @@
   }
 
   /* ================= «Para hoy» en la barra lateral ================= */
-  function pintarMisTareas(cont, tareas, api, alCambiar) {
-    cont.innerHTML = `<div class="mt-lista">${tareas.map(t => filaTarea(t, false)).join('')}</div>
-      <button class="mt-add" type="button" id="mt-add">+ Añadir tarea</button>${formTarea('mt-form')}`;
+  function pintarMisTareas(cont, tareas, api, alCambiar, extra = {}) {
+    const S = extra.setter, O = extra.objetivos || [];
+    const aviso = S ? `<button class="mt-aviso" type="button" id="mt-setter"><i></i><span>${S.faltan === 1 && S.desde === ayerISO() ? 'Apunta el Setter de ayer' : `Apunta el Setter · falta${S.faltan === 1 ? '' : 'n'} ${S.faltan} día${S.faltan === 1 ? '' : 's'} (desde el ${fechaCorta(S.desde)})`}</span></button>` : '';
+    const mini = O.length ? `<button class="mini-obj" type="button" id="mini-obj" aria-label="Ver los objetivos del mes">
+      <span class="sub-h">Objetivos de ${esc(nombreMes(hoyISO().slice(0, 7)).split(' ')[0].toLowerCase())} · ${O.filter(o => o.hecho).length}/${O.length}</span>
+      ${O.map(o => o.tipo === 'manual' ? `<span class="mo ${o.hecho ? 'ok' : ''}"><b>${esc(o.texto)}</b><em>${o.hecho ? 'hecho' : 'pendiente'}</em></span>`
+        : `<span class="mo ${o.hecho ? 'ok' : ''}"><b>${esc(o.texto)}</b><em class="num">${o.tipo === 'ingresos' ? eur(o.valor) : o.valor}/${o.tipo === 'ingresos' ? eur(o.meta) : o.meta}</em><span class="obj-bar"><i style="width:${Math.min(100, o.meta > 0 ? o.valor / o.meta * 100 : 0)}%"></i></span></span>`).join('')}</button>` : '';
+    cont.innerHTML = `${aviso}<div class="mt-lista">${tareas.map(t => filaTarea(t, false)).join('')}</div>
+      <button class="mt-add" type="button" id="mt-add">+ Añadir tarea</button>${formTarea('mt-form')}${mini}`;
+    $('#mt-setter', cont)?.addEventListener('click', () => extra.irSetter(S.desde));
+    $('#mini-obj', cont)?.addEventListener('click', () => extra.irGestion());
     const lista = () => tareas;
     engancharTareas(cont, api, lista, nuevas => alCambiar(nuevas.filter(t => !t.hecha)), 'mt-form');
     $('#mt-add', cont).addEventListener('click', () => { $('#mt-add', cont).hidden = true; $('#mt-form', cont).hidden = false; $('#mt-form-t', cont).focus(); });
@@ -127,23 +137,23 @@
     $('#g-oform', cont).addEventListener('submit', async e => {
       e.preventDefault();
       const tipo = tipoSel.value, objetivo = { mes: G.mes, tipo, meta: $('#g-ometa', cont).value, texto: tipo === 'manual' ? $('#g-otexto', cont).value.trim() : '' };
-      try { await api('guardarObjetivo', { objetivo }); toast('Objetivo añadido'); pintarGestion(cont, api, ctx); } catch (x) { toast(x.message); }
+      try { await api('guardarObjetivo', { objetivo }); toast('Objetivo añadido'); ctx.alCambiar?.(); pintarGestion(cont, api, ctx); } catch (x) { toast(x.message); }
     });
     $('#g-copiar', cont)?.addEventListener('click', async () => {
       const anterior = G.meses.filter(m => m < G.mes).pop();
       try {
         const prev = await api('gestion', { mes: anterior });
         for (const o of prev.objetivos) await api('guardarObjetivo', { objetivo: { mes: G.mes, tipo: o.tipo, meta: o.meta, texto: o.tipo === 'manual' ? o.texto : '' } });
-        toast(`Copiados ${prev.objetivos.length} objetivos de ${nombreMes(anterior).toLowerCase()}`); pintarGestion(cont, api, ctx);
+        toast(`Copiados ${prev.objetivos.length} objetivos de ${nombreMes(anterior).toLowerCase()}`); ctx.alCambiar?.(); pintarGestion(cont, api, ctx);
       } catch (x) { toast(x.message); }
     });
     $$('[data-obj]', cont).forEach(b => b.addEventListener('click', async () => {
       const o = G.objetivos.find(x => x.id === b.dataset.obj); b.disabled = true;
-      try { await api('guardarObjetivo', { objetivo: Object.assign({}, o, { hecho: !o.hecho }) }); pintarGestion(cont, api, ctx); } catch (x) { toast(x.message); b.disabled = false; }
+      try { await api('guardarObjetivo', { objetivo: Object.assign({}, o, { hecho: !o.hecho }) }); ctx.alCambiar?.(); pintarGestion(cont, api, ctx); } catch (x) { toast(x.message); b.disabled = false; }
     }));
     $$('[data-qobj]', cont).forEach(b => b.addEventListener('click', async () => {
       b.disabled = true;
-      try { await api('borrarObjetivo', { id: b.dataset.qobj }); pintarGestion(cont, api, ctx); } catch (x) { toast(x.message); b.disabled = false; }
+      try { await api('borrarObjetivo', { id: b.dataset.qobj }); ctx.alCambiar?.(); pintarGestion(cont, api, ctx); } catch (x) { toast(x.message); b.disabled = false; }
     }));
     engancharTareas($('#g-tareas', cont), api, () => G.tareas, nuevas => { ctx.alCambiarTareas(nuevas.filter(t => !t.hecha)); pintarGestion(cont, api, ctx); }, 'g-tform');
   }
@@ -187,7 +197,8 @@
     /* ---------- Setter ---------- */
     function pintarSetter(box, dias) {
       const CAMPOS = [['bienvenidas', 'Bienvenidas dadas'], ['contestadas', 'Bienvenidas contestadas'], ['inboundsInstagram', 'Inbounds Instagram'], ['inboundsWhatsapp', 'Inbounds WhatsApp'], ['followUps', 'Follow ups']];
-      const porDefecto = mesDe(hoyISO()) === ctx.mes ? hoyISO() : (dias[dias.length - 1]?.fecha || ctx.mes + '-01');
+      const porDefecto = ctx.fechaSetter || (mesDe(hoyISO()) === ctx.mes ? hoyISO() : (dias[dias.length - 1]?.fecha || ctx.mes + '-01'));
+      ctx.fechaSetter = null;
       box.innerHTML = `
         <form class="card fin-form setter-form" id="s-form">
           <label>Día<input type="date" id="s-fecha" value="${porDefecto}"></label>
@@ -211,7 +222,7 @@
         const dia = { fecha: $('#s-fecha', box).value, notas: $('#s-notas', box).value.trim() };
         $$('#s-form [data-k]', box).forEach(i => dia[i.dataset.k] = i.value);
         const btn = e.submitter || $('#s-form button', box); btn.disabled = true;
-        try { V = await api('guardarSetter', { dia }); ctx.mes = mesDe(dia.fecha); toast('Día guardado'); pintar(); } catch (x) { toast(x.message); btn.disabled = false; }
+        try { V = await api('guardarSetter', { dia }); ctx.mes = mesDe(dia.fecha); toast('Día guardado'); ctx.alCambiar?.(); pintar(); } catch (x) { toast(x.message); btn.disabled = false; }
       });
       cargar($('#s-fecha', box).value);
     }
@@ -223,6 +234,7 @@
           <div class="ll-top"><b>${esc(l.nombre)}</b><span class="pill ${l.resultado === 'compro' ? 'ok' : l.resultado === 'no' ? 'no' : 'warnp'}">${RESULTADO[l.resultado]}</span></div>
           <p class="mute">${[fechaCorta(l.fecha), l.lesion, CANALES[l.canal], ORIGEN[l.origen], l.encaja === 'si' ? 'encaja con tu cliente ideal' : l.encaja === 'no' ? 'no encaja' : ''].filter(Boolean).map(esc).join(' · ')}</p>
           ${l.objeciones ? `<p class="ll-obj">«${esc(l.objeciones)}»</p>` : ''}
+          ${l.resultado === 'espera' && l.volverEl ? `<p class="ll-volver ${cuando(l.volverEl).cls}">Volver a contactar: ${esc(cuando(l.volverEl).txt)}</p>` : ''}
           <div class="acts">
             <button class="act" type="button" data-editar="${esc(l.id)}">Editar</button>
             ${l.telefono ? `<a class="act" href="https://wa.me/${esc(l.telefono.replace(/\D/g, ''))}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
@@ -254,26 +266,32 @@
         <datalist id="c-lesiones">${LESIONES.map(x => `<option value="${esc(x)}">`).join('')}</datalist>
         <label>¿Encaja con tu cliente ideal?<select id="c-encaja">${opciones({ si: 'Sí', no: 'No' }, l.encaja, '—')}</select></label>
         <div class="ancho c-res"><span>Resultado</span><div class="chipline" role="group" aria-label="Resultado">${Object.entries(RESULTADO).map(([k, v]) => `<button class="chip" type="button" data-res="${k}" aria-pressed="${l.resultado === k}">${v}</button>`).join('')}</div></div>
+        <label id="c-volver-l" ${l.resultado === 'espera' ? '' : 'hidden'}>Volver a contactar el<input type="date" id="c-volver" value="${esc(l.id ? l.volverEl || '' : masDias(3))}"></label>
+        <p class="mute" id="c-volver-ayuda" ${l.resultado === 'espera' ? '' : 'hidden'}>Te aparecerá como tarea en «Para hoy». Déjalo vacío si no quieres recordatorio.</p>
         <label class="ancho">Objeciones / miedos<textarea id="c-obj" rows="2" maxlength="1500" placeholder="¿Qué le frenaba?">${esc(l.objeciones || '')}</textarea></label>
         <label class="ancho">Notas<textarea id="c-notas" rows="2" maxlength="1500">${esc(l.notas || '')}</textarea></label>
         <div class="fin-form-acts ancho">${l.id ? '<button class="btn btn-ghost" type="button" id="c-borrar">Borrar</button>' : ''}<button class="btn btn-ghost" type="button" id="c-cancelar">Cancelar</button><button class="btn btn-primary" type="submit">Guardar llamada</button></div>
       </form>`;
-      $$('[data-res]', f).forEach(b => b.addEventListener('click', () => { l.resultado = b.dataset.res; $$('[data-res]', f).forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+      $$('[data-res]', f).forEach(b => b.addEventListener('click', () => {
+        l.resultado = b.dataset.res; $$('[data-res]', f).forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        $('#c-volver-l', f).hidden = $('#c-volver-ayuda', f).hidden = l.resultado !== 'espera';
+        if (l.resultado === 'espera' && !$('#c-volver', f).value) $('#c-volver', f).value = masDias(3);
+      }));
       $('#c-cancelar', f).addEventListener('click', () => { editando = null; f.innerHTML = ''; });
       $('#c-borrar', f)?.addEventListener('click', async () => {
         if (!confirm(`¿Borrar la llamada de ${l.nombre}?`)) return;
-        try { V = await api('borrarLlamada', { id: l.id }); editando = null; toast('Llamada borrada'); pintar(); } catch (x) { toast(x.message); }
+        try { V = await api('borrarLlamada', { id: l.id }); editando = null; toast('Llamada borrada'); ctx.alCambiar?.(); pintar(); } catch (x) { toast(x.message); }
       });
       $('#c-form', f).addEventListener('submit', async e => {
         e.preventDefault();
         const llamada = { id: l.id, nombre: $('#c-nombre', f).value.trim(), telefono: $('#c-tel', f).value, fecha: $('#c-fecha', f).value, canal: $('#c-canal', f).value, origen: $('#c-origen', f).value,
-          lesion: $('#c-lesion', f).value.trim(), encaja: $('#c-encaja', f).value, resultado: l.resultado, objeciones: $('#c-obj', f).value.trim(), notas: $('#c-notas', f).value.trim() };
+          lesion: $('#c-lesion', f).value.trim(), encaja: $('#c-encaja', f).value, resultado: l.resultado, objeciones: $('#c-obj', f).value.trim(), notas: $('#c-notas', f).value.trim(), volverEl: l.resultado === 'espera' ? $('#c-volver', f).value : '' };
         if (!llamada.nombre) { $('#c-nombre', f).focus(); toast('Escribe el nombre'); return; }
         const btn = e.submitter || f.querySelector('[type="submit"]'); btn.disabled = true;
         try {
           const r = await api('guardarLlamada', { llamada }); V = r; editando = null; ctx.mes = mesDe(llamada.fecha); ctx.parte = 'closer';
           const guardada = r.llamadas.find(x => x.id === r.id);
-          toast(guardada.resultado === 'compro' && !guardada.pacienteId ? '¡Venta! Ya puedes crear su ficha de paciente' : 'Llamada guardada'); pintar();
+          toast(guardada.resultado === 'compro' && !guardada.pacienteId ? '¡Venta! Ya puedes crear su ficha de paciente' : guardada.volverEl ? 'Llamada guardada · tienes la tarea de volver a contactar' : 'Llamada guardada'); ctx.alCambiar?.(); pintar();
         } catch (x) { toast(x.message); btn.disabled = false; }
       });
       $('#c-nombre', f).focus();

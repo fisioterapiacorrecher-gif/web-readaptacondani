@@ -236,3 +236,23 @@ div.baja { display: grid; gap: 6px; border-color: rgba(255,52,52,.4); }
 .obj-form, .setter-form { align-items: end; }
 .setter-form { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
 .obj-form .btn { justify-self: start; }
+.mt-aviso { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; padding: 10px 12px; margin-bottom: 4px; border-radius: 14px; border: 1px solid rgba(255,52,52,.45); background: rgba(255,52,52,.06); font-size: 14px; font-weight: 600; transition: transform .16s var(--ease); }
+.mt-aviso i { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); margin-top: 7px; }
+.mt-aviso:active, .mini-obj:active { transform: scale(0.98); }
+.mini-obj { display: grid; gap: 8px; text-align: left; margin-top: 8px; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); transition: transform .16s var(--ease), border-color .16s var(--ease); }
+.mini-obj .sub-h { margin: 0; }
+@media (hover: hover) and (pointer: fine) { .mini-obj:hover { border-color: var(--text-mute); } }
+.mo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: 13px; }
+.mo b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mo em { font-style: normal; font-family: var(--font-accent); font-size: 12px; color: var(--text-mute); }
+.mo.ok em { color: var(--mint); }
+[data-tema="claro"] .mo.ok em { color: #3B6D00; }
+.mo .obj-bar { grid-column: 1 / -1; height: 4px; }
+.ll-volver { font-size: 13px; color: var(--text-soft); font-family: var(--font-accent); }
+.ll-volver.vencida { color: var(--coral); }
+.ll-volver.hoy { color: var(--text); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .mt-aviso:active, .mini-obj:active { transform: none; } }
+.fin-cat .bar { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.fin-cat .bar > i { display: block; height: 100%; width: 100%; background: var(--coral); border-radius: inherit; transform-origin: left; }
+.mo.ok .obj-bar i { background: var(--mint); }
+[data-tema="claro"] .mo.ok .obj-bar i { background: #3B6D00; }

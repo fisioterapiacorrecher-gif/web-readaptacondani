@@ -337,11 +337,14 @@ const tB = (() => { ok(api({ action: 'crearPaciente', token: admin, nombre: 'Bea
 const bea = ok(api({ action: 'pacientes', token: admin })).pacientes.find(x => x.nombre === 'Bea Baja');
 assert.strictEqual(bea.canal, 'instagram'); assert.strictEqual(bea.deporte, 'Trail');
 assert.ok(!api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: '' }).ok);
-r = ok(api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: 'Se lesionó de otra cosa y lo deja' }));
+assert.ok(!api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: 'Me caía mal' }).ok);
+r = ok(api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: 'Otra lesión', nota: 'Se rompió el tobillo' }));
+assert.strictEqual(r.paciente.notaBaja, 'Se rompió el tobillo');
+assert.deepStrictEqual(ok(api({ action: 'finanzas', token: admin })).bajas.map(b => b.motivo), ['Otra lesión']);
 assert.strictEqual(r.paciente.estado, 'baja'); assert.strictEqual(r.paciente.fechaSalida, hoyISO);
 assert.ok(!api({ action: 'yo', token: tB }).ok);
 assert.ok(!api({ action: 'darBaja', token: admin, pacienteId: bea.id, motivo: 'otra vez' }).ok);
-paso('la baja (sin alta) pide motivo, guarda la fecha y cierra el acceso');
+paso('la baja (sin alta) pide un motivo de la lista, guarda la nota y la fecha, y cierra el acceso');
 
 r = ok(api({ action: 'guardarSetter', token: admin, dia: { fecha: hoyISO, bienvenidas: 12, contestadas: 5, inboundsInstagram: 3, inboundsWhatsapp: 1, followUps: 4 } }));
 ok(api({ action: 'guardarSetter', token: admin, dia: { fecha: hoyISO, bienvenidas: 14, contestadas: 6, inboundsInstagram: 3, inboundsWhatsapp: 1, followUps: 4 } }));
@@ -378,5 +381,24 @@ assert.strictEqual(obj('llamadas').valor, 2); assert.strictEqual(obj('llamadas')
 assert.strictEqual(obj('bienvenidas').valor, 14); assert.strictEqual(obj('bienvenidas').hecho, true);
 assert.strictEqual(obj('manual').valor, null); assert.strictEqual(obj('manual').hecho, false);
 paso('los objetivos con contador se calculan solos con Ventas; los demás se marcan a mano');
+
+r = ok(api({ action: 'guardarLlamada', token: admin, llamada: { nombre: 'Eva Espera', fecha: hoyISO, resultado: 'espera', volverEl: '2030-01-10' } }));
+const eva = r.id;
+assert.strictEqual(r.llamadas.find(l => l.id === eva).volverEl, '2030-01-10');
+ok(api({ action: 'guardarLlamada', token: admin, llamada: { id: eva, nombre: 'Eva Espera', fecha: hoyISO, resultado: 'espera', volverEl: '2030-01-12' } }));
+let vuelta = ok(api({ action: 'bandeja', token: admin })).misTareas.filter(t => t.llamadaId === eva);
+assert.strictEqual(vuelta.length, 1); assert.strictEqual(vuelta[0].fecha, '2030-01-12'); assert.ok(/Eva Espera/.test(vuelta[0].texto));
+ok(api({ action: 'guardarLlamada', token: admin, llamada: { id: eva, nombre: 'Eva Espera', fecha: hoyISO, resultado: 'no' } }));
+assert.strictEqual(ok(api({ action: 'bandeja', token: admin })).misTareas.filter(t => t.llamadaId === eva).length, 0);
+paso('una llamada en espera crea (y mueve) la tarea «volver a contactar»; al decidir, se da por hecha');
+
+assert.strictEqual(ok(api({ action: 'bandeja', token: admin })).setter, null);   // hoy ya está apuntado
+libro.getSheetByName('Setter').rows.splice(1);
+const hace4 = new Date(Date.now() - 4 * 86400000).toISOString().slice(0, 10);
+ok(api({ action: 'guardarSetter', token: admin, dia: { fecha: hace4, bienvenidas: 1 } }));
+r = ok(api({ action: 'bandeja', token: admin }));
+assert.strictEqual(r.setter.faltan, 3);
+assert.ok(r.objetivos.length >= 3);
+paso('si faltan días del Setter hasta ayer, sale el aviso; la bandeja trae también los objetivos del mes');
 
 console.log(`\nTodo correcto: ${pasos} pruebas.`);

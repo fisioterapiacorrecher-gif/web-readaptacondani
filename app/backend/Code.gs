@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.6.0';
+const VERSION = '1.7.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -23,7 +23,7 @@ const ZONA = 'Europe/Madrid';
 /** Tablas y sus columnas. Cambiar el orden de columnas aquí cambia la hoja: no lo toques con datos dentro. */
 const TABLAS = {
   Config: ['clave', 'valor'],
-  Pacientes: ['id', 'nombre', 'email', 'telefono', 'plantilla', 'plan', 'semanas', 'fechaInicio', 'estado', 'semanaActual', 'cuestionario', 'creado', 'notas', 'canal', 'deporte', 'fechaSalida', 'motivoBaja'],
+  Pacientes: ['id', 'nombre', 'email', 'telefono', 'plantilla', 'plan', 'semanas', 'fechaInicio', 'estado', 'semanaActual', 'cuestionario', 'creado', 'notas', 'canal', 'deporte', 'fechaSalida', 'motivoBaja', 'notaBaja'],
   Codigos: ['email', 'hash', 'expira', 'intentos', 'creado'],
   Accesos: ['hash', 'email', 'rol', 'pacienteId', 'expira', 'creado'],
   Prescripcion: ['id', 'pacienteId', 'semana', 'dia', 'orden', 'tipo', 'ejercicio', 'series', 'valor', 'unidad', 'kg', 'tempo', 'descanso', 'indicacion', 'video', 'publicada', 'creado'],
@@ -48,7 +48,7 @@ const TABLAS = {
   Movimientos: ['id', 'tipo', 'fecha', 'categoria', 'concepto', 'importe', 'recurrencia', 'hasta', 'notas'], // gastos e ingresos de RCD
   Setter: ['fecha', 'bienvenidas', 'contestadas', 'inboundsInstagram', 'inboundsWhatsapp', 'followUps', 'notas'],   // un día por fila
   Llamadas: ['id', 'nombre', 'telefono', 'fecha', 'canal', 'origen', 'lesion', 'encaja', 'resultado', 'objeciones', 'notas', 'pacienteId', 'creado'],
-  Tareas: ['id', 'texto', 'fecha', 'hecha', 'hechaEl', 'creado'],
+  Tareas: ['id', 'texto', 'fecha', 'hecha', 'hechaEl', 'creado', 'llamadaId'],   // llamadaId: tarea «volver a contactar» de una llamada en espera
   Objetivos: ['id', 'mes', 'tipo', 'texto', 'meta', 'hecho', 'creado'],   // tipo: llamadas, clientes, ingresos, bienvenidas, inbounds o manual
 };
 
@@ -346,7 +346,19 @@ const ACC = {
     });
     // Tus tareas pendientes (Gestión) van arriba del todo en «Para hoy»
     const misTareas = buscar_('Tareas', t => !esSi_(t.hecha)).map(publicoTarea_).sort(ordenTareas_);
-    return { tareas, misTareas };
+    // Setter sin apuntar: días de la última semana (hasta ayer) que faltan, solo si ya usa el Setter.
+    // Un día sin actividad se apunta con ceros y deja de avisar.
+    let setter = null;
+    const dias = buscar_('Setter', () => true).map(x => fecha_(x.fecha)).sort();
+    if (dias.length) {
+      const hechos = {}; dias.forEach(d => hechos[d] = 1);
+      const faltan = [];
+      for (let i = 7; i >= 1; i--) { const d = fecha_(new Date(Date.now() - i * 86400000)); if (d >= dias[0] && !hechos[d]) faltan.push(d); }
+      if (faltan.length) setter = { desde: faltan[0], faltan: faltan.length };
+    }
+    const mes = fecha_(new Date()).slice(0, 7);
+    const objetivos = buscar_('Objetivos', o => o.mes === mes).map(o => publicoObjetivo_(o, mes));
+    return { tareas, misTareas, setter, objetivos };
   },
 
   ficha(req) {
@@ -541,6 +553,8 @@ const ACC = {
     return {
       pagos: buscar_('Pagos', () => true).map(x => Object.assign(publicoPago_(x), { pacienteId: x.pacienteId, paciente: nombres[x.pacienteId] || '—', metodo: x.metodo })),
       planes: buscar_('Planes', () => true).map(x => ({ pacienteId: x.pacienteId, paciente: nombres[x.pacienteId] || '—', nombre: x.nombre, precio: num_(x.precio) })),
+      bajas: buscar_('Pacientes', x => x.estado === 'baja').map(x => ({ motivo: x.motivoBaja || 'Otro', fecha: x.fechaSalida ? fecha_(x.fechaSalida) : '' })),
+      altas: buscar_('Pacientes', x => x.estado === 'alta').length,
       movimientos: buscar_('Movimientos', () => true).map(m => ({ id: m.id, tipo: m.tipo, fecha: fecha_(m.fecha), categoria: m.categoria, concepto: m.concepto, importe: num_(m.importe), recurrencia: m.recurrencia || 'no', hasta: m.hasta ? fecha_(m.hasta) : '', notas: m.notas })),
     };
   },
@@ -575,10 +589,10 @@ const ACC = {
   /* ---------- Baja (sale sin el alta) ---------- */
   darBaja(req) {
     const p = paciente_(req.pacienteId);
-    const motivo = texto_(req.motivo, 500);
-    if (!motivo) throw publico_('Escribe el motivo de la baja.');
+    const motivo = MOTIVOS_BAJA.filter(m => m === String(req.motivo || ''))[0];
+    if (!motivo) throw publico_('Elige el motivo de la baja.');
     if (p.estado === 'alta' || p.estado === 'baja') throw publico_('Este paciente ya no está en tratamiento.');
-    actualizar_('Pacientes', x => x.id === p.id, { estado: 'baja', motivoBaja: motivo, fechaSalida: fechaTexto_(req.fecha) || fecha_(new Date()) });
+    actualizar_('Pacientes', x => x.id === p.id, { estado: 'baja', motivoBaja: motivo, notaBaja: texto_(req.nota, 500), fechaSalida: fechaTexto_(req.fecha) || fecha_(new Date()) });
     cerrarAccesos_(p.id);
     registrar_('baja', p.id);
     return { paciente: publicoPaciente_(paciente_(p.id)) };
@@ -586,9 +600,11 @@ const ACC = {
 
   /* ---------- Ventas: Setter (mensajes de cada día) y Closer (llamadas) ---------- */
   ventas() {
+    const volver = {};
+    buscar_('Tareas', t => t.llamadaId && !esSi_(t.hecha)).forEach(t => volver[t.llamadaId] = t.fecha ? fecha_(t.fecha) : '');
     return {
       setter: buscar_('Setter', () => true).map(publicoSetter_).sort((a, b) => a.fecha < b.fecha ? -1 : 1),
-      llamadas: buscar_('Llamadas', () => true).map(publicoLlamada_).sort((a, b) => a.fecha < b.fecha ? 1 : -1),
+      llamadas: buscar_('Llamadas', () => true).map(l => Object.assign(publicoLlamada_(l), { volverEl: volver[l.id] || '' })).sort((a, b) => a.fecha < b.fecha ? 1 : -1),
     };
   },
 
@@ -613,12 +629,25 @@ const ACC = {
       objeciones: texto_(l.objeciones, 1500), notas: texto_(l.notas, 1500), pacienteId: previa ? previa.pacienteId : '', creado: previa ? previa.creado : new Date().toISOString(),
     };
     if (!fila.nombre) throw publico_('Escribe el nombre.');
-    conBloqueo_(() => { borrar_('Llamadas', x => x.id === fila.id); anadir_('Llamadas', fila); });
+    const volverEl = fila.resultado === 'espera' ? fechaTexto_(l.volverEl) : '';
+    conBloqueo_(() => {
+      borrar_('Llamadas', x => x.id === fila.id); anadir_('Llamadas', fila);
+      // «Volver a contactar»: una sola tarea pendiente por llamada en espera; si ya decidió, se da por hecha
+      const pendientes = buscar_('Tareas', t => t.llamadaId === fila.id && !esSi_(t.hecha));
+      if (volverEl) {
+        borrar_('Tareas', t => t.llamadaId === fila.id && !esSi_(t.hecha));
+        anadir_('Tareas', { id: pendientes[0] ? pendientes[0].id : id_(), texto: 'Volver a contactar a ' + fila.nombre, fecha: volverEl, hecha: 'no', hechaEl: '', creado: new Date().toISOString(), llamadaId: fila.id });
+      } else if (pendientes.length) {
+        if (fila.resultado === 'espera') borrar_('Tareas', t => t.llamadaId === fila.id && !esSi_(t.hecha));
+        else actualizar_('Tareas', t => t.llamadaId === fila.id && !esSi_(t.hecha), { hecha: 'si', hechaEl: new Date().toISOString() });
+      }
+    });
     return Object.assign(ACC.ventas(), { id: fila.id });
   },
 
   borrarLlamada(req) {
     borrar_('Llamadas', x => x.id === String(req.id || ''));
+    borrar_('Tareas', t => t.llamadaId === String(req.id || '') && !esSi_(t.hecha));
     return ACC.ventas();
   },
 
@@ -639,7 +668,7 @@ const ACC = {
     const fila = {
       id: previa ? previa.id : id_(), texto: texto_(t.texto, 300), fecha: fechaTexto_(t.fecha),
       hecha: t.hecha ? 'si' : 'no', hechaEl: t.hecha ? (previa && esSi_(previa.hecha) ? previa.hechaEl : new Date().toISOString()) : '',
-      creado: previa ? previa.creado : new Date().toISOString(),
+      creado: previa ? previa.creado : new Date().toISOString(), llamadaId: previa ? previa.llamadaId : '',
     };
     if (!fila.texto) throw publico_('Escribe la tarea.');
     conBloqueo_(() => { borrar_('Tareas', x => x.id === fila.id); anadir_('Tareas', fila); });
@@ -895,7 +924,7 @@ function paciente_(id) {
 
 function publicoPaciente_(p) {
   return { id: p.id, nombre: p.nombre, email: p.email, telefono: p.telefono, plantilla: p.plantilla, plan: p.plan, semanas: Number(p.semanas), fechaInicio: fecha_(p.fechaInicio), estado: p.estado, semanaActual: Number(p.semanaActual), cuestionario: p.cuestionario,
-    canal: p.canal || '', deporte: p.deporte || '', fechaSalida: p.fechaSalida ? fecha_(p.fechaSalida) : '', motivoBaja: p.motivoBaja || '' };
+    canal: p.canal || '', deporte: p.deporte || '', fechaSalida: p.fechaSalida ? fecha_(p.fechaSalida) : '', motivoBaja: p.motivoBaja || '', notaBaja: p.notaBaja || '' };
 }
 
 function limpiarPresc_(x) {
@@ -959,12 +988,17 @@ function finanzasPaciente_(pacienteId) {
 /** Nombre comparable: sin acentos, mayúsculas, signos ni extensión de archivo. */
 /* ---------- Ventas y gestión ---------- */
 const CANALES = ['instagram', 'whatsapp', 'referido', 'otro'];
+const MOTIVOS_BAJA = ['Precio', 'Falta de tiempo', 'Mejoró y lo deja', 'Otra lesión', 'No responde', 'Otro'];
 const CAMPOS_SETTER = ['bienvenidas', 'contestadas', 'inboundsInstagram', 'inboundsWhatsapp', 'followUps'];
 const TIPOS_OBJETIVO = { llamadas: 'Llamadas de venta', clientes: 'Clientes nuevos', ingresos: 'Ingresos (€)', bienvenidas: 'Bienvenidas dadas', inbounds: 'Inbounds', manual: '' };
 function opcion_(v, lista) { const s = String(v || '').trim().toLowerCase(); return lista.indexOf(s) >= 0 ? s : ''; }
 function publicoSetter_(x) { const o = { fecha: fecha_(x.fecha), notas: x.notas || '' }; CAMPOS_SETTER.forEach(k => o[k] = Number(x[k]) || 0); return o; }
-function publicoLlamada_(x) { return { id: x.id, nombre: x.nombre, telefono: x.telefono, fecha: fecha_(x.fecha), canal: x.canal, origen: x.origen, lesion: x.lesion, encaja: x.encaja, resultado: x.resultado || 'espera', objeciones: x.objeciones, notas: x.notas, pacienteId: x.pacienteId || '' }; }
-function publicoTarea_(x) { return { id: x.id, texto: x.texto, fecha: x.fecha ? fecha_(x.fecha) : '', hecha: esSi_(x.hecha), hechaEl: x.hechaEl ? fecha_(x.hechaEl) : '' }; }
+/* Todo como texto: una fila pegada a mano en la hoja puede traer el teléfono como número */
+function publicoLlamada_(x) {
+  const t = k => String(x[k] == null ? '' : x[k]);
+  return { id: t('id'), nombre: t('nombre'), telefono: t('telefono').replace(/[^\d+]/g, ''), fecha: fecha_(x.fecha), canal: t('canal'), origen: t('origen'), lesion: t('lesion'), encaja: t('encaja'), resultado: t('resultado') || 'espera', objeciones: t('objeciones'), notas: t('notas'), pacienteId: t('pacienteId') };
+}
+function publicoTarea_(x) { return { id: x.id, texto: x.texto, fecha: x.fecha ? fecha_(x.fecha) : '', hecha: esSi_(x.hecha), hechaEl: x.hechaEl ? fecha_(x.hechaEl) : '', llamadaId: x.llamadaId || '' }; }
 /* Pendientes primero (las de fecha más próxima arriba; sin fecha al final), luego las hechas (recientes arriba) */
 function ordenTareas_(a, b) {
   if (a.hecha !== b.hecha) return a.hecha ? 1 : -1;

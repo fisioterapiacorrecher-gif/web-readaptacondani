@@ -149,6 +149,13 @@ la app), Mejoras del servicio, Página web y Experiencia de los pacientes. Redes
 - Objetivos (`Objetivos`, por mes): con contador automático (llamadas, clientes nuevos, ingresos —cobros de
   pacientes + otros ingresos de Finanzas—, bienvenidas, inbounds) o a mano. «Copiar los del mes anterior».
 - Código en `web/js/gestion.js`.
+- 1.7.0: baja con motivo de una lista (Precio, Falta de tiempo, Mejoró y lo deja, Otra lesión, No responde, Otro) +
+  nota (`notaBaja`), y gráfico «Por qué se van» en Finanzas. Llamada «en espera» → fecha «Volver a contactar el» que
+  crea/mueve una tarea enlazada (`Tareas.llamadaId`) y se da por hecha al decidir. Aviso en «Para hoy» si falta
+  apuntar algún día del Setter en la última semana (se calla apuntando el día, aunque sea con ceros). Mini barras
+  de los objetivos del mes en el lateral.
+- Histórico de Notion: solo el Closer (18 llamadas), preparado en una hoja del Drive de Dani para pegarlo en la
+  pestaña `Llamadas` (mismas columnas). No está en el repo (datos reales).
 
 ## Pendiente de Dani
 
