@@ -24,6 +24,7 @@
       $('#cargando').hidden = true; shell.hidden = false;
       if (escritorio() && pacientes.length) abrir(pacientes[0].id);
       pintarPlantillas('rotuliana'); pintarBiblioteca(); pintarAjustes();
+      if (CFG.config.VIDEOS_CARPETA_ID) $('#sync-carpeta').value = 'https://drive.google.com/drive/folders/' + CFG.config.VIDEOS_CARPETA_ID;
     } catch (e) {
       if (e.codigo === 'sesion' || e.codigo === 'permiso') return mostrarAcceso();
       $('#cargando').textContent = e.message;
@@ -60,7 +61,7 @@
   const estadoTxt = e => ({ pendiente: 'Pendiente de su primer acceso', activo: 'Activo', pausado: 'En pausa', alta: 'De alta', archivado: 'Archivado' }[e] || e);
 
   /* ================= Menú y vistas ================= */
-  const vistas = ['v-patient', 'v-plantillas', 'v-biblioteca', 'v-ajustes'];
+  const vistas = ['v-patient', 'v-plantillas', 'v-biblioteca', 'v-finanzas', 'v-ajustes'];
   function verVista(id) {
     vistas.forEach(v => $('#' + v).hidden = v !== id);
     $$('.sidenav button').forEach(b => b.setAttribute('aria-current', String(b.dataset.v === id)));
@@ -68,6 +69,7 @@
   }
   $$('.sidenav button').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.v === 'v-patient') { verVista('v-patient'); if (!escritorio()) shell.dataset.screen = 'list'; return; }
+    if (b.dataset.v === 'v-finanzas') window.RCDFinanzas.pintarCRM($('#crm'), api);
     verVista(b.dataset.v);
   }));
   $$('[data-back]').forEach(b => b.addEventListener('click', () => { shell.dataset.screen = 'list'; }));
@@ -95,6 +97,7 @@
     $('#p-code').hidden = false; $('#p-code-wa').hidden = true; $('#p-link').hidden = false; $('#p-link-wa').hidden = true;
     pintarRevision(); pintarRegistros(); pintarAlta(); pintarDatos();
     window.RCDHistoria.pintar($('#hc'), F, api, () => recargarLateral());
+    window.RCDFinanzas.pintarPagos($('#pagos'), F, api);
   }
 
   /* Enlace personal del paciente (anula el anterior) para mandárselo por WhatsApp */
@@ -177,7 +180,8 @@
   /* ---------- Preparar la semana siguiente ---------- */
   let plan = [], destino = 1;
   const base = r => ({ series: r.series, valor: r.valor, unidad: r.unidad, kg: r.kg, tempo: r.tempo, descanso: r.descanso });
-  const videoDe = nombre => (CFG.biblioteca.find(b => b.nombre === nombre) || {}).video || '';
+  const videoDe = nombre => { const k = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    return (CFG.biblioteca.find(b => String(b.nombre || '').replace(/\.[a-z0-9]{2,4}$/i, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() === k) || {}).video || ''; };
   function prepararPlan() {
     const actual = deSemana(F.prescripcion, F.semana);
     destino = actual.length ? F.semana + 1 : F.semana;
@@ -245,7 +249,7 @@
           <label>Unidad<select data-i="${i}" data-k="unidad"><option value="reps" ${r.vals?.unidad !== 's' ? 'selected' : ''}>reps</option><option value="s" ${r.vals?.unidad === 's' ? 'selected' : ''}>seg</option></select></label>
         </div>`;
       const extra = r.vals || r.tipo === 'cardio' ? `<div class="rx-extra">
-          <label>${r.tipo === 'cardio' ? 'Qué tiene que hacer' : 'Indicación (opcional)'}<input data-i="${i}" data-x="indicacion" type="text" value="${esc(r.indicacion || '')}"></label>
+          <label>${r.tipo === 'cardio' ? 'Qué tiene que hacer' : 'Especificaciones para este paciente (adaptaciones)'}<input data-i="${i}" data-x="indicacion" type="text" value="${esc(r.indicacion || '')}"></label>
           <label>Vídeo (enlace de Drive)<input data-i="${i}" data-x="video" type="text" value="${esc(r.video || '')}" placeholder="https://drive.google.com/…"></label></div>` : '';
       return `<div class="rx">
         <div class="rx-top"><div><span class="tag">Día ${r.dia} · ${r.tipo === 'cardio' ? 'Cardio' : 'Fuerza'}</span><b>${esc(r.ejercicio)}</b></div>
@@ -401,28 +405,50 @@
   }
 
   /* ================= Biblioteca ================= */
+  // Nombre comparable (igual que en el motor): sin acentos, mayúsculas, signos ni extensión
+  const comparable = s => String(s || '').replace(/\.[a-z0-9]{2,4}$/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   function nombresBiblioteca() {
-    const m = new Map(D.biblioteca.map(e => [e.nombre, { nombre: e.nombre, en: e.en, video: '' }]));
-    CFG.biblioteca.forEach(b => { const x = m.get(b.nombre) || { nombre: b.nombre, en: [] }; x.video = b.video; m.set(b.nombre, x); });
+    const m = new Map(D.biblioteca.map(e => [comparable(e.nombre), { nombre: e.nombre, en: e.en, video: '', notas: '' }]));
+    CFG.biblioteca.forEach(b => { const k = comparable(b.nombre); const x = m.get(k) || { nombre: b.nombre, en: [] }; x.video = b.video; x.notas = b.notas || ''; m.set(k, x); });
     return [...m.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
   function pintarBiblioteca(q = $('#lib-q').value) {
     const todos = nombresBiblioteca();
     $('#lib-names').innerHTML = todos.map(e => `<option value="${esc(e.nombre)}"></option>`).join('');
-    const n = q.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-    const lista = todos.filter(e => e.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(n));
+    const n = comparable(q);
+    const lista = todos.filter(e => comparable(e.nombre).includes(n));
     $('#lib-count').textContent = `${lista.length} de ${todos.length} ejercicios · ${todos.filter(e => e.video).length} con vídeo`;
-    $('#lib').innerHTML = lista.map((e, i) => `<div class="lib-row"><b>${esc(e.nombre)}</b><span class="chipline">${(e.en || []).map(x => `<span class="pill">${esc(x)}</span>`).join('')}</span>
-      ${e.video ? `<a href="${esc(e.video)}" target="_blank" rel="noopener">Ver vídeo</a>` : '<span class="mute">sin vídeo</span>'}
-      <div class="lib-edit"><label class="sr" for="lv-${i}">Enlace del vídeo</label><input id="lv-${i}" type="text" placeholder="Pega el enlace de Drive" value="${esc(e.video || '')}"><button class="btn btn-ghost" type="button" data-n="${esc(e.nombre)}" data-i="${i}">Guardar</button></div></div>`).join('')
-      || `<p class="mute">Ningún ejercicio contiene «${esc(q)}». Escríbelo al preparar una semana y se añadirá.</p>`;
+    $('#lib').innerHTML = lista.map((e, i) => {
+      const ia = D.comoSeHace?.(e.nombre);
+      return `<details class="lib-row"><summary><b>${esc(e.nombre)}</b><span class="chipline">${(e.en || []).map(x => `<span class="pill">${esc(x)}</span>`).join('')}</span>
+        ${e.video ? '<span class="pill ok">vídeo</span>' : '<span class="mute">sin vídeo</span>'}</summary>
+        <div class="lib-body">
+          ${e.video ? `<a href="${esc(e.video)}" target="_blank" rel="noopener">Ver vídeo ↗</a>` : ''}
+          <label>Enlace del vídeo<input id="lv-${i}" type="text" placeholder="Pega el enlace de Drive (o usa «Sincronizar con Drive»)" value="${esc(e.video || '')}"></label>
+          ${ia ? `<div class="lib-ia"><p class="mini-title">Cómo se hace · texto de la IA</p><p>${esc(ia.como)}</p><ul>${ia.claves.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>` : ''}
+          <label>Tu descripción (opcional: si la escribes, el paciente verá la tuya en lugar de la de la IA)<textarea id="ln-${i}" rows="3">${esc(e.notas || '')}</textarea></label>
+          <button class="btn btn-ghost" type="button" data-n="${esc(e.nombre)}" data-i="${i}">Guardar</button>
+        </div></details>`;
+    }).join('') || `<p class="mute">Ningún ejercicio contiene «${esc(q)}». Escríbelo al preparar una semana y se añadirá.</p>`;
     $$('#lib [data-n]').forEach(b => b.addEventListener('click', async () => {
       b.disabled = true;
-      try { CFG.biblioteca = (await api('guardarBiblioteca', { nombre: b.dataset.n, video: $('#lv-' + b.dataset.i).value.trim() })).biblioteca; toast('Vídeo guardado'); pintarBiblioteca(); }
-      catch (e) { toast(e.message); b.disabled = false; }
+      try { CFG.biblioteca = (await api('guardarBiblioteca', { nombre: b.dataset.n, video: $('#lv-' + b.dataset.i).value.trim(), notas: $('#ln-' + b.dataset.i).value.trim() })).biblioteca; toast('Guardado'); pintarBiblioteca(); }
+      catch (x) { toast(x.message); b.disabled = false; }
     }));
   }
   $('#lib-q').addEventListener('input', e => pintarBiblioteca(e.target.value));
+  // Sincronizar los vídeos de la carpeta de Drive con la Biblioteca (por nombre de archivo)
+  $('#sync-btn').addEventListener('click', async () => {
+    const b = $('#sync-btn'), out = $('#sync-out'); b.disabled = true; b.textContent = 'Sincronizando…'; out.textContent = '';
+    try {
+      const r = await api('sincronizarVideos', { carpeta: $('#sync-carpeta').value.trim(), nombres: D.biblioteca.map(e => e.nombre) });
+      CFG.biblioteca = r.biblioteca; if (r.encontrados >= 0) CFG.config.VIDEOS_CARPETA_ID = CFG.config.VIDEOS_CARPETA_ID || 'ok';
+      out.innerHTML = `<b>${r.encontrados} vídeos encontrados.</b> ${r.asociados.length} asociados a ejercicios de tus plantillas${r.nuevos.length ? `, ${r.nuevos.length} nuevos añadidos a la Biblioteca (${esc(r.nuevos.slice(0, 5).join(', '))}${r.nuevos.length > 5 ? '…' : ''})` : ''}.`
+        + (r.sinPermiso.length ? `<br><span class="lvl-mid">No he podido compartir ${r.sinPermiso.length} vídeo(s) que no son de info@rcdclinic.com: compártelos tú como «Cualquier persona con el enlace».</span>` : '');
+      pintarBiblioteca();
+    } catch (x) { out.innerHTML = `<span class="lvl-high">${esc(x.message)}</span>`; }
+    finally { b.disabled = false; b.textContent = 'Sincronizar con Drive'; }
+  });
 
   /* ================= Ajustes ================= */
   const CAMPOS = [
@@ -510,5 +536,6 @@
   // Instalable como programa (ordenador y móvil): usa el mismo service worker que la app
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('../sw.js').catch(() => {});
 
+  $('#tema-btn').addEventListener('click', () => window.RCDTema.cambiar());
   api.conToken() ? arrancar() : mostrarAcceso();
 })();

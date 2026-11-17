@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="../img/icono-180.png">
 <link rel="stylesheet" href="../css/panel.css">
 <link rel="stylesheet" href="../css/comun.css">
+<script src="../js/tema.js"></script>
 <style>
   .login { --coral: #FF3434; }
   .rx .quitar { margin-left: auto; color: var(--text-mute); font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 999px; }
@@ -60,12 +61,13 @@
 
 <div class="shell" id="shell" data-screen="list" hidden>
   <aside class="side" aria-label="Bandeja y pacientes">
-    <div class="brandbar"><svg><use href="#spark"></use></svg><div><b>RCD CLINIC</b><small>Panel de Dani</small></div></div>
+    <div class="brandbar"><svg><use href="#spark"></use></svg><div><b>RCD CLINIC</b><small>Panel de Dani</small></div><button class="tema-btn" style="margin-left:auto" type="button" id="tema-btn" aria-label="Cambiar entre modo día y modo noche"><svg class="luna" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><svg class="sol" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></button></div>
     <button class="btn btn-primary btn-block" type="button" id="new-patient">+ Nuevo paciente</button>
     <nav class="sidenav" aria-label="Menú">
       <button type="button" data-v="v-patient" aria-current="true">Pacientes</button>
       <button type="button" data-v="v-plantillas" aria-current="false">Plantillas</button>
       <button type="button" data-v="v-biblioteca" aria-current="false">Biblioteca</button>
+      <button type="button" data-v="v-finanzas" aria-current="false">Finanzas</button>
       <button type="button" data-v="v-ajustes" aria-current="false">Ajustes</button>
     </nav>
     <h2>Para hoy <span class="count" id="task-count">0</span></h2>
@@ -100,6 +102,7 @@
             <button class="tab" role="tab" aria-selected="false" data-pane="hc" type="button">Historia clínica</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="log" type="button">Registros</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="alta" type="button">Alta</button>
+            <button class="tab" role="tab" aria-selected="false" data-pane="pagos" type="button">Pagos</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="datos" type="button">Datos</button>
           </div>
         </div>
@@ -142,6 +145,8 @@
           <div class="card log" id="cuest"></div>
         </section>
 
+        <section class="pane" id="pane-pagos" hidden aria-label="Pagos"><div id="pagos" style="display:grid;gap:16px"></div></section>
+
         <section class="pane" id="pane-alta" hidden aria-label="Alta"><div id="alta" style="display:grid;gap:18px"></div></section>
 
         <section class="pane" id="pane-datos" hidden aria-label="Datos del paciente">
@@ -161,11 +166,19 @@
     <!-- ============ Biblioteca ============ -->
     <div class="view" id="v-biblioteca" hidden>
       <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Por nombre, como los tienes tú</p><h1 class="vtitle">Biblioteca de ejercicios</h1></div></div>
-      <p class="soft">Pega el enlace de Drive de cada vídeo y se añadirá solo al prescribir ese ejercicio. El vídeo tiene que estar compartido como «Cualquier persona con el enlace».</p>
+      <div class="card sync"><p><b>Vídeos desde tu Drive.</b> Pega una vez el enlace de la carpeta donde subes los vídeos (en el Drive de info@rcdclinic.com) y pulsa «Sincronizar». Cada vídeo se asocia al ejercicio con el mismo nombre de archivo; los nuevos se añaden solos. Además se sincroniza sola cada noche, y el paciente ve el vídeo nuevo aunque ya tenga la semana publicada.</p>
+        <div class="sync-row"><label class="sr" for="sync-carpeta">Enlace de la carpeta de vídeos</label><input id="sync-carpeta" type="text" placeholder="https://drive.google.com/drive/folders/…"><button class="btn btn-primary" type="button" id="sync-btn">Sincronizar con Drive</button></div>
+        <p class="mute" id="sync-out"></p></div>
       <label class="sr" for="lib-q">Buscar ejercicio</label>
       <input id="lib-q" type="search" placeholder="Buscar: sentadilla, gemelo, puente…" autocomplete="off">
       <p class="mute" id="lib-count"></p>
       <div class="card lib" id="lib"></div>
+    </div>
+
+    <!-- ============ Finanzas (CRM) ============ -->
+    <div class="view" id="v-finanzas" hidden>
+      <div class="vhead"><button class="back" type="button" data-back>← Menú</button><div><p class="eyebrow">Ingresos, gastos y cobros de RCD Clinic</p><h1 class="vtitle">Finanzas</h1></div></div>
+      <div id="crm" style="display:grid;gap:18px"></div>
     </div>
 
     <!-- ============ Ajustes ============ -->
@@ -212,8 +225,10 @@
 <script src="../data/rcd-datos.js"></script>
 <script src="../data/rcd-cuestionarios.js"></script>
 <script src="../data/rcd-presesion.js"></script>
+<script src="../data/rcd-ejercicios.js"></script>
 <script src="../js/comun.js"></script>
 <script src="../js/historia.js"></script>
+<script src="../js/finanzas.js"></script>
 <script src="../js/panel.js"></script>
 </body>
 </html>

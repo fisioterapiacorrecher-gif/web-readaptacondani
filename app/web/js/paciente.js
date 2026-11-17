@@ -50,6 +50,7 @@
     $$('.view').forEach(v => v.hidden = v.id !== 'view-' + tab.dataset.view);
     window.scrollTo({ top: 0 });
     if (tab.dataset.view === 'progreso') pintarProgreso();
+    if (tab.dataset.view === 'plan') pintarPlan();
   }));
 
   /* ---------- Escalas ---------- */
@@ -97,6 +98,7 @@
     $('#dot-semana').hidden = Y.encuestaHecha && !(Y.revisionMensual && !Y.revisionMensual.hecha);
     pintarAvisos().catch(() => {});
     pintarInstalar();
+    pintarPagoAviso();
   }
 
   function pintarDias(dias, hechos) {
@@ -155,7 +157,10 @@
     const rx = e.tipo === 'cardio' ? [] : [[e.series || '—', 'Series'], [e.valor || '—', e.unidad === 's' ? 'Segundos' : 'Reps'], [e.tempo || '—', 'Tempo'], [e.descanso || '—', 'Descanso']];
     $('#sheet-rx').innerHTML = rx.map(([v, l]) => `<div><b>${esc(v)}</b><span>${l}</span></div>`).join('');
     $('#sheet-rx').hidden = !rx.length;
-    $('#sheet-cue').textContent = e.indicacion || ''; $('#sheet-cue').hidden = !e.indicacion;
+    const ia = e.descripcion ? { como: e.descripcion, claves: [] } : (D.comoSeHace ? D.comoSeHace(e.ejercicio) : null);
+    $('#how-card').hidden = !ia;
+    if (ia) { $('#how-text').textContent = ia.como; $('#how-claves').innerHTML = ia.claves.map(c => `<li>${esc(c)}</li>`).join(''); }
+    $('#spec-card').hidden = !e.indicacion; $('#spec-text').textContent = e.indicacion || '';
     const cardio = e.tipo === 'cardio';
     $('#strength-block').hidden = cardio; $('#cardio-block').hidden = !cardio;
     const previo = Y.ejercicios.find(x => x.prescripcionId === e.id);
@@ -424,6 +429,47 @@
     finally { btn.disabled = false; }
   });
 
+  /* ---------- Plan y pagos ---------- */
+  const eur = n => (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' €';
+  const fechaLarga = f => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
+  const diasHasta = f => Math.round((new Date(f + 'T12:00:00') - new Date(Y.hoy + 'T12:00:00')) / 86400000);
+  /** Pago que toca ya (vencido o en los próximos 3 días) y que Dani aún no ha marcado como cobrado. */
+  const pagoQueToca = () => (Y.finanzas?.pagos || []).find(x => !x.pagado && x.vence && diasHasta(x.vence) <= 3);
+  function pintarPagoAviso() {
+    const p = pagoQueToca();
+    $('#pago-aviso').hidden = !p; $('#dot-plan').hidden = !p;
+    if (!p) return;
+    const d = diasHasta(p.vence);
+    $('#pago-aviso-text').innerHTML = `<b>${esc(p.concepto)} · ${eur(p.importe)}</b> — ${d < 0 ? `venció el ${fechaLarga(p.vence)}` : d === 0 ? 'vence hoy' : `vence el ${fechaLarga(p.vence)}`}. Si ya lo has pagado, Dani lo marcará en cuanto lo vea.`;
+  }
+  $('#pago-aviso-ver').addEventListener('click', () => $('.tab[data-view="plan"]').click());
+  function pintarPlan() {
+    const f = Y.finanzas || {}, t = D.plantillas.find(x => x.id === Y.paciente.plantilla);
+    const cont = $('#plan-body');
+    if (!f.plan && !(f.pagos || []).length) { cont.innerHTML = '<p class="vacio">Dani aún no ha añadido los datos de tu plan. Si tienes dudas sobre pagos, escríbele por WhatsApp.</p>'; return; }
+    const hechos = f.pagos.filter(x => x.pagado).length;
+    cont.innerHTML = `
+      <div class="card plan-card">
+        <p class="eyebrow">${esc(t ? t.nombre : 'Tu tratamiento')}</p>
+        <p class="plan-nombre">${esc(f.plan?.nombre || Y.paciente.plan || 'Tu plan')}</p>
+        <p class="soft">${Y.paciente.semanas} semanas · ${f.pagos.length} pago${f.pagos.length === 1 ? '' : 's'}</p>
+        <p class="plan-total num">${eur(f.total)}</p>
+        <div class="bar" aria-hidden="true"><i style="transform:scaleX(${f.total ? f.pagado / f.total : 0})"></i></div>
+        <div class="plan-cifras"><span>Has pagado <b class="lvl-ok">${eur(f.pagado)}</b></span><span>Falta <b>${eur(f.pendiente)}</b></span></div>
+      </div>
+      <h2>Pagos · ${hechos} de ${f.pagos.length} completados</h2>
+      <div class="list">${f.pagos.map(x => {
+        const d = x.vence ? diasHasta(x.vence) : null, vencido = !x.pagado && d !== null && d < 0;
+        return `<div class="card pago ${x.pagado ? 'ok' : vencido ? 'vencido' : ''}">
+          <div class="pago-top"><b>${esc(x.concepto)}</b><b class="num">${eur(x.importe)}</b></div>
+          <p class="mute">${x.pagado ? `Pagado${x.fechaPago ? ' el ' + esc(fechaLarga(x.fechaPago)) : ''}${x.metodo ? ' · ' + esc(x.metodo) : ''}` : vencido ? `<span class="lvl-high">Pendiente · venció el ${esc(fechaLarga(x.vence))}</span>` : `Pendiente${x.vence ? ' · a pagar antes del ' + esc(fechaLarga(x.vence)) : ''}`}</p>
+          <div class="pago-pie"><span class="estado ${x.pagado ? 'ok' : ''}">${x.pagado ? '✓ Completado' : 'No pagado'}</span>
+            ${x.factura ? `<a class="btn btn-ghost" href="${esc(x.factura)}" target="_blank" rel="noopener">Ver factura</a>` : x.pagado ? '<span class="mute">Factura pendiente</span>' : ''}</div>
+        </div>`;
+      }).join('')}</div>
+      <p class="mute">¿Algún dato no cuadra? Escríbele a Dani por WhatsApp.</p>`;
+  }
+
   /* ---------- Tarjeta «Instala la app» (después de entrar, si aún la usa desde el navegador) ---------- */
   let promptInstalar = null;
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; pintarInstalar(); });
@@ -444,6 +490,8 @@
     if (r && r.outcome === 'accepted') { $('#instalar-card').hidden = true; toast('¡Instalada! Ábrela desde el icono'); } else pintarInstalar();
   });
   $('#instalar-x').addEventListener('click', () => { try { localStorage.setItem('rcd_instalar_oculta', '1'); } catch { } $('#instalar-card').hidden = true; });
+
+  $('#tema-btn').addEventListener('click', () => window.RCDTema.cambiar());
 
   /* ---------- Arranque: enlace personal («¿Eres tú?»), sesión guardada o entrada con email ---------- */
   const invitacion = window.RCDInvitacion?.leerDeLaDireccion();

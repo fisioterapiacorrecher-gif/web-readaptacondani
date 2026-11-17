@@ -2,7 +2,7 @@
    Ejecutar: node app/backend/pruebas.js */
 const assert = require('assert');
 const { crearMotor } = require('./simulador');
-const { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush } = crearMotor();
+const { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush, carpetas, carpeta } = crearMotor();
 const ultimoCodigo = () => (correos[correos.length - 1].subject.match(/(\d{6})$/) || [])[1];
 const ok = (r, msg) => { assert.ok(r.ok, (msg || '') + ' → ' + JSON.stringify(r)); return r; };
 let pasos = 0; const paso = (t) => console.log(`  ✓ ${++pasos}. ${t}`);
@@ -263,6 +263,57 @@ paso('ajustes: se guarda el enlace del calendario y no se puede cambiar el email
   ok(api({ action: 'editarPaciente', token: admin, pacienteId: eid, cambios: { estado: 'archivado' } }));
   assert.ok(!api({ action: 'yo', token: tE }).ok); assert.ok(!api({ action: 'invitacion', invitacion: tok }).ok);
   paso('archivar al paciente cierra su sesión y anula su enlace');
+}
+
+/* ---------- Finanzas: plan y pagos del paciente, gastos e ingresos de RCD ---------- */
+{
+  const fid = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Fran Finanzas', email: 'fran@ejemplo.com', plantilla: 'rotuliana', semanas: 12 })).paciente.id;
+  let r6 = ok(api({ action: 'guardarFinanzasPaciente', token: admin, pacienteId: fid, plan: { nombre: 'Readaptación Completa · 3 meses', precio: '470' },
+    pagos: [{ concepto: 'Pago 1 de 3', importe: 160, vence: '2026-10-01', pagado: true, fechaPago: '2026-10-01', metodo: 'Bizum', factura: 'https://drive.google.com/file/d/factura1/view' },
+            { concepto: 'Pago 2 de 3', importe: '155', vence: '2026-11-01' }, { concepto: 'Pago 3 de 3', importe: 155, vence: '2026-12-01' }] }));
+  assert.strictEqual(r6.finanzas.total, 470); assert.strictEqual(r6.finanzas.pagado, 160); assert.strictEqual(r6.finanzas.pendiente, 310);
+  const pagoId = r6.finanzas.pagos[1].id;
+  ok(api({ action: 'pedirCodigo', email: 'fran@ejemplo.com' }));
+  const tF = ok(api({ action: 'verificarCodigo', email: 'fran@ejemplo.com', codigo: ultimoCodigo() })).token;
+  r6 = ok(api({ action: 'yo', token: tF }));
+  assert.strictEqual(r6.finanzas.plan.nombre, 'Readaptación Completa · 3 meses'); assert.strictEqual(r6.finanzas.pagos.length, 3);
+  assert.strictEqual(r6.finanzas.pagos[0].factura, 'https://drive.google.com/file/d/factura1/view');
+  assert.ok(!api({ action: 'guardarFinanzasPaciente', token: tF, pacienteId: fid, pagos: [] }).ok);
+  paso('plan de 470 € en 3 pagos: el paciente ve lo pagado (160 €), lo pendiente (310 €) y su factura; no puede modificarlo');
+
+  r6 = ok(api({ action: 'ficha', token: admin, pacienteId: fid }));
+  const pagos = r6.finanzas.pagos.map(x => x.id === pagoId ? Object.assign(x, { pagado: true, fechaPago: '2026-11-03', metodo: 'Transferencia' }) : x);
+  r6 = ok(api({ action: 'guardarFinanzasPaciente', token: admin, pacienteId: fid, plan: r6.finanzas.plan, pagos }));
+  assert.strictEqual(r6.finanzas.pagado, 315); assert.strictEqual(r6.finanzas.pagos.find(x => x.id === pagoId).fechaPago, '2026-11-03');
+  paso('Dani marca el pago 2 como cobrado (fecha y método) y se conserva su identificador');
+
+  assert.ok(!api({ action: 'guardarMovimiento', token: admin, movimiento: { tipo: 'gasto', concepto: '', importe: 10 } }).ok);
+  ok(api({ action: 'guardarMovimiento', token: admin, movimiento: { tipo: 'gasto', fecha: '2026-10-05', categoria: 'Software', concepto: 'Google Workspace', importe: '13,60', recurrencia: 'mensual' } }));
+  r6 = ok(api({ action: 'guardarMovimiento', token: admin, movimiento: { tipo: 'gasto', fecha: '2026-11-02', categoria: 'Publicidad', concepto: 'Anuncios Instagram', importe: 50 } }));
+  assert.strictEqual(r6.movimientos.length, 2); assert.strictEqual(r6.movimientos.find(m => m.concepto === 'Google Workspace').importe, 13.6);
+  assert.ok(r6.pagos.some(x => x.paciente === 'Fran Finanzas' && x.pagado));
+  r6 = ok(api({ action: 'borrarMovimiento', token: admin, id: r6.movimientos.find(m => m.concepto === 'Anuncios Instagram').id }));
+  assert.strictEqual(r6.movimientos.length, 1);
+  assert.ok(!api({ action: 'finanzas', token: tF }).ok);
+  paso('CRM: gastos con categoría y recurrencia (importes con coma), borrar movimientos; un paciente no puede verlo');
+}
+
+/* ---------- Vídeos: sincronizar la carpeta de Drive ---------- */
+{
+  carpetas['carpeta123'] = carpeta([['Isometrico de gemelo.mp4', 'vid1'], ['notas.pdf', 'doc1', 'application/pdf']],
+    [carpeta([['Sentadilla búlgara con peso.MOV', 'vid2', 'video/quicktime', false], ['Ejercicio nuevo de Dani.mp4', 'vid3']])]);
+  assert.ok(!api({ action: 'sincronizarVideos', token: admin }).ok);
+  const r7 = ok(api({ action: 'sincronizarVideos', token: admin, carpeta: 'https://drive.google.com/drive/folders/carpeta123?usp=sharing', nombres: ['Isométrico de gemelo', 'Sentadilla búlgara con peso'] }));
+  assert.strictEqual(r7.encontrados, 3); assert.deepStrictEqual(r7.asociados.sort(), ['Isométrico de gemelo', 'Sentadilla búlgara con peso']);
+  assert.deepStrictEqual(r7.nuevos, ['Ejercicio nuevo de Dani']); assert.deepStrictEqual(r7.sinPermiso, ['Sentadilla búlgara con peso']);
+  assert.strictEqual(ok(api({ action: 'config', token: admin })).config.VIDEOS_CARPETA_ID, 'carpeta123');
+  // El paciente recibe el vídeo aunque Dani lo subiera después de publicar la semana
+  const vid = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Vera Video', email: 'vera@ejemplo.com', plantilla: 'aquiles' })).paciente.id;
+  ok(api({ action: 'publicarSemana', token: admin, pacienteId: vid, semana: 1, ejercicios: [{ dia: 1, ejercicio: 'Isométrico de gemelo', series: 5, valor: '45', unidad: 's' }] }));
+  ok(api({ action: 'pedirCodigo', email: 'vera@ejemplo.com' }));
+  const tV = ok(api({ action: 'verificarCodigo', email: 'vera@ejemplo.com', codigo: ultimoCodigo() })).token;
+  assert.strictEqual(ok(api({ action: 'yo', token: tV })).prescripcion[0].video, 'https://drive.google.com/file/d/vid1/view');
+  paso('sincronizar Drive: asocia vídeos por nombre (sin importar acentos ni extensión), añade los nuevos y llegan solos al paciente');
 }
 
 const tS = (() => { ok(api({ action: 'crearPaciente', token: admin, nombre: 'Saúl Salir', email: 'saul@ejemplo.com', plantilla: 'aquiles' }));

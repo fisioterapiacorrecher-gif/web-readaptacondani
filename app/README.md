@@ -117,6 +117,20 @@ Todo en `data/rcd-datos.js` (lo usan las dos apps y lo usará la app real):
   uso, así que ampliar la duración en «Datos» amplía el acceso. Alta o archivado cierran sesiones y enlace.
 - Sin recordatorios para planes terminados. Tras entrar, la app guía a instalarla (iPhone/Android).
 
+## Vídeos, ficha del ejercicio, modo día/noche y finanzas (motor 1.5.0)
+
+- Biblioteca › «Sincronizar con Drive»: lee la carpeta de vídeos (`VIDEOS_CARPETA_ID`), asocia cada vídeo al
+  ejercicio con el mismo nombre (sin acentos, mayúsculas ni extensión), añade los nuevos y comparte por enlace los
+  de info@. Se repite sola a las 4:00. Necesita el permiso de Drive: ejecutar `autorizar` una vez en el editor.
+  El paciente recibe el vídeo aunque la semana ya estuviera publicada (se resuelve al vuelo desde la Biblioteca).
+- Ficha del ejercicio: vídeo → «Cómo se hace» (`web/data/rcd-ejercicios.js`, texto de IA para los 111 ejercicios,
+  sustituible por la descripción propia de Dani en la Biblioteca) → «Especificaciones para ti» (campo de la prescripción).
+- Modo día/noche en las dos apps (`js/tema.js` en el head + paleta clara en `css/comun.css`).
+- Finanzas: pestañas Planes, Pagos y Movimientos. Paciente › pestaña «Plan» (total, pagado, falta, facturas) y aviso
+  al abrir la app si un pago vence en ≤ 3 días y no está marcado. Panel › ficha › «Pagos» (calendario generado y
+  editable) y vista «Finanzas» (CRM: ingresos, gastos por categoría con recurrencias, beneficio, pendiente de cobro
+  y progresión de 12 meses) en `js/finanzas.js`.
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).

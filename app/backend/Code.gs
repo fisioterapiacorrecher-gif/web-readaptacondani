@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -43,6 +43,9 @@ const TABLAS = {
   Consentimientos: ['pacienteId', 'documento', 'version', 'aceptado', 'fecha'],
   Historia: ['pacienteId', 'clave', 'valor', 'fecha'],                // lo que escribe Dani en la historia clínica
   Invitaciones: ['pacienteId', 'hash', 'creada'],                    // enlace personal de acceso (solo la huella)
+  Planes: ['pacienteId', 'nombre', 'precio', 'actualizado'],          // plan contratado y precio total
+  Pagos: ['id', 'pacienteId', 'concepto', 'importe', 'vence', 'pagado', 'fechaPago', 'metodo', 'factura', 'notas'],
+  Movimientos: ['id', 'tipo', 'fecha', 'categoria', 'concepto', 'importe', 'recurrencia', 'hasta', 'notas'], // gastos e ingresos de RCD
 };
 
 const CONFIG_INICIAL = {
@@ -61,6 +64,7 @@ const CONFIG_INICIAL = {
   PUSH_CLAVE_PUBLICA: '',
   PUSH_SECRETO: '',
   EMAIL_SI_NO_HAY_NOTIFICACIONES: 'si',
+  VIDEOS_CARPETA_ID: '',   // carpeta de Drive con los vídeos de los ejercicios (Biblioteca › Sincronizar)
 };
 
 /* ============================== Instalación ============================== */
@@ -117,7 +121,7 @@ function doPost(e) {
 
 const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1, invitacion: 1 };
 const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
-const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1, enlaceAcceso: 1 };
+const ACCIONES_ADMIN = { bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1, enlaceAcceso: 1, guardarFinanzasPaciente: 1, finanzas: 1, guardarMovimiento: 1, borrarMovimiento: 1, sincronizarVideos: 1 };
 
 function enrutar_(req) {
   const a = req.action;
@@ -233,7 +237,8 @@ const ACC = {
     const cfg = leerConfig_();
     return {
       paciente: publicoPaciente_(p), semana, hoy,
-      prescripcion: presc.map(limpiarPresc_),
+      prescripcion: presc.map(x => conBiblioteca_(limpiarPresc_(x))),
+      finanzas: finanzasPaciente_(p.id),
       series: series.map(s => ({ prescripcionId: s.prescripcionId, serie: Number(s.serie), valor: num_(s.valor), kg: num_(s.kg), hecha: esSi_(s.hecha), fecha: fecha_(s.fecha) })),
       ejercicios: ejercicios.map(x => ({ prescripcionId: x.prescripcionId, dolor: num_(x.dolor), distancia: num_(x.distancia), tiempo: num_(x.tiempo), velMax: num_(x.velMax), fecha: fecha_(x.fecha) })),
       sesiones: sesiones.map(s => ({ dia: Number(s.dia), dolorAntes: num_(s.dolorAntes), dolorDespues: num_(s.dolorDespues), minutos: num_(s.minutos), fecha: fecha_(s.fecha) })),
@@ -356,6 +361,7 @@ const ACC = {
       presesion: (x => x ? { fecha: fecha_(x.fecha), version: x.version, respuestas: parse_(x.respuestas, {}) } : null)(buscar_('Presesion', x => x.pacienteId === p.id)[0]),
       consentimientos: buscar_('Consentimientos', c => c.pacienteId === p.id).map(c => ({ documento: c.documento, version: c.version, aceptado: esSi_(c.aceptado), fecha: fecha_(c.fecha) })),
       historia: buscar_('Historia', h => h.pacienteId === p.id).reduce((o, h) => (o[h.clave] = String(h.valor), o), {}),
+      finanzas: finanzasPaciente_(p.id),
     };
   },
 
@@ -498,6 +504,63 @@ const ACC = {
     return { historia: buscar_('Historia', h => h.pacienteId === p.id).reduce((o, h) => (o[h.clave] = String(h.valor), o), {}) };
   },
 
+  /* ---------- Finanzas ---------- */
+  /** Plan y calendario de pagos del paciente (sustituye la lista; conserva lo ya marcado como pagado). */
+  guardarFinanzasPaciente(req) {
+    const p = paciente_(req.pacienteId);
+    const plan = req.plan || {};
+    const pagos = (req.pagos || []).slice(0, 60).map((x, i) => ({
+      id: /^[\w-]{6,40}$/.test(x.id || '') ? x.id : id_(), pacienteId: p.id,
+      concepto: texto_(x.concepto, 80) || `Pago ${i + 1}`, importe: dinero_(x.importe), vence: fechaTexto_(x.vence),
+      pagado: x.pagado ? 'si' : 'no', fechaPago: x.pagado ? (fechaTexto_(x.fechaPago) || fecha_(new Date())) : '',
+      metodo: texto_(x.metodo, 30), factura: texto_(x.factura, 400), notas: texto_(x.notas, 300),
+    }));
+    conBloqueo_(() => {
+      borrar_('Planes', x => x.pacienteId === p.id);
+      anadir_('Planes', { pacienteId: p.id, nombre: texto_(plan.nombre, 120), precio: dinero_(plan.precio), actualizado: new Date().toISOString() });
+      borrar_('Pagos', x => x.pacienteId === p.id);
+      pagos.forEach(x => anadir_('Pagos', x));
+    });
+    return { finanzas: finanzasPaciente_(p.id) };
+  },
+
+  /** Todo lo necesario para el CRM: pagos de pacientes y movimientos de RCD. */
+  finanzas() {
+    const nombres = {}; buscar_('Pacientes', () => true).forEach(x => nombres[x.id] = x.nombre);
+    return {
+      pagos: buscar_('Pagos', () => true).map(x => Object.assign(publicoPago_(x), { pacienteId: x.pacienteId, paciente: nombres[x.pacienteId] || '—', metodo: x.metodo })),
+      planes: buscar_('Planes', () => true).map(x => ({ pacienteId: x.pacienteId, paciente: nombres[x.pacienteId] || '—', nombre: x.nombre, precio: num_(x.precio) })),
+      movimientos: buscar_('Movimientos', () => true).map(m => ({ id: m.id, tipo: m.tipo, fecha: fecha_(m.fecha), categoria: m.categoria, concepto: m.concepto, importe: num_(m.importe), recurrencia: m.recurrencia || 'no', hasta: m.hasta ? fecha_(m.hasta) : '', notas: m.notas })),
+    };
+  },
+
+  guardarMovimiento(req) {
+    const m = req.movimiento || {};
+    const fila = { id: /^[\w-]{6,40}$/.test(m.id || '') ? m.id : id_(), tipo: m.tipo === 'ingreso' ? 'ingreso' : 'gasto', fecha: fechaTexto_(m.fecha) || fecha_(new Date()),
+      categoria: texto_(m.categoria, 60) || 'Otros', concepto: texto_(m.concepto, 160), importe: dinero_(m.importe),
+      recurrencia: ['no', 'mensual', 'trimestral', 'anual'].indexOf(m.recurrencia) >= 0 ? m.recurrencia : 'no', hasta: fechaTexto_(m.hasta), notas: texto_(m.notas, 300) };
+    if (!fila.concepto) throw publico_('Escribe el concepto.');
+    if (!(fila.importe > 0)) throw publico_('El importe tiene que ser mayor que 0.');
+    conBloqueo_(() => { borrar_('Movimientos', x => x.id === fila.id); anadir_('Movimientos', fila); });
+    return ACC.finanzas();
+  },
+
+  borrarMovimiento(req) {
+    borrar_('Movimientos', x => x.id === String(req.id || ''));
+    return ACC.finanzas();
+  },
+
+  /* ---------- Vídeos: sincronizar la carpeta de Drive con la Biblioteca ---------- */
+  sincronizarVideos(req) {
+    const cfg = leerConfig_();
+    const carpetaId = texto_(req.carpeta || cfg.VIDEOS_CARPETA_ID, 200).replace(/^.*folders\//, '').replace(/[?#].*$/, '');
+    if (!carpetaId) throw publico_('Pega primero el enlace de tu carpeta de vídeos de Drive.');
+    let carpeta;
+    try { carpeta = DriveApp.getFolderById(carpetaId); } catch (e) { throw publico_('No puedo abrir esa carpeta. Comprueba el enlace y que info@rcdclinic.com tenga acceso.'); }
+    if (req.carpeta) ACC.guardarConfig({ cambios: { VIDEOS_CARPETA_ID: carpetaId } });
+    return sincronizarCarpeta_(carpeta, req.nombres || []);
+  },
+
   config() {
     return { config: leerConfig_(), biblioteca: buscar_('Biblioteca', () => true) };
   },
@@ -522,6 +585,7 @@ function recordatorios() {
   const hora = Number(Utilities.formatDate(ahora, ZONA, 'H'));
   const diaSemana = Number(Utilities.formatDate(ahora, ZONA, 'u')) % 7; // 0 = domingo
   const hoy = fecha_(ahora);
+  if (hora === 4 && cfg.VIDEOS_CARPETA_ID) { try { sincronizarCarpeta_(DriveApp.getFolderById(cfg.VIDEOS_CARPETA_ID), []); } catch (e) { registrar_('videos', 'Sincronización automática fallida: ' + e); } }
   buscar_('Pacientes', p => p.estado === 'activo' && !accesoCerrado_(p)).forEach(p => {   // sin recordatorios si su plan ya terminó
     const nombre = nombrePila_(p.nombre);
     const semana = semanaDe_(p);
@@ -764,6 +828,53 @@ function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).se
 function publico_(msg, codigo) { const e = new Error(msg); e.publico = true; e.codigo = codigo || 'error'; return e; }
 function hash_(s) { return Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(s), Utilities.Charset.UTF_8)); }
 function id_() { return Utilities.getUuid().slice(0, 13); }
+/* ---------- Finanzas y Biblioteca ---------- */
+function dinero_(v) { const n = Math.round(Number(String(v ?? '').replace(',', '.')) * 100) / 100; return isFinite(n) && n >= 0 ? n : 0; }
+function fechaTexto_(v) { const s = String(v || '').trim(); if (!s) return ''; const d = new Date(s.length === 10 ? s + 'T12:00:00' : s); return isNaN(d) ? '' : fecha_(d); }
+function publicoPago_(x) {
+  return { id: x.id, concepto: x.concepto, importe: num_(x.importe), vence: x.vence ? fecha_(x.vence) : '', pagado: esSi_(x.pagado), fechaPago: x.fechaPago ? fecha_(x.fechaPago) : '', factura: x.factura || '', metodo: x.metodo || '', notas: x.notas || '' };
+}
+function finanzasPaciente_(pacienteId) {
+  const plan = buscar_('Planes', x => x.pacienteId === pacienteId)[0];
+  const pagos = buscar_('Pagos', x => x.pacienteId === pacienteId).map(publicoPago_).sort((a, b) => String(a.vence).localeCompare(String(b.vence)));
+  const total = plan ? num_(plan.precio) || 0 : pagos.reduce((t, x) => t + (Number(x.importe) || 0), 0);
+  const pagado = pagos.filter(x => x.pagado).reduce((t, x) => t + (Number(x.importe) || 0), 0);
+  return { plan: plan ? { nombre: plan.nombre, precio: num_(plan.precio) } : null, pagos, total, pagado: Math.round(pagado * 100) / 100, pendiente: Math.max(0, Math.round((total - pagado) * 100) / 100) };
+}
+/** Nombre comparable: sin acentos, mayúsculas, signos ni extensión de archivo. */
+function nombreComparable_(s) {
+  return String(s || '').replace(/\.[a-z0-9]{2,4}$/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function conBiblioteca_(x) {
+  const b = buscar_('Biblioteca', y => nombreComparable_(y.nombre) === nombreComparable_(x.ejercicio))[0];
+  return Object.assign(x, { video: x.video || (b && b.video) || '', descripcion: (b && b.notas) || '' });
+}
+function sincronizarCarpeta_(carpeta, nombresConocidos) {
+  const conocidos = {}; (nombresConocidos || []).concat(buscar_('Biblioteca', () => true).map(b => b.nombre)).forEach(n => conocidos[nombreComparable_(n)] = n);
+  const res = { encontrados: 0, asociados: [], nuevos: [], sinPermiso: [] };
+  const recorrer = c => {
+    const fs = c.getFiles();
+    while (fs.hasNext()) {
+      const f = fs.next();
+      if (!/^video\//.test(f.getMimeType())) continue;
+      res.encontrados++;
+      const clave = nombreComparable_(f.getName()), nombre = conocidos[clave] || f.getName().replace(/\.[a-z0-9]{2,4}$/i, '');
+      try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { res.sinPermiso.push(nombre); }
+      const url = 'https://drive.google.com/file/d/' + f.getId() + '/view';
+      const fila = buscar_('Biblioteca', b => nombreComparable_(b.nombre) === clave)[0];
+      if (fila) { if (fila.video !== url) actualizar_('Biblioteca', b => nombreComparable_(b.nombre) === clave, { video: url }); }
+      else anadir_('Biblioteca', { nombre, video: url, notas: '' });
+      (conocidos[clave] ? res.asociados : res.nuevos).push(nombre);
+    }
+    const sub = c.getFolders(); while (sub.hasNext()) recorrer(sub.next());
+  };
+  recorrer(carpeta);
+  registrar_('videos', `Sincronizados ${res.encontrados} vídeos (${res.asociados.length} asociados, ${res.nuevos.length} nuevos)`);
+  return Object.assign(res, { biblioteca: buscar_('Biblioteca', () => true) });
+}
+/** Ejecútala una vez desde el editor tras actualizar a 1.5.0: pide el permiso de Google Drive para leer tu carpeta de vídeos. */
+function autorizar() { DriveApp.getRootFolder(); Logger.log('Permiso de Drive concedido. Ya puedes sincronizar los vídeos desde el panel.'); }
+
 /* ---------- Acceso: enlace personal, fin del plan y cierre ---------- */
 const MENSAJE_CERRADO = {
   cerrado: 'Tu acceso está cerrado. Si crees que es un error, escribe a Dani.',

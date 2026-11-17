@@ -6,6 +6,10 @@ const crypto = require('crypto');
 
 function crearMotor() {
   const peticiones = [];
+  const carpetas = {};
+  const iter = a => { let i = 0; return { hasNext: () => i < a.length, next: () => a[i++] }; };
+  const carpeta = (archivos, sub = []) => ({ getFiles: () => iter(archivos.map(([n, id, mime, propio]) => ({ getName: () => n, getId: () => id, getMimeType: () => mime || 'video/mp4',
+    setSharing: () => { if (propio === false) throw new Error('sin permiso'); } }))), getFolders: () => iter(sub) });
   let respuestaPush = b => ({ ok: true, resultados: b.subs.map(x => ({ endpoint: x.endpoint, ok: true })) });
 /* ---------- Simulación mínima de los servicios de Google ---------- */
   function crearHoja(nombre) {
@@ -60,6 +64,10 @@ function crearMotor() {
       newTrigger: h => ({ timeBased: () => ({ everyHours: () => ({ create: () => triggers.push(h) }) }) }),
     },
     MailApp: { sendEmail: o => correos.push(o) },
+    DriveApp: {
+      Access: { ANYONE_WITH_LINK: 'link' }, Permission: { VIEW: 'view' }, getRootFolder: () => ({}),
+      getFolderById: id => { const c = carpetas[id]; if (!c) throw new Error('no existe'); return c; },
+    },
     UrlFetchApp: { fetch: (url, o) => { peticiones.push({ url, o, cuerpo: JSON.parse(o.payload) }); const r = respuestaPush(JSON.parse(o.payload)); return { getResponseCode: () => r.codigo ?? 200, getContentText: () => JSON.stringify(r.cuerpo ?? r) }; } },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     ContentService: { createTextOutput: s => ({ s, setMimeType() { return this; }, getContent() { return this.s; } }), MimeType: { JSON: 'json' } },
@@ -71,6 +79,6 @@ function crearMotor() {
   
   const nueva = () => vm.runInContext('for (const k in _cache) delete _cache[k]; _ss = null;', ctx);
   const api = (body) => { nueva(); return JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(body) } }).getContent()); };
-  return { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush: f => { respuestaPush = f; } };
+  return { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush: f => { respuestaPush = f; }, carpetas, carpeta };
 }
 module.exports = { crearMotor };

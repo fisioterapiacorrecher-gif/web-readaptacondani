@@ -8,6 +8,8 @@ const { crearMotor } = require('./simulador');
 
 const motor = crearMotor();
 motor.nueva(); motor.ctx.instalar();
+// Carpeta de vídeos de prueba para ensayar «Sincronizar con Drive» (id: demo)
+motor.carpetas.demo = motor.carpeta([['Isometrico de gemelo.mp4', 'v1'], ['Puntillas aguantando 2.mp4', 'v2'], ['Peso muerto.mov', 'v3', 'video/quicktime']], [motor.carpeta([['Saltos a la comba.mp4', 'v4']])]);
 const RAIZ = path.join(__dirname, '..', 'web');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json' };
 
