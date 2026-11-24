@@ -157,6 +157,30 @@ la app), Mejoras del servicio, Página web y Experiencia de los pacientes. Redes
 - Histórico de Notion: solo el Closer (18 llamadas), preparado en una hoja del Drive de Dani para pegarlo en la
   pestaña `Llamadas` (mismas columnas). No está en el repo (datos reales).
 
+## Vídeos: valoración, técnica y alta con analizador tipo MyJump (motor 1.8.0)
+
+- Dani pide vídeos desde la ficha › «Vídeos» (tres apartados). **Valoración**: momento (inicial / revisión semana N /
+  final) + batería por lesión editable (`web/data/rcd-videos.js`: pruebas, baterías e instrucciones de grabación);
+  las pruebas a una pierna se piden de las dos. **Técnica**: un ejercicio de su plan. **Alta**: ligada a una prueba de alta.
+- El paciente lo ve en «Hoy» (con notificación): qué hacer, cómo colocar el móvil y cómo grabar a cámara lenta
+  (iPhone/Android). El vídeo va **directo del móvil a Drive** (subida reanudable que abre el motor con `Origin`),
+  a trozos de 8 MB; si el navegador no puede, plan B a trozos de 4 MB por el motor (`subirTrozo`). Máx. 500 MB.
+  Carpetas privadas: `RCD · Vídeos de pacientes / Nombre · id / Valoración | Técnica | Alta` (`VIDEOS_PACIENTES_ID`).
+- Analizador (`web/js/analizador.js`): descarga el vídeo de Drive con un acceso de 1 h (`accesoVideo`), lee los fps
+  del propio MP4/MOV y permite indicar los fps reales (cámara lenta del iPhone que se exporta a 30 fps).
+  Salto: altura = g·t²/8 por tiempo de vuelo (despegue/aterrizaje fotograma a fotograma). Drop jump: contacto + vuelo
+  → RSI. Distancia: referencia en el suelo (cinta de 1 m) y proyección sobre su línea. Goniómetro de 3 puntos o
+  respecto a la vertical, a mano o con IA de pose (MediaPipe Pose Landmarker full, alojado en `web/vendor/mediapipe`,
+  en CPU, todo en el navegador) y «Seguir en todo el vídeo» (máximo y mínimo). Comparar dos vídeos lado a lado
+  sincronizados. Guarda resultado, marcas, comentario e imagen del fotograma (JPEG en Drive).
+- Resultados: tabla de evolución por momento con diferencias y **simetría** (pierna afectada ÷ sana, campo
+  `ladoLesion`); en alta, el resultado se escribe solo en la prueba de alta. El paciente ve en «Progreso» sus
+  resultados y sus vídeos, y en «Hoy» y en la ficha del ejercicio la corrección de técnica (con la imagen marcada).
+- CSP (`web/_headers`): `connect-src` añade `https://www.googleapis.com`, `media-src`/`img-src` con `blob:` y
+  `'wasm-unsafe-eval'` para la IA. El paciente vuelve a ver su vídeo desde la copia local (Cache API «rcd-videos»)
+  o, si pesa ≤ 20 MB, desde Drive a través del motor.
+- Tras pegar el motor nuevo: ejecutar `autorizar` otra vez (Drive + peticiones externas) y nueva versión.
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).

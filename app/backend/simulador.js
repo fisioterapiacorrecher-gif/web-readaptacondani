@@ -11,6 +11,29 @@ function crearMotor() {
   const carpeta = (archivos, sub = []) => ({ getFiles: () => iter(archivos.map(([n, id, mime, propio]) => ({ getName: () => n, getId: () => id, getMimeType: () => mime || 'video/mp4',
     setSharing: () => { if (propio === false) throw new Error('sin permiso'); } }))), getFolders: () => iter(sub) });
   let respuestaPush = b => ({ ok: true, resultados: b.subs.map(x => ({ endpoint: x.endpoint, ok: true })) });
+  /* Drive en memoria (carpetas y archivos de vídeo) y subidas reanudables, como las de la API de Drive */
+  const drive = { carpetas: {}, archivos: {}, subidas: {}, n: 0 };
+  const nuevaCarpeta = (nombre, padre) => {
+    const id = 'dir' + (++drive.n), c = { id, nombre, padre, getId: () => id, getName: () => nombre,
+      createFolder: n => nuevaCarpeta(n, id), getFoldersByName: n => iter(Object.values(drive.carpetas).filter(x => x.padre === id && x.nombre === n)),
+      createFile: blob => nuevoArchivo(blob.nombre, blob.tipo, blob.bytes, id), getFiles: () => iter([]), getFolders: () => iter([]) };
+    drive.carpetas[id] = c; carpetas[id] = c; return c;
+  };
+  const nuevoArchivo = (nombre, tipo, bytes, padre) => {
+    const id = 'fil' + (++drive.n), f = { id, nombre, tipo, bytes: Buffer.from(bytes), padre, papelera: false, getId: () => id, getName: () => nombre, getMimeType: () => tipo,
+      getSize: () => f.bytes.length, getBlob: () => ({ getBytes: () => [...f.bytes], getContentType: () => tipo }), getParents: () => iter([drive.carpetas[padre]]), setTrashed(v) { f.papelera = v; } };
+    drive.archivos[id] = f; return f;
+  };
+  /** Recibe un trozo de una subida reanudable. Devuelve { codigo: 308 } o { codigo: 200, cuerpo: { id } } */
+  const trozoSubida = (sid, rango, bytes) => {
+    const s = drive.subidas[sid]; if (!s) return { codigo: 404, cuerpo: {} };
+    const m = /bytes (\d+)-(\d+)\/(\d+)/.exec(rango || ''); if (!m || +m[1] !== s.recibido.length) return { codigo: 400, cuerpo: { error: 'rango' } };
+    s.recibido = Buffer.concat([s.recibido, Buffer.from(bytes)]);
+    if (s.recibido.length < s.total) return { codigo: 308, cuerpo: {} };
+    const f = nuevoArchivo(s.meta.name, s.meta.mimeType, s.recibido, s.meta.parents[0]); delete drive.subidas[sid];
+    return { codigo: 200, cuerpo: { id: f.id, size: String(f.bytes.length), mimeType: f.tipo } };
+  };
+  let baseSubidas = 'http://localhost/__subida/';
 /* ---------- Simulación mínima de los servicios de Google ---------- */
   function crearHoja(nombre) {
     const rows = [];
@@ -54,12 +77,15 @@ function crearMotor() {
     PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] ?? null, setProperty: (k, v) => { props[k] = v; } }) },
     Utilities: {
       getUuid: () => crypto.randomUUID(),
+      base64Decode: b => [...Buffer.from(b, 'base64')], base64Encode: b => Buffer.from(b).toString('base64'),
+      newBlob: (bytes, tipo, nombre) => ({ bytes, tipo, nombre }),
       computeDigest: (_alg, s) => [...crypto.createHash('sha256').update(s, 'utf8').digest()],
       base64EncodeWebSafe: b => Buffer.from(b).toString('base64url'),
       DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
       formatDate: (d, tz, p) => fmt(d, tz, p),
     },
     ScriptApp: {
+      getOAuthToken: () => 'token-de-prueba',
       getProjectTriggers: () => triggers.map(h => ({ getHandlerFunction: () => h })), deleteTrigger() { triggers.length = 0; },
       newTrigger: h => ({ timeBased: () => ({ everyHours: () => ({ create: () => triggers.push(h) }) }) }),
     },
@@ -67,8 +93,17 @@ function crearMotor() {
     DriveApp: {
       Access: { ANYONE_WITH_LINK: 'link' }, Permission: { VIEW: 'view' }, getRootFolder: () => ({}),
       getFolderById: id => { const c = carpetas[id]; if (!c) throw new Error('no existe'); return c; },
+      createFolder: n => nuevaCarpeta(n, 'raiz'),
+      getFileById: id => { const f = drive.archivos[id]; if (!f || f.papelera) throw new Error('no existe'); return f; },
     },
-    UrlFetchApp: { fetch: (url, o) => { peticiones.push({ url, o, cuerpo: JSON.parse(o.payload) }); const r = respuestaPush(JSON.parse(o.payload)); return { getResponseCode: () => r.codigo ?? 200, getContentText: () => JSON.stringify(r.cuerpo ?? r) }; } },
+    UrlFetchApp: { fetch: (url, o) => {
+      if (/\/upload\/drive\/v3\/files\?uploadType=resumable/.test(url)) {   // abrir subida reanudable
+        const sid = 's' + (++drive.n); drive.subidas[sid] = { meta: JSON.parse(o.payload), total: +o.headers['X-Upload-Content-Length'], recibido: Buffer.alloc(0), origen: o.headers.Origin };
+        peticiones.push({ url, o });
+        return { getResponseCode: () => 200, getHeaders: () => ({ Location: baseSubidas + sid }), getContentText: () => '' };
+      }
+      if (url.includes('/__subida/')) { const r = trozoSubida(url.split('/__subida/')[1], o.headers['Content-Range'], o.payload); return { getResponseCode: () => r.codigo, getContentText: () => JSON.stringify(r.cuerpo), getHeaders: () => ({}) }; }
+      peticiones.push({ url, o, cuerpo: JSON.parse(o.payload) }); const r = respuestaPush(JSON.parse(o.payload)); return { getResponseCode: () => r.codigo ?? 200, getContentText: () => JSON.stringify(r.cuerpo ?? r) }; } },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     ContentService: { createTextOutput: s => ({ s, setMimeType() { return this; }, getContent() { return this.s; } }), MimeType: { JSON: 'json' } },
     Logger: { log() {} },
@@ -79,6 +114,6 @@ function crearMotor() {
   
   const nueva = () => vm.runInContext('for (const k in _cache) delete _cache[k]; _ss = null;', ctx);
   const api = (body) => { nueva(); return JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(body) } }).getContent()); };
-  return { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush: f => { respuestaPush = f; }, carpetas, carpeta };
+  return { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush: f => { respuestaPush = f; }, carpetas, carpeta, drive, trozoSubida, setBaseSubidas: b => { baseSubidas = b; } };
 }
 module.exports = { crearMotor };

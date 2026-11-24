@@ -99,7 +99,9 @@
     pintarAvisos().catch(() => {});
     pintarInstalar();
     pintarPagoAviso();
+    pintarVideos();
   }
+  function pintarVideos() { window.RCDVideosPaciente.pintarHoy($('#videos-hoy'), Y, api, () => { pintarVideos(); if (!$('#view-progreso').hidden) window.RCDVideosPaciente.pintarProgreso($('#videos-prog'), Y); }); }
 
   function pintarDias(dias, hechos) {
     $('#dias').innerHTML = dias.map(d => `<button class="chip" type="button" data-d="${d}" aria-pressed="${d === dia}">Día ${d}${hechos.has(d) ? ' ✓' : ''}</button>`).join('');
@@ -161,6 +163,8 @@
     $('#how-card').hidden = !ia;
     if (ia) { $('#how-text').textContent = ia.como; $('#how-claves').innerHTML = ia.claves.map(c => `<li>${esc(c)}</li>`).join(''); }
     $('#spec-card').hidden = !e.indicacion; $('#spec-text').textContent = e.indicacion || '';
+    const tec = window.RCDVideosPaciente.correccionDe(Y, e);
+    $('#tec-card').hidden = !tec; $('#tec-text').textContent = tec ? tec.comentario : ''; $('#tec-card').onclick = () => { cerrarHoja(); window.RCDVideosPaciente.verCorreccion(tec); };
     const cardio = e.tipo === 'cardio';
     $('#strength-block').hidden = cardio; $('#cardio-block').hidden = !cardio;
     const previo = Y.ejercicios.find(x => x.prescripcionId === e.id);
@@ -360,7 +364,8 @@
       const fase = t.fases.find(f => Y.semana >= f.de && Y.semana <= f.a);
       $('#phase-text').innerHTML = `Estás en la fase <b class="text-coral">${esc(fase?.nombre ?? '')}</b> · semana ${Y.semana} de ${p.semanas}.`;
     } else { $('#phases').innerHTML = ''; $('#phase-text').textContent = `Semana ${Y.semana} de ${p.semanas}.`; }
-    $('#alta-list').innerHTML = Y.alta.length ? Y.alta.map(a => `<li><b>${esc(a.prueba)}</b><span>${esc(a.criterio)}</span><em>${a.superada ? 'Superada' : 'Pendiente'}</em></li>`).join('') : '<li><span>Dani te dirá tus pruebas de alta.</span></li>';
+    $('#alta-list').innerHTML = Y.alta.length ? Y.alta.map(a => `<li><b>${esc(a.prueba)}</b><span>${esc(a.criterio)}${a.resultado ? ` · <b class="soft">tu resultado: ${esc(a.resultado)}</b>` : ''}</span><em>${a.superada ? 'Superada' : 'Pendiente'}</em></li>`).join('') : '<li><span>Dani te dirá tus pruebas de alta.</span></li>';
+    window.RCDVideosPaciente.pintarProgreso($('#videos-prog'), Y);
     try { P = await api('progreso'); } catch (x) { toast(x.message); return; }
     const S = s => 'S' + s;
     const dol = P.dolor, adh = P.adherencia.filter(a => a.valor !== null && a.valor !== '');

@@ -284,3 +284,33 @@ a.btn { text-decoration: none; color: var(--text); }
   .sheet { transition: none; }
   .ex:active, .btn:active, .tab:active, .chip:active, .scale button:active, .set .tick:active { transform: none; }
 }
+/* Vídeos que pide Dani */
+.videos-hoy { display: grid; gap: 10px; }
+.videos-hoy[hidden] { display: none; }
+.vids-pide { display: grid; gap: 10px; border-color: rgba(255,52,52,.45); }
+.vids-lista { display: grid; gap: 0; }
+.vid { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center; text-align: left; padding: 10px 0; border-top: 1px solid var(--border); transition: transform .16s var(--ease); }
+.vid:first-child { border-top: 0; }
+.vid:active { transform: scale(0.98); }
+.vid b { display: block; font-weight: 600; font-size: 15px; }
+.vid .mute { display: block; font-size: 13px; }
+.vid-ico { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--coral); }
+.vid-ico svg { width: 20px; height: 20px; }
+.vid-flecha { color: var(--text-mute); font-size: 22px; }
+.vid-tec { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; text-align: left; width: 100%; transition: transform .16s var(--ease); }
+.vid-tec:active { transform: scale(0.98); }
+.vid-tec b { display: block; font-size: 15px; margin: 2px 0; }
+.vid-tec .eyebrow, .vid-tec .mute { display: block; }
+.vsheet { padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+.vs-pasos, .vs-lista { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 15px; color: var(--text-soft); }
+.vs-subir { display: grid; gap: 10px; }
+.vs-subir .bar { margin-top: 4px; }
+.vs-img img, .vs-player { width: 100%; border-radius: 12px; display: block; background: #000; }
+.vs-player { max-height: 70vh; }
+.vp-resultados { display: grid; gap: 0; }
+.vp-res { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+.vp-res:first-child { border-top: 0; padding-top: 0; }
+.vp-res em { font-style: normal; font-family: var(--font-accent); font-weight: 600; font-size: 15px; }
+.tec-card { display: grid; gap: 4px; text-align: left; width: 100%; }
+.tec-card .mute { font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .vid:active, .vid-tec:active { transform: none; } }

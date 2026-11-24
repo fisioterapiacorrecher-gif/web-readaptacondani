@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.7.0';
+const VERSION = '1.8.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -23,7 +23,7 @@ const ZONA = 'Europe/Madrid';
 /** Tablas y sus columnas. Cambiar el orden de columnas aquí cambia la hoja: no lo toques con datos dentro. */
 const TABLAS = {
   Config: ['clave', 'valor'],
-  Pacientes: ['id', 'nombre', 'email', 'telefono', 'plantilla', 'plan', 'semanas', 'fechaInicio', 'estado', 'semanaActual', 'cuestionario', 'creado', 'notas', 'canal', 'deporte', 'fechaSalida', 'motivoBaja', 'notaBaja'],
+  Pacientes: ['id', 'nombre', 'email', 'telefono', 'plantilla', 'plan', 'semanas', 'fechaInicio', 'estado', 'semanaActual', 'cuestionario', 'creado', 'notas', 'canal', 'deporte', 'fechaSalida', 'motivoBaja', 'notaBaja', 'ladoLesion'],
   Codigos: ['email', 'hash', 'expira', 'intentos', 'creado'],
   Accesos: ['hash', 'email', 'rol', 'pacienteId', 'expira', 'creado'],
   Prescripcion: ['id', 'pacienteId', 'semana', 'dia', 'orden', 'tipo', 'ejercicio', 'series', 'valor', 'unidad', 'kg', 'tempo', 'descanso', 'indicacion', 'video', 'publicada', 'creado'],
@@ -49,7 +49,10 @@ const TABLAS = {
   Setter: ['fecha', 'bienvenidas', 'contestadas', 'inboundsInstagram', 'inboundsWhatsapp', 'followUps', 'notas'],   // un día por fila
   Llamadas: ['id', 'nombre', 'telefono', 'fecha', 'canal', 'origen', 'lesion', 'encaja', 'resultado', 'objeciones', 'notas', 'pacienteId', 'creado'],
   Tareas: ['id', 'texto', 'fecha', 'hecha', 'hechaEl', 'creado', 'llamadaId'],   // llamadaId: tarea «volver a contactar» de una llamada en espera
-  Objetivos: ['id', 'mes', 'tipo', 'texto', 'meta', 'hecho', 'creado'],   // tipo: llamadas, clientes, ingresos, bienvenidas, inbounds o manual
+  Objetivos: ['id', 'mes', 'tipo', 'texto', 'meta', 'hecho', 'creado'],
+  // Vídeos de valoración, técnica y alta: la petición de Dani, el archivo en Drive y el análisis
+  Videos: ['id', 'pacienteId', 'apartado', 'momento', 'prueba', 'nombre', 'lado', 'instrucciones', 'prescripcionId', 'altaId', 'estado', 'fileId', 'mime', 'tamano', 'fpsGrabacion',
+    'subido', 'sesion', 'medidas', 'resultado', 'unidad', 'texto', 'comentario', 'imagenId', 'analizado', 'creado', 'vistoPaciente'],   // tipo: llamadas, clientes, ingresos, bienvenidas, inbounds o manual
 };
 
 const CONFIG_INICIAL = {
@@ -69,6 +72,7 @@ const CONFIG_INICIAL = {
   PUSH_SECRETO: '',
   EMAIL_SI_NO_HAY_NOTIFICACIONES: 'si',
   VIDEOS_CARPETA_ID: '',   // carpeta de Drive con los vídeos de los ejercicios (Biblioteca › Sincronizar)
+  VIDEOS_PACIENTES_ID: '', // carpeta «RCD · Vídeos de pacientes» (se crea sola con el primer vídeo)
 };
 
 /* ============================== Instalación ============================== */
@@ -124,8 +128,8 @@ function doPost(e) {
 }
 
 const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1, invitacion: 1 };
-const ACCIONES_PACIENTE = { yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
-const ACCIONES_ADMIN = { darBaja: 1, ventas: 1, guardarSetter: 1, guardarLlamada: 1, borrarLlamada: 1, gestion: 1, guardarTarea: 1, borrarTarea: 1, guardarObjetivo: 1, borrarObjetivo: 1, bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1, enlaceAcceso: 1, guardarFinanzasPaciente: 1, finanzas: 1, guardarMovimiento: 1, borrarMovimiento: 1, sincronizarVideos: 1 };
+const ACCIONES_PACIENTE = { iniciarSubida: 1, subirTrozo: 1, videoSubido: 1, verVideo: 1, imagenVideo: 1, videoVisto: 1, yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
+const ACCIONES_ADMIN = { pedirVideos: 1, videos: 1, accesoVideo: 1, guardarAnalisis: 1, borrarVideo: 1, imagenVideo: 1, darBaja: 1, ventas: 1, guardarSetter: 1, guardarLlamada: 1, borrarLlamada: 1, gestion: 1, guardarTarea: 1, borrarTarea: 1, guardarObjetivo: 1, borrarObjetivo: 1, bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1, enlaceAcceso: 1, guardarFinanzasPaciente: 1, finanzas: 1, guardarMovimiento: 1, borrarMovimiento: 1, sincronizarVideos: 1 };
 
 function enrutar_(req) {
   const a = req.action;
@@ -250,10 +254,11 @@ const ACC = {
       mensaje: mensaje ? mensaje.texto : '',
       encuestaHecha: !!encuesta,
       revisionMensual: semana % 4 === 0 || (semana > 1 && (semana - 1) % 4 === 0) ? { tipo: p.cuestionario, mes, hecha: !!cuestionarioHecho } : null,
-      alta: alta.map(a => ({ prueba: a.prueba, criterio: a.criterio, superada: esSi_(a.superada) })),
+      alta: alta.map(a => ({ prueba: a.prueba, criterio: a.criterio, resultado: a.resultado || '', superada: esSi_(a.superada) })),
       contacto: { whatsapp: cfg.WHATSAPP, reservaCalendario: cfg.RESERVA_CALENDARIO },
       avisos: { clave: cfg.PUSH_CLAVE_PUBLICA || '', activados: buscar_('Avisos', a => a.pacienteId === p.id).length },
       presesion: { hecha: buscar_('Presesion', x => x.pacienteId === p.id).length > 0 },
+      videos: videosDe_(p.id, true),
     };
   },
 
@@ -344,6 +349,14 @@ const ACC = {
       const valorada = buscar_('Historia', h => h.pacienteId === p.id && h.clave === 'valorada' && h.valor === 'si').length > 0;
       if (!valorada) tareas.push({ tipo: 'valoracion', pacienteId: p.id, titulo: `Nueva valoración: ${p.nombre}`, detalle: 'Rellenó el formulario pre-sesión el ' + fechaLarga_(x.fecha) });
     });
+    // Vídeos que el paciente ya ha subido y Dani aún no ha analizado
+    const porPaciente = {};
+    buscar_('Videos', v => v.estado === 'subido').forEach(v => (porPaciente[v.pacienteId] = porPaciente[v.pacienteId] || []).push(v));
+    Object.keys(porPaciente).forEach(pid => {
+      const p = buscar_('Pacientes', y => y.id === pid && y.estado !== 'archivado')[0]; if (!p) return;
+      const vs = porPaciente[pid];
+      tareas.push({ tipo: 'video', pacienteId: pid, titulo: vs.length === 1 ? `${p.nombre} ha subido un vídeo: ${vs[0].nombre}` : `${p.nombre} ha subido ${vs.length} vídeos`, detalle: 'Pendiente de analizar · ' + APARTADOS_VIDEO[vs[0].apartado] });
+    });
     // Tus tareas pendientes (Gestión) van arriba del todo en «Para hoy»
     const misTareas = buscar_('Tareas', t => !esSi_(t.hecha)).map(publicoTarea_).sort(ordenTareas_);
     // Setter sin apuntar: días de la última semana (hasta ayer) que faltan, solo si ya usa el Setter.
@@ -380,6 +393,7 @@ const ACC = {
       consentimientos: buscar_('Consentimientos', c => c.pacienteId === p.id).map(c => ({ documento: c.documento, version: c.version, aceptado: esSi_(c.aceptado), fecha: fecha_(c.fecha) })),
       historia: buscar_('Historia', h => h.pacienteId === p.id).reduce((o, h) => (o[h.clave] = String(h.valor), o), {}),
       finanzas: finanzasPaciente_(p.id),
+      videos: videosDe_(p.id),
     };
   },
 
@@ -405,9 +419,10 @@ const ACC = {
 
   editarPaciente(req) {
     const campos = {};
-    ['nombre', 'telefono', 'plan', 'estado', 'notas', 'cuestionario', 'canal', 'deporte', 'motivoBaja'].forEach(k => { if (k in req.cambios) campos[k] = texto_(req.cambios[k], 2000); });
+    ['nombre', 'telefono', 'plan', 'estado', 'notas', 'cuestionario', 'canal', 'deporte', 'motivoBaja', 'ladoLesion'].forEach(k => { if (k in req.cambios) campos[k] = texto_(req.cambios[k], 2000); });
     if ('canal' in campos) campos.canal = opcion_(campos.canal, CANALES);
     if ('deporte' in campos) campos.deporte = campos.deporte.slice(0, 40);
+    if ('ladoLesion' in campos) campos.ladoLesion = opcion_(campos.ladoLesion, ['derecha', 'izquierda', 'ambas']);
     if ('semanaActual' in req.cambios) campos.semanaActual = Number(req.cambios.semanaActual) || 1;
     if ('semanas' in req.cambios) campos.semanas = Number(req.cambios.semanas) || 12;
     actualizar_('Pacientes', p => p.id === req.pacienteId, campos);
@@ -698,6 +713,158 @@ const ACC = {
     return ACC.gestion({ mes: o ? o.mes : '' });
   },
 
+  /* ---------- Vídeos: Dani los pide, el paciente los sube a Drive y Dani los analiza ---------- */
+  /** Dani pide uno o varios vídeos (una prueba por lado). Le llega al paciente en «Hoy» y como notificación. */
+  pedirVideos(req) {
+    const p = paciente_(req.pacienteId);
+    const apartado = APARTADOS_VIDEO[req.apartado] ? req.apartado : '';
+    if (!apartado) throw publico_('Elige valoración, técnica o alta.');
+    const momento = apartado === 'valoracion' ? momentoVideo_(req.momento) : '';
+    if (apartado === 'valoracion' && !momento) throw publico_('Elige el momento de la valoración.');
+    const items = (req.items || []).slice(0, 30).map(x => ({
+      id: id_(), pacienteId: p.id, apartado, momento, prueba: texto_(x.prueba, 40), nombre: texto_(x.nombre, 120), lado: opcion_(x.lado, ['derecha', 'izquierda']),
+      instrucciones: texto_(x.instrucciones || req.mensaje, 1000), prescripcionId: texto_(x.prescripcionId, 40), altaId: texto_(x.altaId, 40),
+      estado: 'pedido', creado: new Date().toISOString(),
+    }));
+    if (!items.length || items.some(x => !x.nombre)) throw publico_('Elige al menos una prueba.');
+    conBloqueo_(() => items.forEach(x => anadir_('Videos', x)));
+    const cfg = leerConfig_();
+    if (p.estado === 'activo') notificar_(cfg, p.id, items.length === 1 ? `Dani te pide un vídeo: ${items[0].nombre}` : `Dani te pide ${items.length} vídeos`, 'Abre la app: tienes las instrucciones para grabarlo.', cfg.APP_URL);
+    return { videos: videosDe_(p.id) };
+  },
+
+  videos(req) {
+    const p = paciente_(req.pacienteId);
+    return { videos: videosDe_(p.id), ladoLesion: p.ladoLesion || '' };
+  },
+
+  /** El paciente empieza a subir: el motor abre una subida directa a su carpeta de Drive y le da la dirección. */
+  iniciarSubida(req, q) {
+    const v = videoDelPaciente_(req.videoId, q.pacienteId);
+    if (v.estado === 'analizado') throw publico_('Dani ya ha analizado este vídeo.');
+    const tamano = Math.round(Number(req.tamano) || 0), mime = /^video\/[\w.+-]{1,40}$/.test(req.tipo || '') ? req.tipo : 'video/mp4';
+    if (!(tamano > 0)) throw publico_('Ese archivo está vacío.');
+    if (tamano > MAX_VIDEO_MB * 1048576) throw publico_(`El vídeo pesa demasiado (máximo ${MAX_VIDEO_MB} MB). Recórtalo para que solo salga la prueba.`);
+    const carpeta = carpetaVideos_(paciente_(q.pacienteId), v.apartado);
+    const ext = (String(req.nombre || '').match(/\.(\w{2,5})$/) || [, 'mp4'])[1].toLowerCase();
+    const nombre = `${fecha_(new Date())} · ${v.nombre}${v.lado ? ' (' + v.lado + ')' : ''}${v.momento ? ' · ' + etiquetaMomento_(v.momento) : ''}.${ext}`;
+    const origen = /^https:\/\/[\w.-]+(:\d+)?$|^http:\/\/localhost(:\d+)?$/.test(req.origen || '') ? req.origen : leerConfig_().APP_URL.replace(/\/$/, '');
+    // «Origin» hace que Drive deje subir directo desde el navegador del paciente. Si Google no deja ponerlo,
+    // la subida se abre igual y el paciente sube a trozos a través del motor (subirTrozo).
+    const abrir = conOrigen => UrlFetchApp.fetch(DRIVE_API + '/upload/drive/v3/files?uploadType=resumable&fields=id,size,mimeType', {
+      method: 'post', contentType: 'application/json; charset=UTF-8', muteHttpExceptions: true,
+      headers: Object.assign({ Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'X-Upload-Content-Type': mime, 'X-Upload-Content-Length': String(tamano) }, conOrigen ? { Origin: origen } : {}),
+      payload: JSON.stringify({ name: nombre, mimeType: mime, parents: [carpeta.getId()] }),
+    });
+    let r;
+    try { r = abrir(true); } catch (e) { registrar_('video', 'Subida sin Origin: ' + e); r = abrir(false); }
+    const h = r.getHeaders(), url = h.Location || h.location;
+    if (r.getResponseCode() !== 200 || !url) { registrar_('video', 'No se pudo abrir la subida: ' + r.getResponseCode() + ' ' + r.getContentText().slice(0, 300)); throw publico_('No se ha podido preparar la subida. Prueba otra vez en un momento.'); }
+    actualizar_('Videos', x => x.id === v.id, { sesion: url, tamano, mime, fpsGrabacion: num_(req.fps) });
+    return { url, trozo: TROZO_MB * 1048576 };
+  },
+
+  /** Plan B si el navegador no puede subir directo a Drive: manda el vídeo a trozos y el motor los reenvía. */
+  subirTrozo(req, q) {
+    const v = videoDelPaciente_(req.videoId, q.pacienteId);
+    if (!v.sesion) throw publico_('Vuelve a elegir el vídeo para empezar la subida.');
+    const bytes = Utilities.base64Decode(String(req.datos || ''));
+    const inicio = Math.round(Number(req.inicio) || 0), total = Number(v.tamano);
+    if (!bytes.length || inicio < 0 || inicio + bytes.length > total) throw publico_('Trozo del vídeo no válido.');
+    const r = UrlFetchApp.fetch(v.sesion, { method: 'put', muteHttpExceptions: true, contentType: v.mime || 'video/mp4', payload: bytes,
+      headers: { 'Content-Range': `bytes ${inicio}-${inicio + bytes.length - 1}/${total}` } });
+    const c = r.getResponseCode();
+    if (c === 308) return { hecho: false, recibido: inicio + bytes.length };
+    if (c === 200 || c === 201) return { hecho: true, fileId: JSON.parse(r.getContentText()).id };
+    registrar_('video', 'Trozo rechazado: ' + c + ' ' + r.getContentText().slice(0, 300));
+    throw publico_('Se ha cortado la subida. Prueba otra vez.');
+  },
+
+  /** El vídeo ya está en Drive: se comprueba que está en su carpeta y queda listo para que Dani lo analice. */
+  videoSubido(req, q) {
+    const v = videoDelPaciente_(req.videoId, q.pacienteId);
+    let f;
+    try { f = DriveApp.getFileById(String(req.fileId || '')); } catch (e) { throw publico_('No encuentro el vídeo subido. Prueba otra vez.'); }
+    const carpeta = carpetaVideos_(paciente_(q.pacienteId), v.apartado).getId();
+    let dentro = false; const ps = f.getParents(); while (ps.hasNext()) if (ps.next().getId() === carpeta) dentro = true;
+    if (!dentro) throw publico_('Ese archivo no es el vídeo que se ha subido.');
+    if (v.fileId && v.fileId !== f.getId()) { try { DriveApp.getFileById(v.fileId).setTrashed(true); } catch (e) { } }   // lo vuelve a subir: el anterior a la papelera
+    actualizar_('Videos', x => x.id === v.id, { fileId: f.getId(), mime: f.getMimeType(), tamano: f.getSize(), estado: 'subido', subido: new Date().toISOString(), sesion: '' });
+    registrar_('video', 'Subido ' + v.id);
+    return { videos: videosDe_(q.pacienteId, true) };
+  },
+
+  /** El paciente vuelve a ver su vídeo (si no lo tiene guardado en el móvil). Solo vídeos pequeños. */
+  verVideo(req, q) {
+    const v = videoDelPaciente_(req.videoId, q.pacienteId);
+    if (!v.fileId) throw publico_('Este vídeo aún no se ha subido.');
+    const f = DriveApp.getFileById(v.fileId);
+    if (f.getSize() > VER_VIDEO_MB * 1048576) throw publico_(`Este vídeo pesa más de ${VER_VIDEO_MB} MB y solo se puede ver en el móvil desde el que lo subiste.`);
+    return { tipo: f.getMimeType(), datos: Utilities.base64Encode(f.getBlob().getBytes()) };
+  },
+
+  /** Imagen con las marcas de Dani (corrección de técnica o medición). */
+  imagenVideo(req, q) {
+    const v = buscar_('Videos', x => x.id === String(req.videoId || '') && (!q.pacienteId || x.pacienteId === q.pacienteId))[0];
+    if (!v || !v.imagenId) throw publico_('Esta medición no tiene imagen.');
+    return { datos: 'data:image/jpeg;base64,' + Utilities.base64Encode(DriveApp.getFileById(v.imagenId).getBlob().getBytes()) };
+  },
+
+  /** Panel: acceso de lectura al vídeo en Drive para analizarlo en el navegador (caduca en 1 hora). */
+  accesoVideo(req) {
+    const v = buscar_('Videos', x => x.id === String(req.videoId || ''))[0];
+    if (!v || !v.fileId) throw publico_('Este vídeo aún no se ha subido.');
+    return { url: DRIVE_API + '/drive/v3/files/' + encodeURIComponent(v.fileId) + '?alt=media', token: ScriptApp.getOAuthToken(), tipo: v.mime, fpsGrabacion: num_(v.fpsGrabacion) };
+  },
+
+  /** Dani guarda lo medido: resultado, detalle de las marcas, comentario y (opcional) la imagen marcada. */
+  guardarAnalisis(req) {
+    const v = buscar_('Videos', x => x.id === String(req.videoId || ''))[0];
+    if (!v) throw publico_('No encuentro ese vídeo.');
+    const p = paciente_(v.pacienteId);
+    const valor = req.valor === '' || req.valor == null ? '' : redondear_(Number(req.valor), 2);
+    if (valor !== '' && !isFinite(valor)) throw publico_('El resultado no es un número.');
+    const cambios = {
+      medidas: JSON.stringify(req.medidas || {}).slice(0, 40000), resultado: valor, unidad: texto_(req.unidad, 10), texto: texto_(req.texto, 300),
+      comentario: texto_(req.comentario, 2000), estado: 'analizado', analizado: new Date().toISOString(), fpsGrabacion: num_(req.fps) || v.fpsGrabacion,
+    };
+    const img = String(req.imagen || '').match(/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/);
+    if (img) {
+      if (img[1].length > 3 * 1048576) throw publico_('La imagen es demasiado grande.');
+      const carpeta = carpetaVideos_(p, v.apartado);
+      if (v.imagenId) { try { DriveApp.getFileById(v.imagenId).setTrashed(true); } catch (e) { } }
+      cambios.imagenId = carpeta.createFile(Utilities.newBlob(Utilities.base64Decode(img[1]), 'image/jpeg', `${fecha_(new Date())} · ${v.nombre} · marcas.jpg`)).getId();
+    }
+    conBloqueo_(() => {
+      actualizar_('Videos', x => x.id === v.id, cambios);
+      // Alta: el resultado se apunta solo en la prueba de alta (Dani decide si la marca como superada)
+      if (v.apartado === 'alta' && v.altaId && cambios.texto) {
+        const otros = buscar_('Videos', x => x.altaId === v.altaId && x.id !== v.id && x.estado === 'analizado' && x.texto).map(x => x.texto);
+        actualizar_('Alta', a => a.id === v.altaId && a.pacienteId === p.id, { resultado: otros.concat(cambios.texto).join(' · ').slice(0, 200), fecha: new Date().toISOString() });
+      }
+    });
+    if (v.apartado === 'tecnica' && cambios.comentario && p.estado === 'activo') {
+      const cfg = leerConfig_();
+      notificar_(cfg, p.id, `Dani ha revisado tu técnica: ${v.nombre}`, cambios.comentario.slice(0, 120), cfg.APP_URL);
+    }
+    return { videos: videosDe_(p.id) };
+  },
+
+  /** Quita una petición o un vídeo (el archivo va a la papelera de Drive, de donde se puede recuperar 30 días). */
+  borrarVideo(req) {
+    const v = buscar_('Videos', x => x.id === String(req.videoId || ''))[0];
+    if (!v) throw publico_('No encuentro ese vídeo.');
+    [v.fileId, v.imagenId].filter(Boolean).forEach(id => { try { DriveApp.getFileById(id).setTrashed(true); } catch (e) { } });
+    borrar_('Videos', x => x.id === v.id);
+    return { videos: videosDe_(v.pacienteId) };
+  },
+
+  /** El paciente marca como vista la corrección de Dani (deja de salir el aviso en «Hoy»). */
+  videoVisto(req, q) {
+    actualizar_('Videos', x => x.id === String(req.videoId || '') && x.pacienteId === q.pacienteId, { vistoPaciente: new Date().toISOString() });
+    return {};
+  },
+
   config() {
     return { config: leerConfig_(), biblioteca: buscar_('Biblioteca', () => true) };
   },
@@ -924,7 +1091,7 @@ function paciente_(id) {
 
 function publicoPaciente_(p) {
   return { id: p.id, nombre: p.nombre, email: p.email, telefono: p.telefono, plantilla: p.plantilla, plan: p.plan, semanas: Number(p.semanas), fechaInicio: fecha_(p.fechaInicio), estado: p.estado, semanaActual: Number(p.semanaActual), cuestionario: p.cuestionario,
-    canal: p.canal || '', deporte: p.deporte || '', fechaSalida: p.fechaSalida ? fecha_(p.fechaSalida) : '', motivoBaja: p.motivoBaja || '', notaBaja: p.notaBaja || '' };
+    canal: p.canal || '', deporte: p.deporte || '', fechaSalida: p.fechaSalida ? fecha_(p.fechaSalida) : '', motivoBaja: p.motivoBaja || '', notaBaja: p.notaBaja || '', ladoLesion: p.ladoLesion || '' };
 }
 
 function limpiarPresc_(x) {
@@ -986,6 +1153,36 @@ function finanzasPaciente_(pacienteId) {
   return { plan: plan ? { nombre: plan.nombre, precio: num_(plan.precio) } : null, pagos, total, pagado: Math.round(pagado * 100) / 100, pendiente: Math.max(0, Math.round((total - pagado) * 100) / 100) };
 }
 /** Nombre comparable: sin acentos, mayúsculas, signos ni extensión de archivo. */
+/* ---------- Vídeos ---------- */
+var DRIVE_API = 'https://www.googleapis.com';   // el servidor de pruebas lo cambia por uno local
+const MAX_VIDEO_MB = 500, TROZO_MB = 8, VER_VIDEO_MB = 20;
+const APARTADOS_VIDEO = { valoracion: 'Valoración', tecnica: 'Técnica', alta: 'Alta' };
+function momentoVideo_(m) { const s = String(m || ''); return /^(inicial|final|semana-\d{1,2})$/.test(s) ? s : ''; }
+function etiquetaMomento_(m) { return m === 'inicial' ? 'Valoración inicial' : m === 'final' ? 'Valoración final' : /^semana-/.test(m) ? 'Revisión semana ' + m.slice(7) : ''; }
+function videoDelPaciente_(id, pacienteId) {
+  const v = buscar_('Videos', x => x.id === String(id || '') && x.pacienteId === pacienteId)[0];
+  if (!v) throw publico_('No encuentro ese vídeo.');
+  return v;
+}
+/** Lista de vídeos del paciente. Para el propio paciente no van los datos internos (sesión de subida, detalle de marcas). */
+function videosDe_(pacienteId, paraPaciente) {
+  return buscar_('Videos', v => v.pacienteId === pacienteId).map(v => {
+    const o = { id: v.id, apartado: v.apartado, momento: v.momento, prueba: v.prueba, nombre: v.nombre, lado: v.lado, instrucciones: v.instrucciones, prescripcionId: v.prescripcionId, altaId: v.altaId,
+      estado: v.estado, subido: v.subido ? fecha_(v.subido) : '', analizado: v.analizado ? fecha_(v.analizado) : '', creado: fecha_(v.creado), resultado: num_(v.resultado), unidad: v.unidad, texto: v.texto,
+      comentario: v.comentario, imagen: !!v.imagenId, tamano: Number(v.tamano) || 0, fpsGrabacion: num_(v.fpsGrabacion), visto: !!v.vistoPaciente };
+    if (!paraPaciente) o.medidas = parse_(v.medidas, {});
+    return o;
+  }).sort((a, b) => a.creado < b.creado ? 1 : -1);
+}
+/** Carpeta privada de Drive del paciente para ese apartado: «RCD · Vídeos de pacientes / Nombre · id / Valoración». */
+function carpetaVideos_(p, apartado) {
+  const cfg = leerConfig_();
+  let raiz = null;
+  if (cfg.VIDEOS_PACIENTES_ID) { try { raiz = DriveApp.getFolderById(cfg.VIDEOS_PACIENTES_ID); } catch (e) { raiz = null; } }
+  if (!raiz) { raiz = DriveApp.createFolder('RCD · Vídeos de pacientes'); ACC.guardarConfig({ cambios: { VIDEOS_PACIENTES_ID: raiz.getId() } }); }
+  const hija = (padre, nombre) => { const it = padre.getFoldersByName(nombre); return it.hasNext() ? it.next() : padre.createFolder(nombre); };
+  return hija(hija(raiz, `${p.nombre} · ${p.id}`), APARTADOS_VIDEO[apartado] || 'Otros');
+}
 /* ---------- Ventas y gestión ---------- */
 const CANALES = ['instagram', 'whatsapp', 'referido', 'otro'];
 const MOTIVOS_BAJA = ['Precio', 'Falta de tiempo', 'Mejoró y lo deja', 'Otra lesión', 'No responde', 'Otro'];

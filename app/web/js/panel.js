@@ -33,7 +33,7 @@
   $('#salir').addEventListener('click', async () => { try { await api('salir'); } catch { } api.setToken(null); mostrarAcceso(); });
 
   /* ================= Lateral: bandeja y pacientes ================= */
-  const KIND = { revision: 'review', dolor: 'pain', silencio: 'silent', mensual: 'call', nuevo: 'new', valoracion: 'new' };
+  const KIND = { video: 'call', revision: 'review', dolor: 'pain', silencio: 'silent', mensual: 'call', nuevo: 'new', valoracion: 'new' };
   async function recargarLateral() {
     const [b, p] = await Promise.all([api('bandeja'), api('pacientes')]);
     tareas = b.tareas; misTareas = b.misTareas || []; avisoSetter = b.setter || null; objetivosMes = b.objetivos || []; pacientes = p.pacientes;
@@ -108,6 +108,7 @@
     pintarRevision(); pintarRegistros(); pintarAlta(); pintarDatos();
     window.RCDHistoria.pintar($('#hc'), F, api, () => recargarLateral());
     window.RCDFinanzas.pintarPagos($('#pagos'), F, api);
+    window.RCDVideosPanel.pintar($('#vids'), F, api, () => recargarLateral().catch(() => {}));
   }
 
   /* Enlace personal del paciente (anula el anterior) para mandárselo por WhatsApp */

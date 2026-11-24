@@ -105,6 +105,7 @@
             <button class="tab" role="tab" aria-selected="true" data-pane="review" type="button">Revisión semanal</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="hc" type="button">Historia clínica</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="log" type="button">Registros</button>
+            <button class="tab" role="tab" aria-selected="false" data-pane="videos" type="button">Vídeos</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="alta" type="button">Alta</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="pagos" type="button">Pagos</button>
             <button class="tab" role="tab" aria-selected="false" data-pane="datos" type="button">Datos</button>
@@ -148,6 +149,8 @@
           <p class="sec-title">Cuestionarios</p>
           <div class="card log" id="cuest"></div>
         </section>
+
+        <section class="pane" id="pane-videos" hidden aria-label="Vídeos"><div id="vids" style="display:grid;gap:16px"></div></section>
 
         <section class="pane" id="pane-pagos" hidden aria-label="Pagos"><div id="pagos" style="display:grid;gap:16px"></div></section>
 
@@ -251,6 +254,9 @@
 <script src="../js/historia.js"></script>
 <script src="../js/finanzas.js"></script>
 <script src="../js/gestion.js"></script>
+<script src="../data/rcd-videos.js"></script>
+<script src="../js/analizador.js"></script>
+<script src="../js/videos-panel.js"></script>
 <script src="../js/panel.js"></script>
 </body>
 </html>

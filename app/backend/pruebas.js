@@ -2,7 +2,7 @@
    Ejecutar: node app/backend/pruebas.js */
 const assert = require('assert');
 const { crearMotor } = require('./simulador');
-const { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush, carpetas, carpeta } = crearMotor();
+const { ctx, libro, correos, triggers, nueva, api, peticiones, setRespuestaPush, carpetas, carpeta, drive, trozoSubida } = crearMotor();
 const ultimoCodigo = () => (correos[correos.length - 1].subject.match(/(\d{6})$/) || [])[1];
 const ok = (r, msg) => { assert.ok(r.ok, (msg || '') + ' → ' + JSON.stringify(r)); return r; };
 let pasos = 0; const paso = (t) => console.log(`  ✓ ${++pasos}. ${t}`);
@@ -400,5 +400,89 @@ r = ok(api({ action: 'bandeja', token: admin }));
 assert.strictEqual(r.setter.faltan, 3);
 assert.ok(r.objetivos.length >= 3);
 paso('si faltan días del Setter hasta ayer, sale el aviso; la bandeja trae también los objetivos del mes');
+
+/* ---------- Vídeos: petición, subida a Drive (directa y por el motor) y análisis ---------- */
+const vera = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Vera Vídeo', email: 'vera.valoracion@ejemplo.com', plantilla: 'rotuliana', alta: [{ prueba: 'Single leg hop', criterio: 'LSI ≥ 90 %' }] })).paciente;
+ok(api({ action: 'pedirCodigo', email: 'vera.valoracion@ejemplo.com' }));
+const tV = ok(api({ action: 'verificarCodigo', email: 'vera.valoracion@ejemplo.com', codigo: ultimoCodigo() })).token;
+ok(api({ action: 'editarPaciente', token: admin, pacienteId: vera.id, cambios: { ladoLesion: 'izquierda' } }));
+assert.ok(!api({ action: 'pedirVideos', token: admin, pacienteId: vera.id, apartado: 'valoracion', items: [{ prueba: 'cmj', nombre: 'CMJ' }] }).ok);   // falta el momento
+r = ok(api({ action: 'pedirVideos', token: admin, pacienteId: vera.id, apartado: 'valoracion', momento: 'inicial', items: [
+  { prueba: 'cmj', nombre: 'CMJ' }, { prueba: 'hop', nombre: 'Single leg hop', lado: 'derecha' }, { prueba: 'hop', nombre: 'Single leg hop', lado: 'izquierda' }] }));
+assert.strictEqual(r.videos.length, 3);
+const altaId = ok(api({ action: 'ficha', token: admin, pacienteId: vera.id })).alta[0].id;
+ok(api({ action: 'pedirVideos', token: admin, pacienteId: vera.id, apartado: 'alta', items: [{ prueba: 'hop', nombre: 'Single leg hop', lado: 'izquierda', altaId }] }));
+ok(api({ action: 'pedirVideos', token: admin, pacienteId: vera.id, apartado: 'tecnica', items: [{ prueba: 'tecnica', nombre: 'Peso muerto', instrucciones: 'De perfil, 3 repeticiones' }] }));
+let yoV = ok(api({ action: 'yo', token: tV }));
+assert.strictEqual(yoV.videos.filter(v => v.estado === 'pedido').length, 5);
+assert.ok(!('medidas' in yoV.videos[0]));
+paso('Dani pide vídeos de valoración (con momento), alta y técnica; el paciente los ve pendientes');
+
+const cmj = yoV.videos.find(v => v.prueba === 'cmj');
+assert.ok(!api({ action: 'iniciarSubida', token: tV, videoId: cmj.id, tamano: 600 * 1048576, tipo: 'video/mp4' }).ok);
+r = ok(api({ action: 'iniciarSubida', token: tV, videoId: cmj.id, tamano: 10, tipo: 'video/quicktime', nombre: 'IMG_1.MOV', fps: 240, origen: 'https://app.rcdclinic.com' }));
+const abierta = peticiones[peticiones.length - 1];
+assert.strictEqual(abierta.o.headers.Origin, 'https://app.rcdclinic.com'); assert.strictEqual(abierta.o.headers.Authorization, 'Bearer token-de-prueba');
+const sid = r.url.split('/__subida/')[1];
+assert.strictEqual(trozoSubida(sid, 'bytes 0-5/10', Buffer.from('ABCDEF')).codigo, 308);
+const fin = trozoSubida(sid, 'bytes 6-9/10', Buffer.from('GHIJ'));
+assert.strictEqual(fin.codigo, 200);
+const otro = Object.values(drive.carpetas).find(c => c.nombre === 'Técnica') || ctx.DriveApp.createFolder('ajena');
+const ajeno = otro.createFile({ nombre: 'x.mp4', tipo: 'video/mp4', bytes: [1] });
+assert.ok(!api({ action: 'videoSubido', token: tV, videoId: cmj.id, fileId: ajeno.getId() }).ok);   // un archivo de otra carpeta no vale
+r = ok(api({ action: 'videoSubido', token: tV, videoId: cmj.id, fileId: fin.cuerpo.id }));
+assert.strictEqual(r.videos.find(v => v.id === cmj.id).estado, 'subido');
+const archivo = drive.archivos[fin.cuerpo.id];
+assert.strictEqual(archivo.bytes.toString(), 'ABCDEFGHIJ');
+assert.ok(/Valoración/.test(drive.carpetas[archivo.padre].nombre) && /Vera Vídeo/.test(drive.carpetas[drive.carpetas[archivo.padre].padre].nombre));
+assert.ok(/Valoración inicial/.test(archivo.nombre) && /\.mov$/.test(archivo.nombre));
+paso('el vídeo se sube directo a Drive en su carpeta privada (Paciente / Valoración) y se comprueba al terminar');
+
+const hopIzq = yoV.videos.find(v => v.apartado === 'valoracion' && v.lado === 'izquierda');
+r = ok(api({ action: 'iniciarSubida', token: tV, videoId: hopIzq.id, tamano: 7, tipo: 'video/mp4' }));
+r = ok(api({ action: 'subirTrozo', token: tV, videoId: hopIzq.id, inicio: 0, datos: Buffer.from('1234').toString('base64') }));
+assert.strictEqual(r.hecho, false);
+r = ok(api({ action: 'subirTrozo', token: tV, videoId: hopIzq.id, inicio: 4, datos: Buffer.from('567').toString('base64') }));
+assert.ok(r.hecho && r.fileId);
+ok(api({ action: 'videoSubido', token: tV, videoId: hopIzq.id, fileId: r.fileId }));
+assert.strictEqual(ok(api({ action: 'verVideo', token: tV, videoId: hopIzq.id })).datos, Buffer.from('1234567').toString('base64'));
+paso('si el navegador no puede subir directo, el vídeo va a trozos por el motor (y el paciente lo puede volver a ver)');
+
+const tOtro = (() => { ok(api({ action: 'crearPaciente', token: admin, nombre: 'Otra Paciente', email: 'otra.video@ejemplo.com', plantilla: 'aquiles' }));
+  ok(api({ action: 'pedirCodigo', email: 'otra.video@ejemplo.com' })); return ok(api({ action: 'verificarCodigo', email: 'otra.video@ejemplo.com', codigo: ultimoCodigo() })).token; })();
+assert.ok(!api({ action: 'iniciarSubida', token: tOtro, videoId: cmj.id, tamano: 10 }).ok);
+assert.ok(!api({ action: 'verVideo', token: tOtro, videoId: hopIzq.id }).ok);
+assert.ok(!api({ action: 'accesoVideo', token: tV, videoId: cmj.id }).ok);
+paso('nadie más puede subir, ver ni pedir acceso a los vídeos de un paciente');
+
+assert.ok(ok(api({ action: 'bandeja', token: admin })).tareas.some(t => t.tipo === 'video' && t.pacienteId === vera.id && /2 vídeos/.test(t.titulo)));
+r = ok(api({ action: 'accesoVideo', token: admin, videoId: cmj.id }));
+assert.ok(/\/drive\/v3\/files\/fil\d+\?alt=media$/.test(r.url) && r.token && r.fpsGrabacion === 240);
+const jpg = 'data:image/jpeg;base64,' + Buffer.from('imagen').toString('base64');
+r = ok(api({ action: 'guardarAnalisis', token: admin, videoId: cmj.id, valor: 31.24, unidad: 'cm', texto: 'CMJ 31,2 cm', medidas: { tipo: 'salto', intentos: [{ vuelo: 0.505 }] }, imagen: jpg }));
+const cmjA = r.videos.find(v => v.id === cmj.id);
+assert.strictEqual(cmjA.estado, 'analizado'); assert.strictEqual(cmjA.resultado, 31.24); assert.ok(cmjA.imagen && cmjA.medidas.intentos.length === 1);
+assert.strictEqual(ok(api({ action: 'imagenVideo', token: tV, videoId: cmj.id })).datos, jpg);
+assert.ok(!ok(api({ action: 'bandeja', token: admin })).tareas.some(t => t.tipo === 'video' && /2 vídeos/.test(t.titulo)));
+paso('Dani analiza el vídeo: se guardan el resultado, las marcas y la imagen; el paciente ve su resultado y la imagen');
+
+const hopAlta = ok(api({ action: 'yo', token: tV })).videos.find(v => v.apartado === 'alta');
+r = ok(api({ action: 'iniciarSubida', token: tV, videoId: hopAlta.id, tamano: 3, tipo: 'video/mp4' }));
+const fa = trozoSubida(r.url.split('/__subida/')[1], 'bytes 0-2/3', Buffer.from('abc'));
+ok(api({ action: 'videoSubido', token: tV, videoId: hopAlta.id, fileId: fa.cuerpo.id }));
+ok(api({ action: 'guardarAnalisis', token: admin, videoId: hopAlta.id, valor: 158, unidad: 'cm', texto: 'Izquierda 158 cm · LSI 94 %' }));
+assert.strictEqual(ok(api({ action: 'ficha', token: admin, pacienteId: vera.id })).alta[0].resultado, 'Izquierda 158 cm · LSI 94 %');
+paso('el resultado de un vídeo de alta se apunta solo en su prueba de alta');
+
+const tec = ok(api({ action: 'yo', token: tV })).videos.find(v => v.apartado === 'tecnica');
+ok(api({ action: 'guardarAnalisis', token: admin, videoId: tec.id, comentario: 'Mantén la espalda neutra y empuja con la cadera.', valor: '' }));
+yoV = ok(api({ action: 'yo', token: tV }));
+const tecP = yoV.videos.find(v => v.id === tec.id);
+assert.ok(tecP.comentario && !tecP.visto);
+ok(api({ action: 'videoVisto', token: tV, videoId: tec.id }));
+assert.ok(ok(api({ action: 'yo', token: tV })).videos.find(v => v.id === tec.id).visto);
+r = ok(api({ action: 'borrarVideo', token: admin, videoId: hopIzq.id }));
+assert.ok(!r.videos.some(v => v.id === hopIzq.id) && archivo && drive.archivos[Object.keys(drive.archivos).find(k => drive.archivos[k].bytes.toString() === '1234567')].papelera);
+paso('la corrección de técnica le llega al paciente (y deja de avisar al verla); borrar un vídeo lo manda a la papelera de Drive');
 
 console.log(`\nTodo correcto: ${pasos} pruebas.`);

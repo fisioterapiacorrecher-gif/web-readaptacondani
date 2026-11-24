@@ -59,6 +59,7 @@
       <div><p class="label">Activa las notificaciones</p><p class="mute" id="avisos-text">Te avisaremos en el móvil cuando Dani publique tu nueva semana.</p></div>
       <button class="btn btn-primary" type="button" id="avisos-btn">Activar</button>
     </div>
+    <div id="videos-hoy" class="videos-hoy" hidden></div>
     <div class="chips" id="dias" role="group" aria-label="Elige el día de tu plan"></div>
     <div class="card session" id="sesion-card">
       <div class="row"><p class="eyebrow" id="sesion-eyebrow">Sesión</p><p class="mute num" id="sesion-min"></p></div>
@@ -151,6 +152,8 @@
       <p class="mute">Antes de terminar harás estas pruebas con Dani. Tienen que salir superadas para darte el alta.</p>
       <ul class="alta-list" id="alta-list"></ul>
     </div>
+    <h2>Tus pruebas en vídeo</h2>
+    <div id="videos-prog" style="display:grid;gap:10px"></div>
     <h2>Mejora del dolor</h2>
     <div class="card"><svg class="chart" id="chart-weekly" viewBox="0 0 340 150" role="img" aria-label="Dolor medio por semana"></svg>
       <div class="legend-row"><span><i></i>Dolor medio de la semana</span><span><i class="dash"></i>Límite 4/10</span></div></div>
@@ -202,6 +205,7 @@
   <div class="rx" id="sheet-rx"></div>
   <div class="card how" id="how-card" hidden><p class="mini-title">Cómo se hace</p><p id="how-text"></p><ul id="how-claves"></ul></div>
   <div class="card spec" id="spec-card" hidden><p class="mini-title">Especificaciones para ti · de Dani</p><p id="spec-text"></p></div>
+  <button class="card spec tec-card" type="button" id="tec-card" hidden><p class="mini-title">Tu corrección de técnica · de Dani</p><p id="tec-text"></p><span class="mute">Ver la corrección completa ›</span></button>
   <div id="strength-block">
     <div class="set-head"><span>Serie</span><span id="col-a">Reps</span><span>Kg extra</span><span>Hecha</span></div>
     <div class="sets" id="sheet-sets"></div>
@@ -241,6 +245,8 @@
 <script src="js/comun.js"></script>
 <script src="js/presesion.js"></script>
 <script src="js/invitacion.js"></script>
+<script src="data/rcd-videos.js"></script>
+<script src="js/videos-paciente.js"></script>
 <script src="js/paciente.js"></script>
 </body>
 </html>
