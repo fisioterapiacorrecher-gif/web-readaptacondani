@@ -485,4 +485,31 @@ r = ok(api({ action: 'borrarVideo', token: admin, videoId: hopIzq.id }));
 assert.ok(!r.videos.some(v => v.id === hopIzq.id) && archivo && drive.archivos[Object.keys(drive.archivos).find(k => drive.archivos[k].bytes.toString() === '1234567')].papelera);
 paso('la corrección de técnica le llega al paciente (y deja de avisar al verla); borrar un vídeo lo manda a la papelera de Drive');
 
+/* ---------- Códigos sin depender del email (WhatsApp y app instalada) ---------- */
+{
+  const r1 = ok(api({ action: 'crearPaciente', token: admin, nombre: 'Iris Iphone', email: 'iris@ejemplo.com', plantilla: 'aquiles' }));
+  assert.ok(/^\d{6}$/.test(r1.codigo) && r1.horas === 72);
+  const pidI = r1.paciente.id;
+  const enlace = ok(api({ action: 'enlaceAcceso', token: admin, pacienteId: pidI }));
+  const cod = enlace.codigo;
+  ok(api({ action: 'pedirCodigo', invitacion: enlace.token }));                       // «Sí, soy yo» manda email…
+  const t1 = ok(api({ action: 'verificarCodigo', invitacion: enlace.token, codigo: cod })).token;   // …pero el código de WhatsApp sigue valiendo
+  const t2 = ok(api({ action: 'verificarCodigo', email: 'iris@ejemplo.com', codigo: cod })).token;  // y vale otra vez en la app instalada
+  assert.ok(t1 && t2 && t1 !== t2);
+  const deApp = ok(api({ action: 'codigoApp', token: t1 }));
+  assert.ok(/^\d{6}$/.test(deApp.codigo) && deApp.minutos === 30);
+  assert.ok(ok(api({ action: 'verificarCodigo', email: 'iris@ejemplo.com', codigo: deApp.codigo })).token);
+  // El código del email vale una sola vez
+  const viejo = Date.now; Date.now = () => viejo() + 61000;
+  ok(api({ action: 'pedirCodigo', email: 'iris@ejemplo.com' }));
+  Date.now = viejo;
+  const delEmail = ultimoCodigo();
+  ok(api({ action: 'verificarCodigo', email: 'iris@ejemplo.com', codigo: delEmail }));
+  assert.ok(!api({ action: 'verificarCodigo', email: 'iris@ejemplo.com', codigo: delEmail }).ok);
+  // 5 fallos seguidos anulan todos sus códigos
+  for (let i = 0; i < 5; i++) api({ action: 'verificarCodigo', email: 'iris@ejemplo.com', codigo: '000001' });
+  assert.ok(!api({ action: 'verificarCodigo', email: 'iris@ejemplo.com', codigo: cod }).ok);
+  paso('el código de WhatsApp sobrevive al email, vale en varios dispositivos y el paciente saca uno para la app instalada');
+}
+
 console.log(`\nTodo correcto: ${pasos} pruebas.`);

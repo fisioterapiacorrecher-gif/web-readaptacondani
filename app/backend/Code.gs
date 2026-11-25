@@ -13,7 +13,7 @@
 
 /* ============================== Configuración ============================== */
 
-const VERSION = '1.8.0';
+const VERSION = '1.9.0';
 const NOMBRE_HOJA = 'RCD App · Datos';
 const DURACION_SESION_DIAS = 90;      // cuánto dura el acceso antes de volver a pedir código
 const CODIGO_MINUTOS = 10;            // validez del código de acceso
@@ -24,7 +24,7 @@ const ZONA = 'Europe/Madrid';
 const TABLAS = {
   Config: ['clave', 'valor'],
   Pacientes: ['id', 'nombre', 'email', 'telefono', 'plantilla', 'plan', 'semanas', 'fechaInicio', 'estado', 'semanaActual', 'cuestionario', 'creado', 'notas', 'canal', 'deporte', 'fechaSalida', 'motivoBaja', 'notaBaja', 'ladoLesion'],
-  Codigos: ['email', 'hash', 'expira', 'intentos', 'creado'],
+  Codigos: ['email', 'hash', 'expira', 'intentos', 'creado', 'tipo', 'usos'],   // tipo: email (un uso) · dani (WhatsApp, varios dispositivos) · app (pasar a la app instalada)
   Accesos: ['hash', 'email', 'rol', 'pacienteId', 'expira', 'creado'],
   Prescripcion: ['id', 'pacienteId', 'semana', 'dia', 'orden', 'tipo', 'ejercicio', 'series', 'valor', 'unidad', 'kg', 'tempo', 'descanso', 'indicacion', 'video', 'publicada', 'creado'],
   Series: ['id', 'pacienteId', 'fecha', 'semana', 'dia', 'prescripcionId', 'serie', 'valor', 'kg', 'hecha'],
@@ -128,7 +128,7 @@ function doPost(e) {
 }
 
 const ACCIONES_PUBLICAS = { pedirCodigo: 1, verificarCodigo: 1, invitacion: 1 };
-const ACCIONES_PACIENTE = { iniciarSubida: 1, subirTrozo: 1, videoSubido: 1, verVideo: 1, imagenVideo: 1, videoVisto: 1, yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
+const ACCIONES_PACIENTE = { codigoApp: 1, iniciarSubida: 1, subirTrozo: 1, videoSubido: 1, verVideo: 1, imagenVideo: 1, videoVisto: 1, yo: 1, guardarEjercicio: 1, guardarSesion: 1, guardarDolor: 1, guardarEncuesta: 1, guardarCuestionario: 1, progreso: 1, salir: 1, guardarAviso: 1, quitarAviso: 1, guardarPresesion: 1 };
 const ACCIONES_ADMIN = { pedirVideos: 1, videos: 1, accesoVideo: 1, guardarAnalisis: 1, borrarVideo: 1, imagenVideo: 1, darBaja: 1, ventas: 1, guardarSetter: 1, guardarLlamada: 1, borrarLlamada: 1, gestion: 1, guardarTarea: 1, borrarTarea: 1, guardarObjetivo: 1, borrarObjetivo: 1, bandeja: 1, pacientes: 1, ficha: 1, crearPaciente: 1, editarPaciente: 1, publicarSemana: 1, guardarAlta: 1, darAlta: 1, guardarBiblioteca: 1, config: 1, guardarConfig: 1, salir: 1, guardarHistoria: 1, codigoManual: 1, enlaceAcceso: 1, guardarFinanzasPaciente: 1, finanzas: 1, guardarMovimiento: 1, borrarMovimiento: 1, sincronizarVideos: 1 };
 
 function enrutar_(req) {
@@ -153,19 +153,22 @@ const ACC = {
     const paciente = buscar_('Pacientes', p => canonEmail_(p.email) === email && !accesoCerrado_(p))[0];
     // Misma respuesta exista o no el email, para no revelar quién es paciente (pero queda en el Registro para Dani).
     if (!esAdmin && !paciente) { registrar_('codigo', 'Pedido con un email sin acceso: ' + normEmail_(req.email)); return { enviado: true }; }
-    const previos = buscar_('Codigos', c => c.email === email);
+    // Solo se sustituye el último código por email: los códigos que Dani manda por WhatsApp siguen valiendo
+    const previos = buscar_('Codigos', c => c.email === email && tipoCodigo_(c) === 'email');
     if (previos.some(c => Date.now() - new Date(c.creado).getTime() < 60 * 1000)) throw publico_('Espera un minuto antes de pedir otro código.');
-    borrar_('Codigos', c => c.email === email);
+    borrar_('Codigos', c => c.email === email && tipoCodigo_(c) === 'email');
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
-    anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + CODIGO_MINUTOS * 60000).toISOString(), intentos: 0, creado: new Date().toISOString() });
+    anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + CODIGO_MINUTOS * 60000).toISOString(), intentos: 0, creado: new Date().toISOString(), tipo: 'email', usos: 0 });
     const destino = esAdmin ? normEmail_(cfg.ADMIN_EMAIL) : normEmail_(paciente.email);
-    registrar_('codigo', 'Código enviado a ' + destino);
-    MailApp.sendEmail({
-      to: destino,
-      subject: `Tu código de acceso a ${cfg.CLINICA}: ${codigo}`,
-      htmlBody: plantillaEmail_(cfg, `Tu código de acceso es`, `<p style="font-size:34px;letter-spacing:6px;font-weight:700;margin:12px 0">${codigo}</p><p>Caduca en ${CODIGO_MINUTOS} minutos. Si no lo has pedido tú, ignora este mensaje.</p>`),
-      name: cfg.CLINICA,
-    });
+    try {
+      MailApp.sendEmail({
+        to: destino,
+        subject: `Tu código de acceso a ${cfg.CLINICA}: ${codigo}`,
+        htmlBody: plantillaEmail_(cfg, `Tu código de acceso es`, `<p style="font-size:34px;letter-spacing:6px;font-weight:700;margin:12px 0">${codigo}</p><p>Caduca en ${CODIGO_MINUTOS} minutos. Si no lo has pedido tú, ignora este mensaje.</p>`),
+        name: cfg.CLINICA,
+      });
+      registrar_('codigo', 'Código enviado a ' + destino);
+    } catch (e) { registrar_('codigo', 'No se pudo enviar el email a ' + destino + ': ' + e); }   // el paciente puede entrar con el código de Dani
     return { enviado: true };
   },
 
@@ -173,16 +176,21 @@ const ACC = {
     const inv = req.invitacion ? invitacion_(req.invitacion) : null;
     const email = inv ? canonEmail_(inv.email) : canonEmail_(req.email);
     const codigo = String(req.codigo || '').replace(/\D/g, '');
-    const fila = buscar_('Codigos', c => c.email === email)[0];
-    if (!fila) throw publico_('Pide un código nuevo.', 'codigo');
-    if (new Date(fila.expira).getTime() < Date.now()) { borrar_('Codigos', c => c.email === email); throw publico_('El código ha caducado. Pide uno nuevo.', 'codigo'); }
-    if (fila.hash !== hash_(codigo)) {
-      const n = Number(fila.intentos) + 1;
-      if (n >= CODIGO_INTENTOS) { borrar_('Codigos', c => c.email === email); throw publico_('Demasiados intentos. Pide un código nuevo.', 'codigo'); }
+    borrar_('Codigos', c => c.email === email && new Date(c.expira).getTime() < Date.now());   // caducados fuera
+    const filas = buscar_('Codigos', c => c.email === email);
+    if (!filas.length) throw publico_('Ese código ya no vale. Pide uno nuevo o pídeselo a Dani por WhatsApp.', 'codigo');
+    const fila = filas.filter(c => c.hash === hash_(codigo))[0];
+    if (!fila) {
+      // Los fallos cuentan para todos los códigos de ese email: 5 fallos y hay que pedir otro
+      const n = Math.max.apply(null, filas.map(c => Number(c.intentos) || 0)) + 1;
+      if (n >= CODIGO_INTENTOS) { borrar_('Codigos', c => c.email === email); throw publico_('Demasiados intentos. Pide un código nuevo a Dani.', 'codigo'); }
       actualizar_('Codigos', c => c.email === email, { intentos: n });
       throw publico_('Código incorrecto.', 'codigo');
     }
-    borrar_('Codigos', c => c.email === email);
+    // El código del email vale una vez; el de Dani y el de la app instalada, unas cuantas (Safari + app instalada)
+    const usos = (Number(fila.usos) || 0) + 1, max = USOS_CODIGO[tipoCodigo_(fila)] || 1;
+    if (usos >= max) borrar_('Codigos', c => c.email === email && c.hash === fila.hash);
+    else actualizar_('Codigos', c => c.email === email && c.hash === fila.hash, { usos, intentos: 0 });
     const cfg = leerConfig_();
     const esAdmin = email === canonEmail_(cfg.ADMIN_EMAIL);
     const paciente = esAdmin ? null : buscar_('Pacientes', p => canonEmail_(p.email) === email && !accesoCerrado_(p))[0];
@@ -205,21 +213,26 @@ const ACC = {
     const p = paciente_(req.pacienteId);
     const cerrado = accesoCerrado_(p);
     if (cerrado) throw publico_(cerrado === 'plan' ? 'Su plan ha terminado: amplía la duración en la pestaña Datos.' : 'Este paciente está de alta, de baja o archivado.');
-    return { token: nuevaInvitacion_(p.id) };
+    // Con el enlace va también un código para WhatsApp: así no depende de que le llegue el email
+    return { token: nuevaInvitacion_(p.id), codigo: codigoDani_(p), horas: HORAS_CODIGO.dani };
   },
 
-  /** Plan B si el correo no llega: Dani genera el código y se lo manda al paciente por WhatsApp. Vale 24 h. */
+  /** Código para el paciente por WhatsApp (sin email). Vale 3 días y para varios dispositivos. */
   codigoManual(req) {
     const p = paciente_(req.pacienteId);
     if (p.estado === 'archivado') throw publico_('Este paciente está archivado.');
-    const email = canonEmail_(p.email);
+    return { codigo: codigoDani_(p), email: normEmail_(p.email), horas: HORAS_CODIGO.dani };
+  },
+
+  /** El paciente, ya dentro desde Safari, saca un código para entrar en la app instalada (iPhone no comparte la sesión). */
+  codigoApp(req, q) {
+    const p = paciente_(q.pacienteId), email = canonEmail_(p.email);
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     conBloqueo_(() => {
-      borrar_('Codigos', c => c.email === email);
-      anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + 24 * 3600000).toISOString(), intentos: 0, creado: new Date(Date.now() - 120000).toISOString() });
+      borrar_('Codigos', c => c.email === email && tipoCodigo_(c) === 'app');
+      anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + HORAS_CODIGO.app * 3600000).toISOString(), intentos: 0, creado: new Date().toISOString(), tipo: 'app', usos: 0 });
     });
-    registrar_('codigo', 'Código manual generado por Dani para ' + normEmail_(p.email));
-    return { codigo, email: normEmail_(p.email), horas: 24 };
+    return { codigo, email: normEmail_(p.email), minutos: HORAS_CODIGO.app * 60 };
   },
 
   salir(req) {
@@ -414,7 +427,7 @@ const ACC = {
     if (req.llamadaId) actualizar_('Llamadas', l => l.id === String(req.llamadaId), { resultado: 'compro', pacienteId: p.id });
     (req.alta || []).forEach(a => anadir_('Alta', { id: id_(), pacienteId: p.id, prueba: texto_(a.prueba, 200), criterio: texto_(a.criterio, 200), resultado: '', superada: 'no', fecha: '' }));
     registrar_('paciente', 'Creado ' + p.id);
-    return { paciente: publicoPaciente_(p), token: nuevaInvitacion_(p.id) };
+    return { paciente: publicoPaciente_(p), token: nuevaInvitacion_(p.id), codigo: codigoDani_(p), horas: HORAS_CODIGO.dani };
   },
 
   editarPaciente(req) {
@@ -1262,6 +1275,20 @@ function sincronizarCarpeta_(carpeta, nombresConocidos) {
 function autorizar() { DriveApp.getRootFolder(); Logger.log('Permiso de Drive concedido. Ya puedes sincronizar los vídeos desde el panel.'); }
 
 /* ---------- Acceso: enlace personal, fin del plan y cierre ---------- */
+/* ---------- Códigos de acceso ---------- */
+const HORAS_CODIGO = { dani: 72, app: 0.5 };
+const USOS_CODIGO = { email: 1, dani: 5, app: 3 };
+function tipoCodigo_(c) { return c.tipo === 'dani' || c.tipo === 'app' ? c.tipo : 'email'; }
+/** Nuevo código de Dani para el paciente (sustituye al anterior de Dani; no toca el del email). */
+function codigoDani_(p) {
+  const email = canonEmail_(p.email), codigo = String(Math.floor(100000 + Math.random() * 900000));
+  conBloqueo_(() => {
+    borrar_('Codigos', c => c.email === email && tipoCodigo_(c) === 'dani');
+    anadir_('Codigos', { email, hash: hash_(codigo), expira: new Date(Date.now() + HORAS_CODIGO.dani * 3600000).toISOString(), intentos: 0, creado: new Date(Date.now() - 120000).toISOString(), tipo: 'dani', usos: 0 });
+  });
+  registrar_('codigo', 'Código de Dani para ' + normEmail_(p.email));
+  return codigo;
+}
 const MENSAJE_CERRADO = {
   cerrado: 'Tu acceso está cerrado. Si crees que es un error, escribe a Dani.',
   plan: 'Tu plan ha terminado. Escribe a Dani para renovarlo.',

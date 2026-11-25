@@ -46,7 +46,7 @@
           <label for="l-email">Tu email</label>
           <input id="l-email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@ejemplo.com" required>
           <button class="btn btn-primary btn-block" type="submit">Enviarme el código</button>
-          <button class="btn btn-ghost btn-block" type="button" id="l-have">Ya tengo un código de Dani</button>
+          <button class="btn btn-ghost btn-block" type="button" id="l-have">Tengo un código</button>
         </form>
         <form id="f-code" class="login-form" novalidate hidden>
           <label for="l-code">Código de 6 cifras</label>
@@ -90,7 +90,7 @@
       err(); email = $('#l-email', cont).value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Escribe primero tu email.');
       $('#f-email', cont).hidden = true; $('#f-code', cont).hidden = false;
-      $('#l-sent', cont).textContent = 'Escribe el código de 6 cifras que te ha mandado Dani por WhatsApp.';
+      $('#l-sent', cont).textContent = 'Escribe el código de 6 cifras que te mandó Dani por WhatsApp (o el que sacaste en la app para instalarla).';
       $('#l-code', cont).focus();
     });
     $('#l-back', cont).addEventListener('click', () => { $('#f-code', cont).hidden = true; $('#f-email', cont).hidden = false; err(); });

@@ -32,7 +32,7 @@
           <h1>Hola, ${esc(nombre)}</h1>
           <p class="soft">Dani te ha dado acceso a tu plan de readaptación en RCD Clinic.</p>
           ${esIOS && !instalada ? `<div class="card ios-tip"><p class="label">Consejo para iPhone</p>
-            <p class="mute">Para tenerla como una app y no tener que entrar dos veces: pulsa <b>Compartir</b> (el cuadrado con la flecha) → <b>«Añadir a pantalla de inicio»</b>, ábrela desde el icono y entra con tu email. O sigue aquí si lo prefieres.</p></div>` : ''}
+            <p class="mute">Para tenerla como una app: pulsa <b>Compartir</b> (el cuadrado con la flecha) → <b>«Añadir a pantalla de inicio»</b>, ábrela desde el icono y entra con tu email, «Tengo un código» y el código que te mandó Dani. O sigue aquí si lo prefieres.</p></div>` : ''}
           <div class="card who-card"><p class="eyebrow">¿Eres tú?</p><p class="who-name">${esc(info.nombre)}</p><p class="mute">${esc(info.email)}</p></div>
           <button class="btn btn-primary btn-block" type="button" id="i-si">Sí, soy yo</button>
           <button class="btn btn-ghost btn-block" type="button" id="i-no">No soy yo</button>
@@ -49,14 +49,14 @@
     function codigo(info, enviado) {
       cont.innerHTML = `
         <div class="login">${marca}
-          <h1>Revisa tu correo</h1>
-          <p class="soft">${enviado ? `Te hemos enviado un código de 6 cifras a <b>${esc(info.email)}</b>. Mira también en «Spam» o «Promociones».` : ''}</p>
+          <h1>Escribe tu código</h1>
+          <p class="soft">Es el código de 6 cifras que te mandó Dani por WhatsApp junto con este enlace.${enviado ? ` También te lo hemos enviado a <b>${esc(info.email)}</b> (mira en «Spam» o «Promociones»).` : ''}</p>
           <form id="i-form" class="login-form" novalidate>
             <label for="l-code">Código de 6 cifras</label>
             <input id="l-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······" required>
             <button class="btn btn-primary btn-block" type="submit">Entrar</button>
           </form>
-          <p class="mute">¿No te llega? Pídele a Dani un código por WhatsApp y escríbelo aquí.</p>
+          <p class="mute">¿No lo tienes? Pídeselo a Dani por WhatsApp.</p>
           ${contacto}
           <p class="login-error" id="i-err" role="alert"></p>
         </div>`;

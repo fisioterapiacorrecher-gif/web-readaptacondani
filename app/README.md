@@ -181,6 +181,16 @@ la app), Mejoras del servicio, Página web y Experiencia de los pacientes. Redes
   o, si pesa ≤ 20 MB, desde Drive a través del motor.
 - Tras pegar el motor nuevo: ejecutar `autorizar` otra vez (Drive + peticiones externas) y nueva versión.
 
+## Acceso sin depender del email (motor 1.9.0)
+
+- Primeras pruebas reales: los emails con el código no llegaban y en el iPhone la app instalada (que no comparte la
+  sesión con Safari) pedía otro código que solo se podía recibir por email.
+- Ahora «Enlace de acceso» y el alta de paciente generan también un **código de Dani** que va en el mismo WhatsApp
+  (`Codigos.tipo = dani`): vale 72 h y hasta 5 entradas (Safari + app instalada). Pedir el código por email ya no
+  borra el de Dani. El del email sigue valiendo una sola vez. Cinco fallos seguidos anulan todos los códigos del email.
+- En el iPhone, la tarjeta «Instala la app» tiene «Sacar código para la app» (`codigoApp`, tipo `app`: 30 min, 3 usos).
+- La pantalla de entrada dice «Tengo un código». Si `MailApp` falla, queda en el Registro y el paciente entra igual.
+
 ## Pendiente de Dani
 
 - Confirmado: «Recuperación tras fuerza» y «Cansancio general» existen. «Malestar asociado a la lesión» se quita (decisión de Dani).

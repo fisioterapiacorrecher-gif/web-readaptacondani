@@ -1,6 +1,6 @@
 /* RCD · service worker: guarda la «carcasa» de la app para que abra rápido y se pueda instalar.
    Los datos (el motor en Google) nunca se guardan aquí: siempre se piden en directo. */
-const VERSION = 'rcd-v8';
+const VERSION = 'rcd-v9';
 const CARCASA = ['./', 'index.html', 'css/paciente.css', 'css/comun.css', 'js/config.js', 'js/comun.js', 'js/paciente.js',
   'data/rcd-datos.js', 'data/rcd-cuestionarios.js', 'data/rcd-presesion.js', 'js/presesion.js', 'js/invitacion.js', 'js/tema.js', 'data/rcd-ejercicios.js', 'fonts/geist-latin.woff2', 'fonts/outfit-latin.woff2', 'img/icono.svg', 'img/icono-192.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(VERSION).then(c => c.addAll(CARCASA)).then(() => self.skipWaiting())));

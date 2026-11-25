@@ -113,13 +113,13 @@
 
   /* Enlace personal del paciente (anula el anterior) para mandárselo por WhatsApp */
   const urlApp = () => (CFG.config.APP_URL || 'https://app.rcdclinic.com').replace(/\/$/, '');
-  const mensajeEnlace = (nombre, enlace) => `Hola ${nombre.split(' ')[0]}, soy Dani de RCD Clinic. Este es tu acceso personal a la app: ${enlace}\n\nÁbrelo, confirma que eres tú y te llegará un código a tu email. Es personal, no lo compartas. Después añade la app a tu pantalla de inicio y ábrela siempre desde ahí.`;
+  const mensajeEnlace = (nombre, enlace, codigo) => `Hola ${nombre.split(' ')[0]}, soy Dani de RCD Clinic. Este es tu acceso personal a la app: ${enlace}\n\nÁbrelo, confirma que eres tú y escribe este código: ${codigo}\n(Vale 3 días. Te servirá también cuando añadas la app a tu pantalla de inicio: allí escribe tu email, pulsa «Tengo un código» y pon el mismo.)\n\nEs personal, no lo compartas.`;
   $('#p-link').addEventListener('click', async () => {
     const b = $('#p-link'); b.disabled = true;
     try {
       const r = await api('enlaceAcceso', { pacienteId: F.paciente.id });
       const enlace = `${urlApp()}/#i=${r.token}`, tel = String(F.paciente.telefono || '').replace(/\D/g, '');
-      const a = $('#p-link-wa'); a.href = `https://wa.me/${tel}?text=` + encodeURIComponent(mensajeEnlace(F.paciente.nombre, enlace)); a.hidden = false; b.hidden = true;
+      const a = $('#p-link-wa'); a.href = `https://wa.me/${tel}?text=` + encodeURIComponent(mensajeEnlace(F.paciente.nombre, enlace, r.codigo)); a.hidden = false; b.hidden = true;
       try { await navigator.clipboard.writeText(enlace); toast('Enlace nuevo copiado · el anterior ya no vale'); } catch { toast('Enlace nuevo listo · el anterior ya no vale'); }
     } catch (x) { toast(x.message); } finally { b.disabled = false; }
   });
@@ -130,11 +130,11 @@
     try {
       const r = await api('codigoManual', { pacienteId: F.paciente.id });
       const url = (CFG.config.APP_URL || 'https://app.rcdclinic.com').replace(/\/$/, '');
-      const msg = `Hola ${F.paciente.nombre.split(' ')[0]}, tu código para entrar en la app de RCD Clinic es ${r.codigo} (vale ${r.horas} h).\nEntra en ${url}, escribe tu email (${r.email}) y pulsa «Ya tengo un código de Dani».`;
+      const msg = `Hola ${F.paciente.nombre.split(' ')[0]}, tu código para entrar en la app de RCD Clinic es ${r.codigo} (vale 3 días y puedes usarlo en el móvil y en la app instalada).\nEntra en ${url}, escribe tu email (${r.email}), pulsa «Tengo un código» y escríbelo.`;
       const tel = String(F.paciente.telefono || '').replace(/\D/g, '');
       const a = $('#p-code-wa'); a.href = `https://wa.me/${tel}?text=` + encodeURIComponent(msg); a.textContent = `Enviar código ${r.codigo} por WhatsApp`;
       a.hidden = false; b.hidden = true;
-      try { await navigator.clipboard.writeText(msg); toast(`Código ${r.codigo} copiado · vale ${r.horas} h`); } catch { toast(`Código ${r.codigo} · vale ${r.horas} h`); }
+      try { await navigator.clipboard.writeText(msg); toast(`Código ${r.codigo} copiado · vale 3 días`); } catch { toast(`Código ${r.codigo} · vale 3 días`); }
     } catch (x) { toast(x.message); } finally { b.disabled = false; }
   });
 
@@ -562,7 +562,7 @@
       creado = r.paciente;
       const enlace = `${urlApp()}/#i=${r.token}`;
       $('#np-link').textContent = enlace.replace(/^https?:\/\//, '');
-      $('#np-wa').href = `https://wa.me/${creado.telefono || ''}?text=` + encodeURIComponent(mensajeEnlace(creado.nombre, enlace));
+      $('#np-wa').href = `https://wa.me/${creado.telefono || ''}?text=` + encodeURIComponent(mensajeEnlace(creado.nombre, enlace, r.codigo));
       paso(2); recargarLateral();
     } catch (e) { $('#np-err').textContent = e.message; btn.disabled = false; }
   });

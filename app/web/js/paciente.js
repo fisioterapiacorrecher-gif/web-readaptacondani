@@ -484,10 +484,18 @@
     if (instalada || oculta || !Y) { card.hidden = true; return; }
     card.hidden = false;
     $('#instalar-text').innerHTML = esIOS
-      ? 'Pulsa <b>Compartir</b> (el cuadrado con la flecha) → <b>«Añadir a pantalla de inicio»</b>. A partir de ahí, ábrela siempre desde el icono.'
+      ? 'Pulsa <b>Compartir</b> (el cuadrado con la flecha) → <b>«Añadir a pantalla de inicio»</b>. En el iPhone la app instalada te pedirá entrar otra vez: usa el código de Dani o saca uno aquí. <button class="btn btn-ghost" type="button" id="instalar-codigo" style="margin-top:8px">Sacar código para la app</button><span id="instalar-cod" class="instalar-cod" hidden></span>'
       : promptInstalar ? 'Tenla en tu pantalla de inicio como una app más, sin tener que buscar el enlace.'
       : 'En el menú <b>⋮</b> del navegador → <b>«Instalar aplicación»</b> o «Añadir a pantalla de inicio». Después, ábrela siempre desde el icono.';
     $('#instalar-btn').hidden = !promptInstalar;
+    $('#instalar-codigo')?.addEventListener('click', async e => {
+      const b = e.currentTarget; b.disabled = true;
+      try {
+        const r = await api('codigoApp');
+        const c = $('#instalar-cod'); c.hidden = false; b.hidden = true;
+        c.innerHTML = `Tu código: <b class="num">${esc(r.codigo)}</b>. Abre la app desde el icono, escribe <b>${esc(r.email)}</b>, pulsa «Tengo un código» y escríbelo. Vale ${r.minutos} minutos.`;
+      } catch (x) { toast(x.message); b.disabled = false; }
+    });
   }
   $('#instalar-btn').addEventListener('click', async () => {
     if (!promptInstalar) return; promptInstalar.prompt();
